@@ -18,21 +18,90 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Your awesome title
-email: your-email@example.com
+# Theme Settings
+#
+# Review documentation to determine if you should use `theme` or `remote_theme`
+# https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/#installing-the-theme
+
+theme                 : "minimal-mistakes-jekyll"
+# remote_theme             : "mmistakes/minimal-mistakes"
+minimal_mistakes_skin : "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+
+locale                : "en-US"
+title                 : "Random Code Ramblings"
+title_separator       : "-"
+subtitle              : "offloading a software engineer's mind" # site tagline that appears below site title in masthead
+name                  : "Mattias Severson"
 description: >- # this means to ignore newlines until "baseurl:"
-  Write an awesome description for your new site here. You can edit this
-  line in _config.yml. It will appear in your document head meta (for
-  Google search results) and in your feed.xml site description.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-twitter_username: jekyllrb
-github_username:  jekyll
+  Mattias Severson's website. This is where I present my profile, list my public events, publish my blog posts
+  and list references to my other profiles online.
+url                   : "https://matsev.github.io" # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
+baseurl               : # the subpath of your site, e.g. "/blog"
+repository            : "matsev/matsev.github.io" # GitHub username/repo-name
+teaser                : # path of fallback teaser image, e.g. "/assets/images/500x300.png"
+logo                  : # path of logo image to display in the masthead, e.g. "/assets/images/88x88.png"
+masthead_title        : # overrides the website title displayed in the masthead, use " " for no title
+# breadcrumbs         : false # true, false (default)
+words_per_minute      : 200
+
+
+# Site Author
+author:
+  name             : "Mattias Severson"
+  avatar           : "/assets/images/mattias-severson.jpg"
+  bio              : "Senior Software Consultant"
+  location         : "Malmö, Sweden"
+  email            :
+  stackoverflow    : "303598/matsev"
+  twitter          : "mattiasseverson"
+  github           : "matsev"
+  linkedin         : "matsev"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      # url: mailto:your.name@email.com
+    - label: "Website"
+      icon: "fas fa-fw fa-link"
+      # url: "https://your-website.com"
+    - label: "Twitter"
+      icon: "fab fa-fw fa-twitter-square"
+      # url: "https://twitter.com/mattiasseverson"
+    - label: "Malmö, Sweden"
+      icon: "fas fa-fw fa-map-marker-alt"
+      # url: "https://www.google.com/maps/place/Malmö/"
+    - label: "Facebook"
+      icon: "fab fa-fw fa-facebook-square"
+      # url: "https://facebook.com/"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      # url: "https://github.com/matsev"
+    - label: "Instagram"
+      icon: "fab fa-fw fa-instagram"
+      # url: "https://instagram.com/"
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      # url: "https://www.linkedin.com/in/matsev/"
+    - label: "Stack Overflow"
+      icon: "fab fa-fw fa-stack-overflow"
+      # url: "https://stackoverflow.com/users/303598/matsev"
+
 
 # Build settings
-theme: minima
 plugins:
+  - jekyll-archives
   - jekyll-feed
+  - jekyll-gist
+  - jekyll-include-cache
+  - jekyll-paginate
+  - jekyll-sitemap
+
+
+# Outputting
+permalink: /blog/:year/:month/:day/:title/
+paginate: 5 # amount of posts to show
+paginate_path: /blog/page:num/
+timezone: Europe/Stockholm # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+
 
 # Exclude from processing.
 # The following items will not be processed, by default.
@@ -53,6 +122,32 @@ plugins:
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+include:
+  - _pages
 exclude:
   - LICENSE
   - README.md
+
+# Defaults
+defaults:
+
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: # true
+      toc: true
+      share: true
+      related: true
+
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: true
