@@ -11,9 +11,9 @@
   {% for f in feature_row %}
     <div class="feature__item{% if include.type %}--{{ include.type }}{% endif %}">
       <div class="archive__item">
-        {% if f.material-icon %}
+        {% if f.octicon %}
           <div class="archive__item-teaser">
-            {% include {{ f.material-icon }} %}
+            {% octicon {{ f.octicon }} height:16 aria-label: {{ f.title }} %}
             {% if f.image_caption %}
               <span class="archive__item-caption">{{ f.image_caption | markdownify | remove: "<p>" | remove: "</p>" }}</span>
             {% endif %}

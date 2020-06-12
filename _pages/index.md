@@ -9,19 +9,19 @@ header:
   image_description: "Turning Torso - Malmö"
 #  overlay_filter: 0.5
 feature_row:
-  - material-icon: svg/code-24px.svg
+  - octicon: code
     title: "Blog"
     excerpt: "Blog posts that I have authored"
     url: "/blog/"
     # btn_class: "btn--primary"
     # btn_label: "Learn more"
-  - material-icon: svg/info-24px.svg
+  - octicon: info
     title: "About"
     excerpt: "Information about me and this web site"
     url: "/about/"
     # btn_class: "btn--primary"
     # btn_label: "Learn more"
-  - material-icon: svg/comment-24px.svg
+  - octicon: megaphone
     title: "Talks"
     excerpt: "Some presentations that I have made at conferences and user groups"
     url: "/talks/"

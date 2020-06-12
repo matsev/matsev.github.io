@@ -15,6 +15,6 @@ Mattias occasionally speaks at conferences and other public events, see the [Tal
 
 ## This Site
 
-This site is created using open source software. It is based on [Jekyll](https://jekyllrb.com/), customized with the [Minimal Mistakes](https://mmistakes.github.io/minimal-mistakes/) theme and hosted on [GitHub Pages](https://pages.github.com). The icons on the [landing page]({% link _pages/index.md %}) are copied from [Material Design](https://material.io/resources/icons/?style=outline).
+This site is created using open source software. It is based on [Jekyll](https://jekyllrb.com/), customized with the [Minimal Mistakes](https://mmistakes.github.io/minimal-mistakes/) theme and hosted on [GitHub Pages](https://pages.github.com). The icons on the [landing page]({% link _pages/index.md %}) are [GitHub Octicons](https://primer.style/octicons/).
 
 The source code of the site is available on [GitHub](https://github.com/matsev/matsev.github.io) and is free to use under the terms of the [MIT Licence]({% link /LICENSE.md %}).
