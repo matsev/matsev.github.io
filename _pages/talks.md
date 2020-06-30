@@ -4,21 +4,18 @@ permalink: /talks/
 toc: true
 ---
 
-Below are some of the public events that I have presented at
+Below are some of the presentations I have made at public events. All content is freely available under a [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/) license (reuse anything but please mention me) unless stated otherwise on the sites hosting the content.
 
 
 {% for talk in site.data.talks %}
-<!-- {{ talk }} -->
   
-## {{ talk.event }} {{ talk.year }}
+## {{ talk.event }} - {{ talk.title }} 
 
-{{ talk.title }}
+{{ talk.day }} {{ talk.year }}
+{%- if talk.location -%}, {{ talk.location }}{%- endif -%}
+{%- if talk.co-presenter -%}, co-presenter: {{ talk.co-presenter }}{% endif %}
+{: .notice }
 
-{{ talk.day }} {{ talk.location }}
-
-{% if talk.co-presenter %}
-co-presenter: {{ talk.co-presenter }}
-{% endif %}
 {% if talk.youtube %}
 {% capture youtube_id %}{{ talk.youtube }}{% endcapture %}
 {% include youtube-player.html id=youtube_id %}
@@ -30,11 +27,11 @@ co-presenter: {{ talk.co-presenter }}
 {% include slideshare-viewer.html id=slideshare_id %}
 {% endif %}
 
-{% if talk.slideshare and talk.youtube or talk.vimeo %}
-[[slides]({{ talk.slides }})]
-{%- endif -%}
 {%- if talk.website -%}
 [[website]({{ talk.website }})]
-{% endif %}
+{%- endif -%}
+{%- if talk.slideshare and talk.youtube or talk.vimeo -%}
+[[slides]({{ talk.slides }})]
+{%- endif -%}
 
 {% endfor %}
