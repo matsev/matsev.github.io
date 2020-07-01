@@ -1,7 +1,10 @@
 main:
   - title: "Blog"
+    description: "Software related blog posts"
     url: /blog/
   - title: "Talks"
+    description: "Presentations that I have made"
     url: /talks/
   - title: "About"
+    description: "Information about me and this web site"
     url: /about/
