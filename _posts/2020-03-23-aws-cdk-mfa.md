@@ -16,6 +16,11 @@ tags:
 The [AWS CDK (Cloud Development Kit)](https://aws.amazon.com/cdk/) is a welcome contribution to the "Infrastructure as Code" family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.
 
 
+## Update
+
+The AWS CDK version [v1.60.0](https://github.com/aws/aws-cdk/releases/tag/v1.60.0) was released August 19, 2020 and it partly solves some of problems mentioned in this post. One drawback with this version is that the MFA credentials are not cached, i.e. they need to entered every time a CDK CLI command is invoked. A new feature request has been created [#9855 - [cli] Cache mfa credentials](https://github.com/aws/aws-cdk/issues/9855) to address this issue. Meanwhile, keep on reading if you are interested in a MFA solution for the CDK CLI that provides caching as well. 
+
+
 ## Background
 
 I recently had the opportunity to try the AWS CDK in a real project. The [getting started guide](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) provided a good introduction and soon it was time for the first deployment. The intended deployment account was configured to use MFA for the AWS CLI (see my previous blog [AWS CLI MFA]({% post_url 2017-11-22-aws-cli-mfa %})) which made deployment more complicated. That said, the paragraph about Specifying Your Credentials and Region using AWS CLI profiles seemed to provide a solution. I thought I could just pass my AWS CLI configured MFA profile and it would “just work” (spoiler: it didn’t):
