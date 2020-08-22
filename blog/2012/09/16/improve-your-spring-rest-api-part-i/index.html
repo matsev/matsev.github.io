@@ -1,0 +1,650 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Improve Your Spring REST API, Part I - Random Code Ramblings</title>
+<meta name="description" content="After watching Jonathan Dahl’s presentation about API design from the Øredev conference last year, especially the parts about Smart Validations, it is apparent that you can do much more to help your client developers than just returning HTTP status code 500 - Internal Server Error, when a request to your REST API fails.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Improve Your Spring REST API, Part I">
+<meta property="og:url" content="https://matsev.github.io/blog/2012/09/16/improve-your-spring-rest-api-part-i/">
+
+
+  <meta property="og:description" content="After watching Jonathan Dahl’s presentation about API design from the Øredev conference last year, especially the parts about Smart Validations, it is apparent that you can do much more to help your client developers than just returning HTTP status code 500 - Internal Server Error, when a request to your REST API fails.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2012-09-16T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2012/09/16/improve-your-spring-rest-api-part-i/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Improve Your Spring REST API, Part I">
+    <meta itemprop="description" content="After watching Jonathan Dahl’s presentation about API design from the Øredev conference last year, especially the parts about Smart Validations, it is apparent that you can do much more to help your client developers than just returning HTTP status code 500 - Internal Server Error, when a request to your REST API fails.">
+    <meta itemprop="datePublished" content="2012-09-16T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Improve Your Spring REST API, Part I
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#spring-web-mvc">Spring WEB MVC</a></li>
+  <li><a href="#solution">Solution</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+  <li><a href="#side-notes">Side notes</a>
+    <ul>
+      <li><a href="#jsr-303">JSR 303</a></li>
+      <li><a href="#xml">XML</a></li>
+      <li><a href="#json">JSON</a></li>
+    </ul>
+  </li>
+  <li><a href="#dependencies">Dependencies</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>After watching <a href="http://oredev.org/2011/sessions/advanced-api-design-how-an-awesome-api-can-attract-friends-make-you-rich-and-change-the-world">Jonathan Dahl’s presentation</a> about API design from the Øredev conference last year, especially the parts about <a href="http://vimeo.com/41968498#at=819">Smart Validations</a>, it is apparent that you can do much more to help your client developers than just returning HTTP status code <em>500 - Internal Server Error</em>, when a request to your REST API fails.</p>
+
+<h2 id="spring-web-mvc">Spring WEB MVC</h2>
+
+<p>The Spring Web MVC framework is a great tool for creating restful web services. It takes care of request mapping, validation, serialization and de-serialization just to name a few. When it comes to error handling, the <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-exceptionhandlers-resolver">DefaultHandlerExceptionResolver</a> makes a really good job behind the scenes for translating common exceptions to suitable HTTP status codes and adding response headers when applicable. If there is no resource mapped to the request URI, <em>404 - Not Found</em>, is set as response code. If a HTTP method is not supported by a particular request URI, <em>405 - Method Not Allowed</em>, is set as response code and the <em>Allow</em> response header is set to indicate which method(s) that can be used instead, and so on. Unfortunately, things are not always that easy. What about when the developer receives a <em>400 - Bad Request</em>? Obviously, there is something wrong with the request, but the response fails to tell the developer <strong>why</strong> it is not accepted. Take a look at the following controller method:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/user/{userId}"</span><span class="o">,</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">PUT</span><span class="o">,</span>
+        <span class="n">consumes</span> <span class="o">=</span> <span class="o">{</span><span class="nc">MediaType</span><span class="o">.</span><span class="na">APPLICATION_JSON_VALUE</span><span class="o">,</span> <span class="nc">MediaType</span><span class="o">.</span><span class="na">APPLICATION_XML_VALUE</span><span class="o">})</span>
+<span class="nd">@ResponseStatus</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">NO_CONTENT</span><span class="o">)</span>
+<span class="kt">void</span> <span class="nf">update</span><span class="o">(</span><span class="nd">@PathVariable</span><span class="o">(</span><span class="s">"userId"</span><span class="o">)</span> <span class="kt">long</span> <span class="n">userId</span><span class="o">,</span> 
+        <span class="nd">@RequestBody</span> <span class="nd">@Valid</span> <span class="nc">User</span> <span class="n">user</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">userService</span><span class="o">.</span><span class="na">update</span><span class="o">(</span><span class="n">userId</span><span class="o">,</span> <span class="n">user</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Even with the implementation available, it is impossible to unambiguously determine the cause of failure. Perhaps the de-serialization of the request body to the <code class="language-plaintext highlighter-rouge">User</code> object failed? Maybe the validation failed? Other possible causes of a <em>400 - Bad Request</em> include erroneous request parameters, missing request headers, etc. Inspired by Jonathan’s presentation, the idea is that the server will still respond with appropriate status codes, and the appropriate headers when applicable. Additionally, the response body should contain information that can assist the client developer, and in the format that the client requested (as specified by the <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.1">Accept</a> request header). For example, if the server expects a <code class="language-plaintext highlighter-rouge">name</code> and a valid <code class="language-plaintext highlighter-rouge">email</code> as part of the request, a suitable response could be a <em>400 - Bad Request</em> with the following response body:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"name, may not be empty"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"email, not a well-formed email address"</span><span class="w">
+    </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="solution">Solution</h2>
+
+<p>The <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-exceptionhandler">@ExceptionHandler</a> in conjunction with the <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-responsebody">@ResponseBody</a> provide a simple solution to the problem:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@ExceptionHandler</span>
+<span class="nd">@ResponseStatus</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">)</span>
+<span class="nd">@ResponseBody</span>
+<span class="nc">ErrorMessage</span> <span class="nf">handleException</span><span class="o">(</span><span class="nc">MethodArgumentNotValidException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FieldError</span><span class="o">&gt;</span> <span class="n">fieldErrors</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getFieldErrors</span><span class="o">();</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">ObjectError</span><span class="o">&gt;</span> <span class="n">globalErrors</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getGlobalErrors</span><span class="o">();</span>
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">errors</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">fieldErrors</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">+</span> <span class="n">globalErrors</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+    <span class="nc">String</span> <span class="n">error</span><span class="o">;</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">FieldError</span> <span class="n">fieldError</span> <span class="o">:</span> <span class="n">fieldErrors</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">()</span> <span class="o">+</span> <span class="s">", "</span> <span class="o">+</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">();</span>
+        <span class="n">errors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">error</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">ObjectError</span> <span class="n">objectError</span> <span class="o">:</span> <span class="n">globalErrors</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">objectError</span><span class="o">.</span><span class="na">getObjectName</span><span class="o">()</span> <span class="o">+</span> <span class="s">", "</span> <span class="o">+</span> <span class="n">objectError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">();</span>
+        <span class="n">errors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">error</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nf">ErrorMessage</span><span class="o">(</span><span class="n">errors</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ErrorMessage</code> is a simple helper class used for serialization:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@XmlRootElement</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ErrorMessage</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">errors</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">ErrorMessage</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">ErrorMessage</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">errors</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">errors</span> <span class="o">=</span> <span class="n">errors</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">ErrorMessage</span><span class="o">(</span><span class="nc">String</span> <span class="n">error</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="nc">Collections</span><span class="o">.</span><span class="na">singletonList</span><span class="o">(</span><span class="n">error</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">ErrorMessage</span><span class="o">(</span><span class="nc">String</span> <span class="o">...</span> <span class="n">errors</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">errors</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="nf">getErrors</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">errors</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setErrors</span><span class="o">(</span><span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">errors</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">errors</span> <span class="o">=</span> <span class="n">errors</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="considerations">Considerations</h2>
+
+<p>There is plenty of more information that may be added to the response that could be valuable for the REST API users. Some suggestions that come to mind are a <em>default message</em> text that could be presented to the end user, a <em>custom error code</em> for client developers or a link to relevant part of the application specific <em>REST API doc</em>, if it is published online. Another question is how the error handling can be generalized to prevent the <code class="language-plaintext highlighter-rouge">@ExceptionHandler</code> implementation from being copied between all controllers in the project. Note, the example above includes just one of the potential error causes, it is likely that there are more similar implementations for other exceptions.</p>
+
+<h2 id="side-notes">Side notes</h2>
+
+<h3 id="jsr-303">JSR 303</h3>
+
+<p>The ability to use the <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/validation.html#validation-mvc">@Valid</a> annotation as part of a <code class="language-plaintext highlighter-rouge">@RequestBody</code> controller method argument was introduced in Spring 3.1. For completeness, the JAXB validation of the <code class="language-plaintext highlighter-rouge">User</code> class could be implemented as:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@XmlRootElement</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">User</span> <span class="o">{</span>
+
+    <span class="nd">@NotBlank</span>
+    <span class="nd">@Length</span><span class="o">(</span><span class="n">min</span> <span class="o">=</span> <span class="mi">3</span><span class="o">,</span> <span class="n">max</span> <span class="o">=</span> <span class="mi">30</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+
+    <span class="nd">@Email</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">email</span><span class="o">;</span>
+
+    <span class="c1">// Getters and setters omitted</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/validation.html#validation-mvc-jsr303">Spring reference documentation</a> provides configuration details.</p>
+
+<h3 id="xml">XML</h3>
+
+<p>You may have noticed the <code class="language-plaintext highlighter-rouge">@XmlRootElement</code> annotation on the <code class="language-plaintext highlighter-rouge">ErrorMessage</code> class. It is a JAXB annotation required to make the XML serialization work. No additional dependency is required, since JAXB 2.0 was added to <a href="http://jaxb.java.net/guide/Which_JAXB_RI_is_included_in_which_JDK_.html">JDK 6u3</a>.</p>
+
+<h3 id="json">JSON</h3>
+
+<p>A JSON message converter for serialization and deserialization is added <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-config-enable">automatically</a> by Spring by just adding Jackson to the classpath. No additional setting is required, however you can tailor the behavior by adding Jackson annotation to your objects.</p>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<ul>
+  <li>Spring 3.1.2.RELEASE</li>
+  <li>jackson-databind 2.0.5</li>
+</ul>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Spring reference documentation:
+    <ul>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html">Spring Web MVC</a></li>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-exceptionhandlers-resolver">DefaultHandlerExceptionResolver</a></li>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-exceptionhandler">@ExceptionHandler</a></li>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-responsebody">@ResponseBody</a></li>
+    </ul>
+  </li>
+  <li>The HTTP specification:
+    <ul>
+      <li><a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html">HTTP headers</a></li>
+      <li><a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html">HTTP methods</a></li>
+      <li><a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">HTTP status codes</a></li>
+    </ul>
+  </li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2012-09-16T00:00:00+02:00">September 16, 2012</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2012/09/08/spring-controller-tests-20/" class="pagination--pager" title="Spring Controller Tests 2.0
+">Previous</a>
+    
+    
+      <a href="/blog/2012/09/23/improve-your-spring-rest-api-part-ii/" class="pagination--pager" title="Improve Your Spring REST API, Part II
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

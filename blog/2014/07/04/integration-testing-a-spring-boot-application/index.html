@@ -1,0 +1,698 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Integration Testing a Spring Boot Application - Random Code Ramblings</title>
+<meta name="description" content="Example of how you can use Rest Assured when implementing integration tests for a Spring Boot application.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Integration Testing a Spring Boot Application">
+<meta property="og:url" content="https://matsev.github.io/blog/2014/07/04/integration-testing-a-spring-boot-application/">
+
+
+  <meta property="og:description" content="Example of how you can use Rest Assured when implementing integration tests for a Spring Boot application.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2014-07-04T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2014/07/04/integration-testing-a-spring-boot-application/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Integration Testing a Spring Boot Application">
+    <meta itemprop="description" content="Example of how you can use Rest Assured when implementing integration tests for a Spring Boot application.">
+    <meta itemprop="datePublished" content="2014-07-04T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Integration Testing a Spring Boot Application
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#sample-application">Sample Application</a></li>
+  <li><a href="#spring-boot-test">Spring Boot Test</a>
+    <ul>
+      <li><a href="#explanation">Explanation</a></li>
+    </ul>
+  </li>
+  <li><a href="#advantages">Advantages</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+  <li><a href="#spring-boot-reference-documentation">Spring Boot reference documentation</a></li>
+  <li><a href="#dependencies">Dependencies</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Spring Boot brings about some welcome defaults configurations that significantly decreases the development time of Spring projects. It also has some useful additions when it comes to simplified integration testing. Traditionally, one would use the build script to fire up an embedded container such as Jetty, Tomcat or Cargo, but since a Spring Boot web application already comprises an embedded servlet container some convenient utilities have been created so it can be reused for integration testing.</p>
+
+<h2 id="sample-application">Sample Application</h2>
+
+<p>Let us have a look at a sample application. First, there is an entity class based on JPA:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Character</span> <span class="o">{</span>
+
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"name"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+
+    <span class="nd">@Id</span>
+    <span class="nd">@Column</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">"id"</span><span class="o">)</span>
+    <span class="nd">@GeneratedValue</span>
+    <span class="kd">private</span> <span class="nc">Integer</span> <span class="n">id</span><span class="o">;</span>
+
+    <span class="c1">// getters, setters, etc, omitted</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>A corresponding repository based on Spring Data JPA:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">CharacterRepository</span> <span class="kd">extends</span> <span class="nc">JpaRepository</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>A Spring 4 Controller:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RestController</span>
+<span class="kd">class</span> <span class="nc">CharacterController</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">CharacterRepository</span> <span class="n">repository</span><span class="o">;</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/characters"</span><span class="o">)</span>
+    <span class="nc">List</span> <span class="nf">characters</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">repository</span><span class="o">.</span><span class="na">findAll</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"/characters/{id}"</span><span class="o">,</span> <span class="n">method</span> <span class="o">=</span> <span class="nc">RequestMethod</span><span class="o">.</span><span class="na">DELETE</span><span class="o">)</span>
+    <span class="nd">@ResponseStatus</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">NO_CONTENT</span><span class="o">)</span>
+    <span class="kt">void</span> <span class="nf">delete</span><span class="o">(</span><span class="nd">@PathVariable</span><span class="o">(</span><span class="s">"id"</span><span class="o">)</span> <span class="nc">Integer</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="c1">// more controller methods</span>
+<span class="o">}</span> 
+</code></pre></div></div>
+
+<p>And a Spring Boot application:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@ComponentScan</span>
+<span class="nd">@EnableAutoConfiguration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Application</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="nc">Application</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Unless you have used Spring Boot before, you will be pleasantly surprised that (besides adding the appropriate dependencies on your classpath) this is actually all that is required to create a complete Spring Boot web application including database persistence! If, let’s say that <code class="language-plaintext highlighter-rouge">Mickey Mouse</code>, <code class="language-plaintext highlighter-rouge">Minnie Mouse</code> and <code class="language-plaintext highlighter-rouge">Pluto</code> were the only three characters in the database, a request to <code class="language-plaintext highlighter-rouge">/characters</code> would give the following response:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl localhost:8080/characters
+<span class="o">[{</span><span class="s2">"name"</span>:<span class="s2">"Mickey Mouse"</span>,<span class="s2">"id"</span>:1<span class="o">}</span>,<span class="o">{</span><span class="s2">"name"</span>:<span class="s2">"Minnie Mouse"</span>,<span class="s2">"id"</span>:2<span class="o">}</span>,<span class="o">{</span><span class="s2">"name"</span>:<span class="s2">"Pluto"</span>,<span class="s2">"id"</span>:3<span class="o">}]</span>
+</code></pre></div></div>
+
+<p>Curl is a good tool for trying out things on the command line, but it is less suitable for writing automated integration tests.</p>
+
+<h2 id="spring-boot-test">Spring Boot Test</h2>
+
+<p>To verify that the application works, one could create the following test class. Scroll down to read explanations for each <code class="language-plaintext highlighter-rouge">// nbr</code> below.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="nc">SpringJUnit4ClassRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>   <span class="c1">// 1</span>
+<span class="nd">@SpringApplicationConfiguration</span><span class="o">(</span><span class="n">classes</span> <span class="o">=</span> <span class="nc">Application</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>   <span class="c1">// 2</span>
+<span class="nd">@WebAppConfiguration</span>   <span class="c1">// 3</span>
+<span class="nd">@IntegrationTest</span><span class="o">(</span><span class="s">"server.port:0"</span><span class="o">)</span>   <span class="c1">// 4</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CharacterControllerTest</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>   <span class="c1">// 5</span>
+    <span class="nc">CharacterRepository</span> <span class="n">repository</span><span class="o">;</span>
+
+    <span class="nc">Character</span> <span class="n">mickey</span><span class="o">;</span>
+    <span class="nc">Character</span> <span class="n">minnie</span><span class="o">;</span>
+    <span class="nc">Character</span> <span class="n">pluto</span><span class="o">;</span>
+
+    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${local.server.port}"</span><span class="o">)</span>   <span class="c1">// 6</span>
+    <span class="kt">int</span> <span class="n">port</span><span class="o">;</span>
+
+    <span class="nd">@Before</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setUp</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 7</span>
+        <span class="n">mickey</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Character</span><span class="o">(</span><span class="s">"Mickey Mouse"</span><span class="o">);</span>
+        <span class="n">minnie</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Character</span><span class="o">(</span><span class="s">"Minnie Mouse"</span><span class="o">);</span>
+        <span class="n">pluto</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Character</span><span class="o">(</span><span class="s">"Pluto"</span><span class="o">);</span>
+
+        <span class="c1">// 8</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">deleteAll</span><span class="o">();</span>
+        <span class="n">repository</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="n">mickey</span><span class="o">,</span> <span class="n">minnie</span><span class="o">,</span> <span class="n">pluto</span><span class="o">));</span>
+
+        <span class="c1">// 9</span>
+        <span class="nc">RestAssured</span><span class="o">.</span><span class="na">port</span> <span class="o">=</span> <span class="n">port</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 10</span>
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">canFetchMickey</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Integer</span> <span class="n">mickeyId</span> <span class="o">=</span> <span class="n">mickey</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+
+        <span class="n">when</span><span class="o">().</span>
+                <span class="n">get</span><span class="o">(</span><span class="s">"/characters/{id}"</span><span class="o">,</span> <span class="n">mickeyId</span><span class="o">).</span>
+        <span class="n">then</span><span class="o">().</span>
+                <span class="n">statusCode</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">SC_OK</span><span class="o">).</span>
+                <span class="n">body</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="nc">Matchers</span><span class="o">.</span><span class="na">is</span><span class="o">(</span><span class="s">"Mickey Mouse"</span><span class="o">)).</span>
+                <span class="n">body</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span> <span class="nc">Matchers</span><span class="o">.</span><span class="na">is</span><span class="o">(</span><span class="n">mickeyId</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">canFetchAll</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">when</span><span class="o">().</span>
+                <span class="n">get</span><span class="o">(</span><span class="s">"/characters"</span><span class="o">).</span>
+        <span class="n">then</span><span class="o">().</span>
+                <span class="n">statusCode</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">SC_OK</span><span class="o">).</span>
+                <span class="n">body</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="nc">Matchers</span><span class="o">.</span><span class="na">hasItems</span><span class="o">(</span><span class="s">"Mickey Mouse"</span><span class="o">,</span> <span class="s">"Minnie Mouse"</span><span class="o">,</span> <span class="s">"Pluto"</span><span class="o">));</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">canDeletePluto</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Integer</span> <span class="n">plutoId</span> <span class="o">=</span> <span class="n">pluto</span><span class="o">.</span><span class="na">getId</span><span class="o">();</span>
+
+        <span class="n">when</span><span class="o">()</span>
+                <span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="s">"/characters/{id}"</span><span class="o">,</span> <span class="n">plutoId</span><span class="o">).</span>
+        <span class="n">then</span><span class="o">().</span>
+                <span class="n">statusCode</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">SC_NO_CONTENT</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="explanation">Explanation</h3>
+
+<p>Hint, more information can be found in the Javadoc of each class, just click on the corresponding link.</p>
+
+<ol>
+  <li>Like any other Spring based test, we need the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/test/context/junit4/SpringJUnit4ClassRunner.html">SpringJUnit4ClassRunner</a> so that an application context is created.</li>
+  <li>The <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/test/SpringApplicationConfiguration.html">@SpringApplicationConfiguration</a> annotation is similar to the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/test/context/ContextConfiguration.html">@ContextConfiguration</a> annotation in that it is used to specify which application context(s) that should be used in the test. Additionally, it will trigger logic for reading Spring Boot specific configurations, properties, and so on.</li>
+  <li><a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/test/context/web/WebAppConfiguration.html">@WebAppConfiguration</a> must be present in order to tell Spring that a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/web/context/WebApplicationContext.html">WebApplicationContext</a> should be loaded for the test. It also provides an attribute for specifying the path to the root of the web application.</li>
+  <li><a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/test/IntegrationTest.html">@IntegrationTest</a> is used to instruct Spring Boot that the embedded web server should be started. By providing colon- or equals-separated name-value pair(s), any environment variable can be overridden. In this example, the <code class="language-plaintext highlighter-rouge">"server.port:0"</code> will override the server’s default port setting. Normally, the server would start using the specified port number, but the value <code class="language-plaintext highlighter-rouge">0</code> has a special meaning. When specified, it tells Spring Boot to scan the ports on the host environment and start the server on a random, available port. That is useful if you have different services occupying different ports on the development machines and the build server that could potentially collide with the application port, in which case the application will not start. Secondly, if you create multiple integration tests with different application contexts, they may also collide if the tests are running concurrently.</li>
+  <li>We have access to the application context and can use autowiring to inject any Spring bean.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">@Value("${local.server.port}”)</code> will be resolved to the actual port number that is used.</li>
+  <li>We create some entities that we can use for validation.</li>
+  <li>The database is cleared and re-initialized for each test so that we always validate against a known state. Since the order of the tests is not defined, chances are that the <code class="language-plaintext highlighter-rouge">canFetchAll()</code> test fails if it is executed after the <code class="language-plaintext highlighter-rouge">canDeletePluto()</code> test.</li>
+  <li>We instruct <a href="https://github.com/jayway/rest-assured">Rest Assured</a> to use the correct port. It is an open source project that provides a Java DSL for testing restful services, founded by my colleague <a href="https://blog.jayway.com/author/johanhaleby/">Johan Haleby</a> (follow the link to read his blog posts, including more about Rest Assured).</li>
+  <li>Test are implemented by using Rest Assured. You could implement the tests using the <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/test/TestRestTemplate.html">TestRestTemplate</a> or any other http client, but I find the Rest Assured syntax both clear and concise.</li>
+</ol>
+
+<h2 id="advantages">Advantages</h2>
+
+<p>Some advantages with using Spring Boot’s embedded container during testing:</p>
+
+<ul>
+  <li>Development test turnaround time. You can change a test (or the code that is verified by the test) and execute the test immediately. Compare that with rebuilding the entire project, launch an embedded server, and then execute the test.</li>
+  <li>Spring Boot enable us to create tests that access any Spring bean, the REST API as well as the database directly. If you create tests using an embedded server in your build script you can only interact with the REST API and the database (unless it is an embedded database).</li>
+  <li>The very same container is used during development, testing and production. Hence there is no discrepancy between different vendor implementations or server versions. Moreover, the server configuration will be tested and verified in all environments (typically, you will only change environment specific settings such as database url and password, administrator credentials, etc).</li>
+</ul>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>You cannot create <a href="http://docs.spring.io/spring-framework/docs/4.0.x/spring-framework-reference/html/testing.html#testing-tx">transaction based</a> tests when making requests to the REST API, despite that you could autowire the transaction manager in your test. The reason is that any transaction defined in your application, regardless of where it is declared, will be committed before the server response is sent. Consequently, it will be too late for a test to roll back any state using the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/transaction/annotation/Transactional.html">@Transactional</a> annotation when the test completes.</li>
+  <li>It is possible to verify your application responses without starting a server by using the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/spring-framework-reference/html/testing.html#spring-mvc-test-framework">Spring Mvc Test Framework</a> framework. Just remove the <code class="language-plaintext highlighter-rouge">@IntegrationTest</code> annotation, and rewrite the test implementations using the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/test/web/servlet/MockMvc.html">MockMvc</a> class as showed in this <a href="https://spring.io/blog/2012/11/12/spring-framework-3-2-rc1-spring-mvc-test-framework">example</a>. The execution time of these tests will be shorter, since no application server is involved.</li>
+</ul>
+
+<h2 id="spring-boot-reference-documentation">Spring Boot reference documentation</h2>
+
+<ul>
+  <li><a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#boot-features-testing-spring-boot-applications">Testing Spring Boot applications</a></li>
+  <li><a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#howto-user-a-random-unassigned-http-port">Use a random unassigned HTTP port</a></li>
+  <li><a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#howto-discover-the-http-port-at-runtime">Discover the HTTP port at runtime</a></li>
+</ul>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<ul>
+  <li>spring-boot-starter-web 1.1.3.RELEASE</li>
+  <li>spring-boot-starter-data-jpa 1.1.3.RELEASE</li>
+  <li>hsqldb 2.3.2</li>
+  <li>spring-boot-starter-test 1.1.3.RELEASE</li>
+  <li>hamcrest-core 1.3</li>
+  <li>rest-assured 2.3.2.</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2014-07-04T00:00:00+02:00">July 4, 2014</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2014/05/24/geecon-2014/" class="pagination--pager" title="GeeCON 2014
+">Previous</a>
+    
+    
+      <a href="/blog/2014/07/22/spring-boot-custom-healthindicator/" class="pagination--pager" title="Spring Boot Custom HealthIndicator
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

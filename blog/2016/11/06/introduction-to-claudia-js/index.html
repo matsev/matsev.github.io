@@ -1,0 +1,649 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Introduction to Claudia.js - Random Code Ramblings</title>
+<meta name="description" content="Introduction to the Claudia.js deployment tool for AWS Lambda and AWS API Gateway. Some basic installation guides and a simple code example is provided.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Introduction to Claudia.js">
+<meta property="og:url" content="https://matsev.github.io/blog/2016/11/06/introduction-to-claudia-js/">
+
+
+  <meta property="og:description" content="Introduction to the Claudia.js deployment tool for AWS Lambda and AWS API Gateway. Some basic installation guides and a simple code example is provided.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2016-11-06T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2016/11/06/introduction-to-claudia-js/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Introduction to Claudia.js">
+    <meta itemprop="description" content="Introduction to the Claudia.js deployment tool for AWS Lambda and AWS API Gateway. Some basic installation guides and a simple code example is provided.">
+    <meta itemprop="datePublished" content="2016-11-06T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Introduction to Claudia.js
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#tldr">tl;dr</a></li>
+  <li><a href="#claudiajs">Claudia.js</a></li>
+  <li><a href="#cli-tool">CLI Tool</a></li>
+  <li><a href="#lambda-function">Lambda Function</a></li>
+  <li><a href="#deployment">Deployment</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+  <li><a href="#more-resources">More Resources</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Serverless architecture and serverless applications are rapidly gaining momentum. In a couple of previous blog posts I have showed simple examples of how RESTful APIs can be deployed using AWS API Gateway and AWS Lambda. In <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/">one blog post</a> CloudFormation’s native resources were used to create the entire stack, including the RESTful API. In <a href="/blog/2016/09/18/introduction-to-swagger-for-cloudformation-and-api-gateway/">another blog post</a> a different approach was used where some resources remained in Lambda, but Swagger was used to define the RESTful API and the API Gateway mappings. Both alternatives provided full control of your stack, but the configurations were quite verbose even for simple sample projects. This time, we will re-implement the same application yet again, but instead of using CloudFormation we will take a look at what <a href="https://claudiajs.com/">Claudia.js</a> has to offer. The full source code is available in my GitHub <a href="https://github.com/matsev/claudiajs-demo">sample project</a>.</p>
+
+<h2 id="tldr">tl;dr</h2>
+
+<p>Claudia makes it easy to develop serverless applications that can be deployed to AWS. Execute the following steps in order to create a RESTful service that uses AWS API Gateway for HTTP request mapping and AWS Lambda for business logic:</p>
+
+<ol>
+  <li>Install Claudia as a global dependency by executing <code class="language-plaintext highlighter-rouge">$ npm install claudia --global</code>.</li>
+  <li>Execute <code class="language-plaintext highlighter-rouge">$ npm init</code> in an empty directory to create a new npm project (enter appropriate answers for your project when prompted).</li>
+  <li>Add Claudia API Builder as project dependency by executing <code class="language-plaintext highlighter-rouge">$ npm install claudia-api-builder --save</code>.</li>
+  <li>
+    <p>Create a new file called <code class="language-plaintext highlighter-rouge">index.js</code> in the project root folder with the following content:</p>
+
+    <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+    
+<span class="kd">const</span> <span class="nx">ApiBuilder</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">claudia-api-builder</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">api</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiBuilder</span><span class="p">();</span>
+    
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">api</span><span class="p">;</span>
+    
+<span class="nx">api</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/greeting</span><span class="dl">'</span><span class="p">,</span> <span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Event:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">request</span><span class="p">));</span>
+    <span class="kd">const</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">queryString</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="s2">!`</span><span class="p">};</span>
+<span class="p">});</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Deploy your application to AWS <code class="language-plaintext highlighter-rouge">$ claudia create --region eu-west-1 --api-module index</code> (this step requires that you have an AWS account and that you have configured your access key ID and secret access key).</li>
+  <li>
+    <p>That’s it! That is all that is required to create an API Gateway backed by Lambda. To verify that it is working copy the url from the output of the previous command, append <code class="language-plaintext highlighter-rouge">/greeting</code> to it and make a request:</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl https://[api-gateway-id].execute-api.eu-west-1.amazonaws.com/latest/greeting
+<span class="o">{</span><span class="s2">"greeting"</span>:<span class="s2">"Hello, World!"</span><span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Deployed and verified, wait for customers to start using your incredible greeting service. :-)</li>
+</ol>
+
+<h2 id="claudiajs">Claudia.js</h2>
+
+<p>At its core, Claudia.js is a deployment tool. The following lines have been copied from the <a href="https://claudiajs.com/">project homepage</a>:</p>
+
+<blockquote>
+  <p>Claudia makes it easy to deploy Node.js projects to AWS Lambda and API Gateway. It automates all the error-prone deployment and configuration tasks, and sets everything up the way JavaScript developers expect out of the box.</p>
+</blockquote>
+
+<p>In addition, there is the <a href="https://claudiajs.com/claudia-api-builder.html">Claudia API Builder</a> that takes of the API Gateway generation, request and response mapping, etc:</p>
+
+<blockquote>
+  <p>Claudia API Builder is an extension library for Claudia.js that helps you get started with AWS API Gateway easily, and significantly reduces the learning curve required to launch web APIs in AWS. Instead of having to learn Swagger, manually managing request and response transformation templates, manually linking gateway methods to Lambda functions, you can just write the code for your API handlers, and Claudia API Builder takes care of the rest</p>
+</blockquote>
+
+<p>Behind the scenes, the <a href="https://aws.amazon.com/sdk-for-node-js/">AWS JavaScript SDK</a> is used to handle the deployment. By executing just a few commands, Claudia will create an application stack that comprises not only the API Gateway and the Lambda function in addition to the <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-api-as-simple-proxy-for-lambda.html">Lambda Proxy Integration</a> which glues the two together. Moreover, the required IAM role and the permission required for the API Gateway to invoke the Lambda are also created as part of the process.</p>
+
+<h2 id="cli-tool">CLI Tool</h2>
+
+<p>In order to work with Claudia, the CLI tool need to be installed. It can be installed as a global npm module, e.g. <code class="language-plaintext highlighter-rouge">$ npm install claudia --global</code> or you can install it as a test dependency <code class="language-plaintext highlighter-rouge">$ npm install claudia --save-dev</code> and then add the local <code class="language-plaintext highlighter-rouge">node_modules/.bin</code> directory to your <code class="language-plaintext highlighter-rouge">$PATH</code>. Verify by executing <code class="language-plaintext highlighter-rouge">claudia --version</code>. For a full list of the available command line args see the <a href="https://claudiajs.com/documentation.html">Command Args</a> documentation or execute <code class="language-plaintext highlighter-rouge">$ claudia --help</code>. As an alternative (or rather as a complement) to the CLI tool, one can also write some <a href="https://claudiajs.com/tutorials/package-json-scripts.html">deployment scripts</a> by adding a few lines to the <code class="language-plaintext highlighter-rouge">script</code> part of the <a href="https://github.com/matsev/claudiajs-demo/blob/master/package.json#L8-L9">package.json</a> file:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"create-app"</span><span class="p">:</span><span class="w"> </span><span class="s2">"claudia create --region eu-west-1 --api-module index"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"update"</span><span class="p">:</span><span class="w"> </span><span class="s2">"claudia update"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">create-app</code> script calls <a href="https://github.com/claudiajs/claudia/blob/master/docs/create.md">claudia create</a> command (see link for details) and similarly the <code class="language-plaintext highlighter-rouge">update</code> script calls the <a href="https://github.com/claudiajs/claudia/blob/master/docs/update.md">claudia update</a> command. To learn more about npm scripts, please read the blog <a href="https://blog.jayway.com/2014/03/28/running-scripts-with-npm/">Running scripts with npm</a> authored by my colleague Anders Janmyr.</p>
+
+<h2 id="lambda-function">Lambda Function</h2>
+
+<p>Before looking at the Lambda implementation, we create a new npm project by executing <code class="language-plaintext highlighter-rouge">$ npm init</code> and provide some good answers. Add the <code class="language-plaintext highlighter-rouge">claudia-api-builder</code> to the project, e.g. <code class="language-plaintext highlighter-rouge">$ npm install claudia-api-builder --save</code>. Now, we can copy / paste the following lines to an <a href="https://github.com/matsev/claudiajs-demo/blob/master/index.js">index.js</a> file in the project root:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+    
+<span class="kd">const</span> <span class="nx">ApiBuilder</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">claudia-api-builder</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">api</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">ApiBuilder</span><span class="p">();</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">api</span><span class="p">;</span>
+
+<span class="nx">api</span><span class="p">.</span><span class="kd">get</span><span class="p">(</span><span class="dl">'</span><span class="s1">/greeting</span><span class="dl">'</span><span class="p">,</span> <span class="p">(</span><span class="nx">request</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Event:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">request</span><span class="p">));</span>
+    <span class="kd">const</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">request</span><span class="p">.</span><span class="nx">queryString</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="s2">!`</span><span class="p">};</span>
+<span class="p">});</span>
+</code></pre></div></div>
+
+<p>The API builder is used to define a <code class="language-plaintext highlighter-rouge">/greeting</code> resource that expects a <code class="language-plaintext highlighter-rouge">GET</code> request. If the string contains a query string parameter called <code class="language-plaintext highlighter-rouge">name</code> it is used as part of the response, otherwise <code class="language-plaintext highlighter-rouge">Hello, World!</code> is returned as the greeting response. The <a href="https://github.com/claudiajs/claudia-api-builder/blob/master/docs/api.md#the-request-object">request</a> object contains all information that was passed from the client, e.g. HTTP headers, request body, the <a href="http://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-context.html">Lambda context object</a>, the <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference">API Gateway context</a>, etc. The return value can either be a simple JavaScript object as exemplified above, but it can also be a <code class="language-plaintext highlighter-rouge">Promise</code> or more complex data structures, dynamic response, custom response headers and so on, see the <a href="https://github.com/claudiajs/claudia-api-builder/blob/master/docs/api.md#responding-to-requests">documentation</a> for details. In contrast to the native CloudFormation API Gateway implementation (and the CloudFormation Swagger configuration for that matter) the Claudia API Builder maps all API Gateway resources automatically to a single Lambda function. If you would like to have a richer REST api, you simply register more <a href="https://github.com/claudiajs/claudia-api-builder/blob/master/docs/api.md#api-definition-syntax">http handlers</a> with their paths by calling <code class="language-plaintext highlighter-rouge">get</code>, <code class="language-plaintext highlighter-rouge">put</code>, <code class="language-plaintext highlighter-rouge">post</code> or <code class="language-plaintext highlighter-rouge">delete</code>, very similar to how you would when you are developing a Node app that uses the Express web framework. In fact, with very little effort you can port an existing Express app to Claudia by just changing a couple of lines in the source code and importing the <code class="language-plaintext highlighter-rouge">aws-serverless-express</code> module, see <a href="https://claudiajs.com/tutorials/serverless-express.html">Running Express Apps in AWS Lambda</a> for details.</p>
+
+<h2 id="deployment">Deployment</h2>
+
+<p>Now we are ready to deploy. We do so by either calling the <a href="https://github.com/claudiajs/claudia/blob/master/docs/create.md">claudia create</a> command. As a result, we will see the details of the resource that were created:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>claudia create <span class="nt">--region</span> eu-west-1 <span class="nt">--api-module</span> index
+<span class="o">[</span>...]
+saving configuration
+<span class="o">{</span>
+    <span class="s2">"lambda"</span>: <span class="o">{</span>
+    <span class="s2">"role"</span>: <span class="s2">"claudiajs-demo-executor"</span>,
+    <span class="s2">"name"</span>: <span class="s2">"claudiajs-demo"</span>,
+    <span class="s2">"region"</span>: <span class="s2">"eu-west-1"</span>
+    <span class="o">}</span>,
+    <span class="s2">"api"</span>: <span class="o">{</span>
+    <span class="s2">"id"</span>: <span class="s2">"[api-gateway-id]"</span>,
+    <span class="s2">"module"</span>: <span class="s2">"index"</span>,
+    <span class="s2">"url"</span>: <span class="s2">"https://[api-gateway-id].execute-api.eu-west-1.amazonaws.com/latest"</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>where <code class="language-plaintext highlighter-rouge">[api-gateway-id]</code> is the id of your API Gateway. Alternatively we can use the npm script mentioned earlier with a similar result:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>npm run create-app
+<span class="o">[</span>...]
+saving configuration
+<span class="o">[</span>...]
+</code></pre></div></div>
+
+<p>After the deployment, we can verify that the API Gateway and Lambda function has been deployed successfully:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl https://[api-gateway-id].execute-api.eu-west-1.amazonaws.com/latest/greeting
+<span class="o">{</span><span class="s2">"greeting"</span>:<span class="s2">"Hello, World!"</span><span class="o">}</span>
+<span class="o">[</span>...]
+<span class="nv">$ </span>curl https://[api-gateway-id].execute-api.eu-west-1.amazonaws.com/latest/greeting?name<span class="o">=</span>Superman
+<span class="o">{</span><span class="s2">"greeting"</span>:<span class="s2">"Hello, Superman!"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>There are other tools that can help with API Gateway and Lambda configuration and deployment such as <a href="https://github.com/serverless/serverless">Serverless</a> and <a href="http://senecajs.org/">Seneca</a> that you may find interesting. Start by reading the <a href="https://github.com/claudiajs/claudia/blob/master/FAQ.md#how-does-it-compare-to-">comparison</a> guide in the Claudia FAQ for a brief overview. There is also the <a href="https://github.com/awslabs/aws-serverless-express">aws-serverless-express</a> library from AWS Labs.</li>
+  <li>A <code class="language-plaintext highlighter-rouge">claudia.json</code> file will be created after the initial call to <a href="https://github.com/claudiajs/claudia/blob/master/docs/create.md">claudia create</a>. This file contains your project specific Claudia configuration and should typically be added to version control so that your team mates and build server work against the same environment.</li>
+  <li>If you need to start over (or shut down the application), there is the <a href="https://github.com/claudiajs/claudia/blob/master/docs/destroy.md">claudia destroy</a> command.</li>
+  <li>As mentioned Claudia is a deployment tool that uses the AWS JavaScript SDK. It does not use CloudFormation and thus you cannot use CloudFormation to track your resources.</li>
+  <li>Another consequence of not using CloudFormation is that you need to think twice about how you configure the Lambda functions when calling external services such as DynamoDB. The Claudia documentation provides a <a href="https://claudiajs.com/tutorials/external-services.html">checklist</a> for integration tips, including guidelines for <a href="https://claudiajs.com/tutorials/external-services.html#set-up-iam-access-privileges">setting up IAM privileges</a> and using <a href="https://claudiajs.com/tutorials/external-services.html#configure-external-access-keys-with-stage-variables">stage variables</a> for differentiation between environments. You can use a similar approach to detect the <a href="https://claudiajs.com/tutorials/versions.html#environment-configuration-without-api-gateway">environment configuration without API Gateway</a>.</li>
+  <li>If you do not fancy the <code class="language-plaintext highlighter-rouge">claudia-api-builder</code>, you can still create a <a href="https://claudiajs.com/tutorials/deploying-proxy-api.html">proxy Lambda function</a> using Claudia. This can be useful if your clients use the Lambda API of an AWS SDK instead of a REST client when communicating with your backend.</li>
+</ul>
+
+<h2 id="more-resources">More Resources</h2>
+
+<p>More information and links are available at the <a href="https://claudiajs.com/">Claudia.js</a> website, for example:</p>
+
+<ul>
+  <li><a href="https://claudiajs.com/documentation.html">Claudia Documentation</a>.</li>
+  <li><a href="https://claudiajs.com/tutorials/hello-world-lambda.html">Hello World Lambda Tutorial</a>.</li>
+  <li><a href="https://claudiajs.com/tutorials/hello-world-api-gateway.html">Hello World API Gateway Tutorial</a>.</li>
+  <li><a href="https://github.com/claudiajs/example-projects">Claudia Example Projects at GitHub</a>.</li>
+  <li><a href="https://gitter.im/claudiajs/claudia">The Claudia Gitter channel</a>.</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2016-11-06T00:00:00+01:00">November 6, 2016</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2016/09/18/introduction-to-swagger-for-cloudformation-and-api-gateway/" class="pagination--pager" title="Introduction to Swagger for CloudFormation and API Gateway
+">Previous</a>
+    
+    
+      <a href="/blog/2017/11/22/aws-cli-mfa/" class="pagination--pager" title="AWS CLI MFA
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

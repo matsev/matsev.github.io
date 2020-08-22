@@ -1,0 +1,732 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Continuous Deployment on AWS Lambda - Random Code Ramblings</title>
+<meta name="description" content="Example of how a you can use a set of bash scripts to implement continuous deployment on AWS Lambda, with reference to a working sample project at GitHub.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Continuous Deployment on AWS Lambda">
+<meta property="og:url" content="https://matsev.github.io/blog/2016/07/07/continuous-deployment-on-aws-lambda/">
+
+
+  <meta property="og:description" content="Example of how a you can use a set of bash scripts to implement continuous deployment on AWS Lambda, with reference to a working sample project at GitHub.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2016-07-07T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2016/07/07/continuous-deployment-on-aws-lambda/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Continuous Deployment on AWS Lambda">
+    <meta itemprop="description" content="Example of how a you can use a set of bash scripts to implement continuous deployment on AWS Lambda, with reference to a working sample project at GitHub.">
+    <meta itemprop="datePublished" content="2016-07-07T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Continuous Deployment on AWS Lambda
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#lambda-versioning-and-alias">Lambda Versioning and Alias</a></li>
+  <li><a href="#preparations">Preparations</a>
+      - {:.} <a href="#tools">Tools</a>
+      - {:.} <a href="#npm-scripts">npm Scripts</a>
+      - {:.} <a href="#cloudformation-and-initial-lambda">CloudFormation and Initial Lambda</a></li>
+  <li><a href="#bash-scripts">Bash Scripts</a>
+      - {:.} <a href="#0-create-stack">0. Create Stack</a>
+      - {:.} <a href="#1-unit-tests">1. Unit Tests</a>
+      - {:.} <a href="#2-package">2. Package</a>
+      - {:.} <a href="#3-update-lambda">3. Update Lambda</a>
+      - {:.} <a href="#4-integration-tests">4. Integration Tests</a>
+      - {:.} <a href="#5-publish-latest-version">5. Publish $LATEST Version</a>
+      - {:.} <a href="#6-update-stage-alias">6. Update STAGE Alias</a>
+      - {:.} <a href="#7-update-prod-alias">7. Update PROD Alias</a>
+      - {:.} <a href="#build-and-deploy-to-stage">Build and Deploy to STAGE</a></li>
+  <li><a href="#considerations">Considerations</a>
+      - {:.} <a href="#functionname">FunctionName</a>
+      - {:.} <a href="#additional-backup">Additional Backup</a>
+      - {:.} <a href="#different-configurations">Different Configurations</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>The quickest way of pushing every code change to production is to use automation, but to do that in a safe and sustainable way also requires test automation. The goal of this blog post is to create a set of bash scripts for automating each part of Continuous Deployment pipeline for a Node.js based AWS Lambda function, including scripts for unit and integration tests. The actual Lambda function is not that important, imagine that there is a business critical Greeting Lambda under development. You will find the implementation together with some unit and integration tests as well as the bash scripts in the <a href="https://github.com/matsev/lambda-continuous-delivery">sample project</a> at GitHub.</p>
+
+<h2 id="lambda-versioning-and-alias">Lambda Versioning and Alias</h2>
+
+<p>A key enabler for implementing continuous deployment on AWS Lambda is its support for <a href="http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">Versioning and Aliases</a>. Follow the link to find more information (as well as a tutorial that inspired this post), but for the purpose of this blog it can summarized as:</p>
+
+<ul>
+  <li>Every time the code of a Lambda function (or its configuration) is updated it will be available as version <code class="language-plaintext highlighter-rouge">$LATEST</code>.</li>
+  <li>By publishing a Lambda its code (and configuration) will be assigned a unique version number. Versions are immutable, which means that a new version must be published in order to change any Lambda behavior.</li>
+  <li>It is possible to assign one (or more) alias to a specific Lambda version. Each alias can only point to a single version at the time. In contrast to versions alias can be changed, i.e. they can point to another version if desired.</li>
+</ul>
+
+<p>Note, the client developers that use the Lambda must be notified about the usage of the alias so that they can specify it as a <code class="language-plaintext highlighter-rouge">qualifier</code> parameter when they use the AWS client SDK. If the Lambda is used by another AWS CloudFormation resource, you need to specify the qualified ARN, i.e. the ARN with the alias name as a suffix to get the correct version. For example, if the <code class="language-plaintext highlighter-rouge">GreetingLambda</code> has a <code class="language-plaintext highlighter-rouge">PROD</code> alias, the qualified ARN would look something like <code class="language-plaintext highlighter-rouge">arn:aws:lambda:eu-west-1:123456789012:function:GreetingLambda:PROD</code>.</p>
+
+<h2 id="preparations">Preparations</h2>
+
+<p>Besides an AWS account there are some preparations required before we dive into details of the continuous deployment scripts.</p>
+
+<h4 id="tools">Tools</h4>
+
+<p>A couple of tools need to be installed to the development environment:</p>
+
+<ul>
+  <li><a href="https://aws.amazon.com/cli/">AWS CLI</a>, AWS Command Line Interface (see also the <a href="http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html">configuration guideline</a>).</li>
+  <li><a href="https://stedolan.github.io/jq/">jq</a>, a command line JSON processor.</li>
+</ul>
+
+<h4 id="npm-scripts">npm Scripts</h4>
+
+<p>A few npm scripts have been defined in the <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/package.json">package.json</a> file:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"scripts"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"test"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mocha --recursive"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"xunit-test"</span><span class="p">:</span><span class="w"> </span><span class="s2">"XUNIT_FILE=xunit-test.xml mocha --recursive -R xunit-file"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"itest"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mocha --recursive integration-test"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"xunit-itest"</span><span class="p">:</span><span class="w"> </span><span class="s2">"XUNIT_FILE=xunit-itest.xml mocha --recursive integration-test -R xunit-file"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The first is used to tell <a href="https://mochajs.org/">mocha</a> to execute all tests in the default <code class="language-plaintext highlighter-rouge">test</code> folder recursively. The second is similar, but uses the <code class="language-plaintext highlighter-rouge">-R</code> (or <code class="language-plaintext highlighter-rouge">--reporter</code>) parameter to define that the result should be published using the <a href="https://www.npmjs.com/package/xunit-file">xunit-file</a> reporter. The <code class="language-plaintext highlighter-rouge">XUNIT_FILE=xunit-test.xml</code> is an environment variable used by the <code class="language-plaintext highlighter-rouge">xunit-file</code> reporter to specify the output to the <code class="language-plaintext highlighter-rouge">xunit-test.xml</code> file. The third script executes the integration tests located in the <code class="language-plaintext highlighter-rouge">integration-test</code> folder recursively. Finally, the last one executes the integration tests and publishes the result in the <code class="language-plaintext highlighter-rouge">xunit-itest.xml</code> file. Typically, you use the first and third scripts on your local developer machine, whereas the second and the fourth are well suited for a build server that can visualize the xunit result files. Side note, if you would like to learn more about npm scripts, I recommend that you read the blog post <a href="https://blog.jayway.com/2014/03/28/running-scripts-with-npm/">Running scripts with npm</a> by my colleague Anders Janmyr.</p>
+
+<h4 id="cloudformation-and-initial-lambda">CloudFormation and Initial Lambda</h4>
+
+<p>Before we can upload any Lambda function code, we need to create a CloudFormation template with a Lambda resource. Since the function code will be updated later, we just provide a simple echo function:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"GreetingLambda"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Lambda::Function"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Code"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"ZipFile"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Fn::Join"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="w">
+        </span><span class="s2">"'use strict';"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">""</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"// Initial Echo Lambda"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"exports.handler = (event, context) =&gt; {"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"  console.log('Event:', JSON.stringify(event));"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"  context.succeed(event);"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"};"</span><span class="w">
+      </span><span class="p">]]}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A greeting function"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"FunctionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingLambda"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Handler"</span><span class="p">:</span><span class="w"> </span><span class="s2">"index.handler"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Role"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Fn::GetAtt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"LambdaExecutionRole"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Arn"</span><span class="p">]},</span><span class="w">
+    </span><span class="nl">"Runtime"</span><span class="p">:</span><span class="w"> </span><span class="s2">"nodejs4.3"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="bash-scripts">Bash Scripts</h2>
+
+<p>Now that we are all geared up, it is time to take a closer look at the bash scripts. Step by step we will see how the code is tested, deployed, integration tested and if successful also deployed to a <code class="language-plaintext highlighter-rouge">STAGE</code> alias and a <code class="language-plaintext highlighter-rouge">PROD</code> alias respectively. It should be possible to call each script individually, but as I will show later, we will also create one script that will chain the scripts together to be able to execute all steps in a single command. The idea is that if one script fails, the chain should break to prevent that bad code is being deployed. You will find an outline of the scripts below. I recommend that you open the <a href="https://github.com/matsev/lambda-continuous-delivery/tree/master/scripts">scripts folder</a> in the example project at GitHub if you would like to see the source code.</p>
+
+<h4 id="0-create-stack">0. Create Stack</h4>
+
+<p>First, we create an initial helper script since it creates the stack (including the initial echo Lambda) from the CloudFormation template. It is not a part of the continuous delivery pipeline, but it is a good idea to have stack management automated and version controlled.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws cloudformation create-stack <span class="se">\</span>
+  <span class="nt">--stack-name</span> greeting-stack <span class="se">\</span>
+  <span class="nt">--template-body</span> fileb://cloudformation.template <span class="se">\</span>
+  <span class="nt">--capabilities</span> CAPABILITY_IAM <span class="se">\</span>
+  <span class="nt">--region</span> eu-west-1
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/0-create-stack.sh">0-create-stack.sh</a>.</p>
+
+<h4 id="1-unit-tests">1. Unit Tests</h4>
+
+<p>The continuous delivery pipeline kicks off with a script that executes the npm unit test script that prints the result in xunit format:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install
+</span>npm run xunit-test
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/1-test.sh">1-test.sh</a>.</p>
+
+<h4 id="2-package">2. Package</h4>
+
+<p>Create a distribution package by zipping relevant files:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">rm</span> <span class="nt">-rf</span> target
+<span class="nb">mkdir</span> <span class="nt">-p</span> target
+
+<span class="nb">cp</span> <span class="nt">-r</span> <span class="k">*</span>.js package.json lib target/
+
+<span class="nb">pushd </span>target
+npm <span class="nb">install</span> <span class="nt">--production</span>
+zip <span class="nt">-r</span> greeting-lambda.zip <span class="nb">.</span>
+<span class="nb">popd</span>
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/2-package.sh">2-package.sh</a>.</p>
+
+<h4 id="3-update-lambda">3. Update Lambda</h4>
+
+<p>Upload the zip file to AWS Lambda as version <code class="language-plaintext highlighter-rouge">$LATEST</code>. It does not affect neither the <code class="language-plaintext highlighter-rouge">STAGE</code> alias nor the <code class="language-plaintext highlighter-rouge">PROD</code> alias:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws lambda update-function-code <span class="se">\</span>
+  <span class="nt">--function-name</span> GreetingLambda <span class="se">\</span>
+  <span class="nt">--zip-file</span> fileb://greeting-lambda.zip <span class="se">\</span>
+  <span class="nt">--region</span> eu-west-1
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/3-update-lambda.sh">3-update-lambda.sh</a>.</p>
+
+<h4 id="4-integration-tests">4. Integration Tests</h4>
+
+<p>Execute integration tests against version <code class="language-plaintext highlighter-rouge">$LATEST</code> by calling the npm integration test script that prints the result in xunit format. If the integration tests fails, the build pipeline will break with the failing code still deployed to version <code class="language-plaintext highlighter-rouge">$LATEST</code>. It is not a problem since it is not used by the clients and it will be replaced next time the pipeline starts over and updates the Lambda:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>npm <span class="nb">install
+</span>npm run xunit-itest
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/4-integration-test.sh">4-integration-test.sh</a>.</p>
+
+<h4 id="5-publish-latest-version">5. Publish $LATEST Version</h4>
+
+<p>Since both the unit tests and integration tests have passed, we can confidently publish version <code class="language-plaintext highlighter-rouge">$LATEST</code> as a new Lambda version. Here, I choose to use the optional version <code class="language-plaintext highlighter-rouge">--description</code> parameter and pass a <code class="language-plaintext highlighter-rouge">$build_number</code> parameter for its value. The idea is that the build number is generated by the build server that execute the script. It may be an actual number that is incremented for each build, but it could also be a date string or a Git SHA. Different teams have different preferences, the only limitation is that it should be unique. Yet again, neither the <code class="language-plaintext highlighter-rouge">STAGE</code> alias nor the <code class="language-plaintext highlighter-rouge">PROD</code> are changed:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws lambda publish-version <span class="se">\</span>
+  <span class="nt">--function-name</span> GreetingLambda <span class="se">\</span>
+  <span class="nt">--description</span> <span class="nv">$build_number</span> <span class="se">\</span>
+  <span class="nt">--region</span> eu-west-1
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/5-publish-version.sh">5-publish-version.sh</a>.</p>
+
+<h4 id="6-update-stage-alias">6. Update STAGE Alias</h4>
+
+<p>When the new version is published, the <code class="language-plaintext highlighter-rouge">STAGE</code> alias can be updated. For this reason we first lookup the Lambda version that is associated with the <code class="language-plaintext highlighter-rouge">$build_number</code>:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Find the Lambda version that is not the $LATEST version and has the ${build_number} as its description</span>
+<span class="nv">lambda_version</span><span class="o">=</span><span class="si">$(</span>aws lambda list-versions-by-function <span class="se">\</span>
+  <span class="nt">--function-name</span> GreetingLambda <span class="se">\</span>
+  <span class="nt">--region</span> eu-west-1 <span class="se">\</span>
+  <span class="nt">--output</span> json| jq <span class="nt">-r</span> <span class="s2">".Versions[] | select(.Version!=</span><span class="se">\"\$</span><span class="s2">LATEST</span><span class="se">\"</span><span class="s2">) | select(.Description == </span><span class="se">\"</span><span class="k">${</span><span class="nv">build_number</span><span class="k">}</span><span class="se">\"</span><span class="s2">).Version"</span><span class="si">)</span>
+</code></pre></div></div>
+
+<p>It should be noted that we could have obtained the Lambda version directly from the output of the <code class="language-plaintext highlighter-rouge">aws lambda publish-version</code> command. The reason why I choose to look it up is that I would like a script that can update the alias based on the <code class="language-plaintext highlighter-rouge">$build_number</code> rather than the AWS Lambda version. Thus, we can use the same script to update any alias to any successful build without knowing its AWS version (including the <code class="language-plaintext highlighter-rouge">PROD</code> alias as you will see soon). Next, we get a list of all aliases for the Lambda function:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">existing_aliases</span><span class="o">=</span><span class="si">$(</span>aws lambda list-aliases <span class="se">\</span>
+  <span class="nt">--function-name</span> GreetingLambda <span class="se">\</span>
+  <span class="nt">--region</span> <span class="nv">$aws_region</span> <span class="se">\</span>
+  <span class="nt">--output</span> json| jq <span class="nt">-r</span> <span class="s1">'.Aliases[] | {Name: .Name}'</span><span class="si">)</span>
+</code></pre></div></div>
+
+<p>If the alias we would like to update already exists, we can update it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws lambda update-alias <span class="se">\</span>
+  <span class="nt">--function-name</span> GreetingLambda <span class="se">\</span>
+  <span class="nt">--name</span> STAGE <span class="se">\</span>
+  <span class="nt">--function-version</span> <span class="nv">$lambda_version</span> <span class="se">\</span>
+  <span class="nt">--description</span> <span class="nv">$build_number</span> <span class="se">\</span>
+  <span class="nt">--region</span> eu-west-1
+</code></pre></div></div>
+
+<p>Otherwise, we need to create it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>aws lambda create-alias <span class="se">\</span>
+  <span class="nt">--function-name</span> GreetingLambda <span class="se">\</span>
+  <span class="nt">--name</span> STAGE <span class="se">\</span>
+  <span class="nt">--function-version</span> <span class="nv">$lambda_version</span> <span class="se">\</span>
+  <span class="nt">--description</span> <span class="nv">$build_number</span> <span class="se">\</span>
+  <span class="nt">--region</span> eu-west-1
+</code></pre></div></div>
+
+<p>Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/6-update-stage-alias.sh">6-update-stage-alias.sh</a> and <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/update-alias.sh">update-alias.sh</a>.</p>
+
+<h4 id="7-update-prod-alias">7. Update PROD Alias</h4>
+
+<p>Basically the same script as the one that updated the <code class="language-plaintext highlighter-rouge">STAGE</code> alias, but this time with <code class="language-plaintext highlighter-rouge">PROD</code> as alias parameter value. Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/7-update-prod-alias.sh">7-update-prod-alias.sh</a> and <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/update-alias.sh">update-alias.sh</a>.</p>
+
+<h4 id="build-and-deploy-to-stage">Build and Deploy to STAGE</h4>
+
+<p>Now it is a simple task to create a single script which in turn calls all of the other scripts. In this example, I have chosen to do this in yet another bash script, but if you use Jenkins 2.0 or later you might as well call them from a <a href="https://jenkins.io/doc/pipeline/">Jenkinsfile</a> pipeline script directly. I suggest that your build server is setup to use this script in a continuous delivery pipeline to deploy every successful build directly to <code class="language-plaintext highlighter-rouge">STAGE</code>. The last step, <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/7-update-prod-alias.sh">7-update-prod-alias.sh</a>, would be configured as a manual trigger based on a decision from the development team, project stakeholders or similar. Ref: <a href="https://github.com/matsev/lambda-continuous-delivery/blob/master/scripts/build-and-deploy-to-stage.sh">build-and-deploy-to-stage.sh</a>.</p>
+
+<h2 id="considerations">Considerations</h2>
+
+<h4 id="functionname">FunctionName</h4>
+
+<p>In the CloudFormation template, I have configured the Lambda function with the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#cfn-lambda-function-functionname">FunctionName</a> property. The same name is used by the scripts and it is also very useful for clients that communicate directly with the Lambda function using one of the AWS SDKs since it gives the function a predictable name. The trade-off is that it is not possible to do updates that require the resource to be replaced, see <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#cfn-lambda-function-functionname">AWS::Lambda::Function</a> documentation for details. If you do not use <code class="language-plaintext highlighter-rouge">FunctionName</code>, you can still use the provided scripts, but you need to update the Lambda name parameter with the name that AWS gives your function. You can also make this dynamic by enhancing the scripts to lookup the Lambda name dynamically by providing the Lambda resource name as a <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/outputs-section-structure.html">stack output</a> and then use <a href="http://docs.aws.amazon.com/cli/latest/reference/cloudformation/describe-stacks.html">aws cloudformation describe stacks</a> command.</p>
+
+<h4 id="additional-backup">Additional Backup</h4>
+
+<p>AWS Lambda keeps a reference to each version of the Lambda source code (and configuration) that was published. However, if you delete a Lambda function or the entire stack all versions will be lost. If your past deliveries are important, you may choose to consider keeping another backup of them, e.g. in an S3 bucket. However, since the entire build and deploy chain has been automated, you might as well checkout the source code of an earlier version that you would like to deploy from your version control system and execute the scripts again.</p>
+
+<h4 id="different-configurations">Different Configurations</h4>
+
+<p>It is not always desirable to use the same backend configuration for the <code class="language-plaintext highlighter-rouge">STAGE</code> and <code class="language-plaintext highlighter-rouge">PROD</code> alias. Perhaps the Lambda should write to different SNS topics, read from different S3 buckets or query different DynamoDB tables depending on which alias is used? By looking at the <code class="language-plaintext highlighter-rouge">context.invokedFunctionArn</code> parameter passed to the Lambda’s handler method, you will see the full ARN of the Lambda, including the alias, e.g. <code class="language-plaintext highlighter-rouge">arn:aws:lambda:eu-west-1:123456789012:function:GreetingLambda:STAGE</code>. Consequently, you can use methods like <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/String/endsWith">endsWith()</a> or <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/split">split()</a> to extract it. Hint, remind the developers of the Lambda client code that the should use the alias if it is missing.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">AWS Lambda Versioning and Aliases</a></li>
+  <li><a href="http://docs.aws.amazon.com/cli/latest/reference/lambda/">Lambda AWS CLI</a></li>
+  <li><a href="https://stedolan.github.io/jq/manual/">jq Manual</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2016-07-07T00:00:00+02:00">July 7, 2016</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2016/06/02/route53-configuration-for-elastic-beanstalk/" class="pagination--pager" title="Route53 Configuration for Elastic Beanstalk
+">Previous</a>
+    
+    
+      <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/" class="pagination--pager" title="Introduction to CloudFormation for API Gateway
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

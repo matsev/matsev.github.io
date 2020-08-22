@@ -1,0 +1,654 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Spring and Autowiring of Generic Types - Random Code Ramblings</title>
+<meta name="description" content="Spring 4 brings some nice improvements to how autowiring of generic types are handled. Before going into details, let’s look into the current state of affairs.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Spring and Autowiring of Generic Types">
+<meta property="og:url" content="https://matsev.github.io/blog/2013/11/03/spring-and-autowiring-of-generic-types/">
+
+
+  <meta property="og:description" content="Spring 4 brings some nice improvements to how autowiring of generic types are handled. Before going into details, let’s look into the current state of affairs.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2013-11-03T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2013/11/03/spring-and-autowiring-of-generic-types/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Spring and Autowiring of Generic Types">
+    <meta itemprop="description" content="Spring 4 brings some nice improvements to how autowiring of generic types are handled. Before going into details, let’s look into the current state of affairs.">
+    <meta itemprop="datePublished" content="2013-11-03T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Spring and Autowiring of Generic Types
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#basics">Basics</a></li>
+  <li><a href="#inheritance">Inheritance</a></li>
+  <li><a href="#spring-4-rc1">Spring 4 RC1</a></li>
+  <li><a href="#update">Update</a></li>
+  <li><a href="#update-2">Update 2</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Spring 4 brings some nice improvements to how autowiring of generic types are handled. Before going into details, let’s look into the current state of affairs.</p>
+
+<h2 id="basics">Basics</h2>
+
+<p>Consider the following example where you have one generic interface:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">interface</span> <span class="nc">GenericDao</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>And two concrete implementations of it:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Repository</span>
+<span class="kd">class</span> <span class="nc">FooDao</span> <span class="kd">implements</span> <span class="nc">GenericDao</span><span class="o">&lt;</span><span class="nc">Foo</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span> 
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Repository</span>
+<span class="kd">class</span> <span class="nc">BarDao</span> <span class="kd">implements</span> <span class="nc">GenericDao</span><span class="o">&lt;</span><span class="nc">Bar</span><span class="o">&gt;</span> <span class="o">{</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Now, the task is to create a <code class="language-plaintext highlighter-rouge">FooService</code> that autowires an instance of the <code class="language-plaintext highlighter-rouge">FooDao</code> class. Using current Spring versions, i.e. versions 3.x, one can either tie the implementation of the <code class="language-plaintext highlighter-rouge">FooService</code> class to the <code class="language-plaintext highlighter-rouge">FooDao</code> class:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">class</span> <span class="nc">FooService</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">FooDao</span> <span class="n">fooDao</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Or use the <a href="http://docs.spring.io/spring/docs/3.2.4.RELEASE/javadoc-api/org/springframework/beans/factory/annotation/Qualifier.html">@Qualifer</a> annotation:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">class</span> <span class="nc">FooService</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="nd">@Qualifier</span><span class="o">(</span><span class="s">"fooDao"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">GenericDao</span> <span class="n">fooDao</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>However, the disadvantage of these implementations is that they both suffer from coupling. In the first example, the <code class="language-plaintext highlighter-rouge">FooService</code> implementation is tightly coupled to the <code class="language-plaintext highlighter-rouge">FooDao</code> class. The second example has less coupling in a way that the <code class="language-plaintext highlighter-rouge">FooService</code> does not know about the class that implements the <code class="language-plaintext highlighter-rouge">GenericDao</code>, but there is still some coupling present because the name of the <code class="language-plaintext highlighter-rouge">FooDao</code> bean is hardcoded in the <code class="language-plaintext highlighter-rouge">FooService</code> implementation. As of Spring 4 RC1, the issue <a href="https://jira.springsource.org/browse/SPR-9965">SPR-9965</a> has been solved, which allows us to do autowiring by generic type:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">class</span> <span class="nc">FooService</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">GenericDao</span><span class="o">&lt;</span><span class="nc">Foo</span><span class="o">&gt;</span> <span class="n">fooDao</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Subtle difference, the key difference is that the <code class="language-plaintext highlighter-rouge">FooService</code> implementation does not need any information about the implementing <code class="language-plaintext highlighter-rouge">FooDao</code> bean, they are completely decoupled from each other. Side note, if you attempt to use this solution in a Spring 3.x environment, you will find that it works if your application context contains a single <code class="language-plaintext highlighter-rouge">GenericDao</code> bean. However, you will get an exception if the application context contains two or more beans. When the generic type is not acknowledged, Spring cannot determine which bean to use:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>NoUniqueBeanDefinitionException: No qualifying bean of <span class="nb">type</span> <span class="o">[</span>GenericDao] is defined:
+    expected single matching bean but found 2: barDao,fooDao
+</code></pre></div></div>
+
+<h2 id="inheritance">Inheritance</h2>
+
+<p>To further investigate the autowiring issue, one can also see how it affects inheritance. In a pre Spring 4 environment, there is a little ceremony to handle inheritance and generic types. First, a <code class="language-plaintext highlighter-rouge">GenericService</code> needs a constructor with the generic type:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">GenericService</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">GenericDao</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">dao</span><span class="o">;</span>
+
+    <span class="nc">GenericService</span><span class="o">(</span><span class="nc">GenericDao</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">dao</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">dao</span> <span class="o">=</span> <span class="n">dao</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Then we yet again have to tightly tie the implementation of a specific service to its specific dao:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">class</span> <span class="nc">FooService</span> <span class="kd">extends</span> <span class="nc">GenericService</span><span class="o">&lt;</span><span class="nc">Foo</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="nc">FooService</span><span class="o">(</span><span class="nc">FooDao</span> <span class="n">fooDao</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">fooDao</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Spring 4 also makes it possible to autowire generic class hierarchies. First, we can autowire a <code class="language-plaintext highlighter-rouge">GenericDao</code> instance to the <code class="language-plaintext highlighter-rouge">GenericService</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">GenericService</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">GenericDao</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">dao</span><span class="o">;</span>
+
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Next, we can implement the concrete <code class="language-plaintext highlighter-rouge">FooService</code> by just extending the <code class="language-plaintext highlighter-rouge">GenericService</code> with the generic type:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">class</span> <span class="nc">FooService</span> <span class="kd">extends</span> <span class="nc">GenericService</span><span class="o">&lt;</span><span class="nc">Foo</span><span class="o">&gt;</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Problem solved with less code and less coupling than before.</p>
+
+<h2 id="spring-4-rc1">Spring 4 RC1</h2>
+
+<p>Spring Framework project lead Juergen Hoeller writes in a <a href="https://spring.io/blog/2013/11/01/spring-framework-4-0-rc1-available">blog post</a>:</p>
+
+<blockquote>
+  <p>Overall, this is the perfect time to give Spring Framework 4.0 an early try! We’ll make sure to incorporate your feedback in a timely fashion on our way to 4.0 GA in December.</p>
+</blockquote>
+
+<p>Spring 4 RC1 is available in the Spring milestone repository. Add it to your list of Maven repositories:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;repositories&gt;</span>
+    <span class="nt">&lt;repository&gt;</span>
+        <span class="nt">&lt;id&gt;</span>org.springframework.maven.milestone<span class="nt">&lt;/id&gt;</span>
+        <span class="nt">&lt;name&gt;</span>Spring Milestone Repository<span class="nt">&lt;/name&gt;</span>
+        <span class="nt">&lt;url&gt;</span>http://maven.springframework.org/milestone/<span class="nt">&lt;/url&gt;</span>
+    <span class="nt">&lt;/repository&gt;</span>
+
+    <span class="c">&lt;!-- more repositories --&gt;</span>
+
+<span class="nt">&lt;/repositories&gt;</span>
+</code></pre></div></div>
+
+<p>Update your Spring dependencies to version <code class="language-plaintext highlighter-rouge">4.0.0.RC1</code> accordingly:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupid&gt;</span>org.springframework<span class="nt">&lt;/groupid&gt;</span>
+        <span class="nt">&lt;artifactid&gt;</span>spring-core<span class="nt">&lt;/artifactid&gt;</span>
+        <span class="nt">&lt;version&gt;</span>4.0.0.RC1<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+
+    <span class="c">&lt;!-- more dependencies --&gt;</span>
+
+<span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div></div>
+
+<h2 id="update">Update</h2>
+
+<p>Dec 4th, 2013: Phil Webb has published a blog post at the Spring blog titled <a href="https://spring.io/blog/2013/12/03/spring-framework-4-0-and-java-generics">Spring Framework 4.0 and Java Generics</a> which further elaborates the topic.</p>
+
+<h2 id="update-2">Update 2</h2>
+
+<p>Dec 12th, 2013: Adrian Colyer announced the release of <a href="https://spring.io/blog/2013/12/12/announcing-spring-framework-4-0-ga-release">Spring 4.0</a> (which means that you should update the version number to <code class="language-plaintext highlighter-rouge">4.0.0.RELEASE</code>, and that you can remove the declaration of the Spring Milestone Repository in case you used the <code class="language-plaintext highlighter-rouge">4.0.0.RC1</code> version).</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2013-11-03T00:00:00+01:00">November 3, 2013</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2013/10/31/improve-your-spring-rest-api-part-iv/" class="pagination--pager" title="Improve Your Spring REST API, Part IV
+">Previous</a>
+    
+    
+      <a href="/blog/2014/02/16/spring-propertysource/" class="pagination--pager" title="Spring @PropertySource
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

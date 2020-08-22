@@ -1,0 +1,725 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Improve Your Spring REST API, Part II - Random Code Ramblings</title>
+<meta name="description" content="In the previous blog post, I explained how a custom @ExceptionHandler can be used to return feedback to REST API clients when they are submitting erroneous requests. However, the suggested implementation does not scale, because an @ExceptionHandler method is only applicable for a specific controller. In a real project, it is likely that we would like consistent error handling across multiple controllers. The easiest way to overcome this problem is to create a common super class that can be extended by all other controllers. To create a more generic solution to the problem, we can look under the hood of Spring itself and get inspired.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Improve Your Spring REST API, Part II">
+<meta property="og:url" content="https://matsev.github.io/blog/2012/09/23/improve-your-spring-rest-api-part-ii/">
+
+
+  <meta property="og:description" content="In the previous blog post, I explained how a custom @ExceptionHandler can be used to return feedback to REST API clients when they are submitting erroneous requests. However, the suggested implementation does not scale, because an @ExceptionHandler method is only applicable for a specific controller. In a real project, it is likely that we would like consistent error handling across multiple controllers. The easiest way to overcome this problem is to create a common super class that can be extended by all other controllers. To create a more generic solution to the problem, we can look under the hood of Spring itself and get inspired.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2012-09-23T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2012/09/23/improve-your-spring-rest-api-part-ii/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Improve Your Spring REST API, Part II">
+    <meta itemprop="description" content="In the previous blog post, I explained how a custom @ExceptionHandler can be used to return feedback to REST API clients when they are submitting erroneous requests. However, the suggested implementation does not scale, because an @ExceptionHandler method is only applicable for a specific controller. In a real project, it is likely that we would like consistent error handling across multiple controllers. The easiest way to overcome this problem is to create a common super class that can be extended by all other controllers. To create a more generic solution to the problem, we can look under the hood of Spring itself and get inspired.">
+    <meta itemprop="datePublished" content="2012-09-23T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Improve Your Spring REST API, Part II
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#edit">Edit</a></li>
+  <li><a href="#goal">Goal</a></li>
+  <li><a href="#spring-classes">Spring Classes</a>
+    <ul>
+      <li><a href="#defaulthandlerexceptionresolver">DefaultHandlerExceptionResolver</a></li>
+      <li><a href="#annotationmethodhandlerexceptionresolver">AnnotationMethodHandlerExceptionResolver</a></li>
+    </ul>
+  </li>
+  <li><a href="#custom-handlerexceptionresolver">Custom HandlerExceptionResolver</a>
+    <ul>
+      <li><a href="#implementation-comments">Implementation Comments</a></li>
+    </ul>
+  </li>
+  <li><a href="#errormessagefactory-implementations">ErrorMessageFactory implementations</a></li>
+  <li><a href="#putting-it-together">Putting it together</a></li>
+  <li><a href="#future-improvements">Future Improvements</a></li>
+  <li><a href="#dependencies">Dependencies</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>In the <a href="/blog/2012/09/16/improve-your-spring-rest-api-part-i/">previous blog post</a>, I explained how a custom <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-exceptionhandler">@ExceptionHandler</a> can be used to return feedback to REST API clients when they are submitting erroneous requests. However, the suggested implementation does not scale, because an <code class="language-plaintext highlighter-rouge">@ExceptionHandler</code> method is only applicable for a specific controller. In a real project, it is likely that we would like consistent error handling across multiple controllers. The easiest way to overcome this problem is to create a common super class that can be extended by all other controllers. To create a more generic solution to the problem, we can look under the hood of Spring itself and get inspired.</p>
+
+<h2 id="edit">Edit</h2>
+
+<p>Feb 3rd, 2013: The <code class="language-plaintext highlighter-rouge">@ControllerAdvice</code> and the <code class="language-plaintext highlighter-rouge">ResponseEntityExceptionHandler</code> in the Spring 3.2 release effectively obsoletes the implementation below. Please read the updated solution in <a href="/blog/2013/02/03/improve-your-spring-rest-api-part-iii/">next blog</a> unless you are stuck with an older version of Spring.</p>
+
+<h2 id="goal">Goal</h2>
+
+<p>The intent of this blog post is to implement a custom <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-exceptionhandlers">HandlerExceptionResolver</a> that in addition to the HTTP status codes also writes useful data to the response body when an exception occurs. The idea is to create a pluggable solution that generates error messages consistently by reusing the <a href="https://gist.github.com/3104749#file_error_message.java">ErrorMessage</a> class introduced in the previos blog post. The content of an error message depends on the specific exception and it should be derived by implementing a factory interface:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/**
+ * Factory interface for creating {@link ErrorMessage} based on a specific {@code Exception}.
+ * @param &lt;T&gt; The specific exception type.
+ */</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">ErrorMessageFactory</span><span class="o">&lt;</span><span class="no">T</span> <span class="kd">extends</span> <span class="nc">Exception</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="cm">/**
+     * Gets the exception class used for this factory.
+     * @return An exception class.
+     */</span>
+    <span class="nc">Class</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="nf">getExceptionClass</span><span class="o">();</span>
+
+    <span class="cm">/**
+     * Creates an {@link ErrorMessage} from an exception.
+     * @param ex The exception to get data from.
+     * @return An error message.
+     */</span>
+    <span class="nc">ErrorMessage</span> <span class="nf">getErrorMessage</span><span class="o">(</span><span class="no">T</span> <span class="n">ex</span><span class="o">);</span>
+
+    <span class="cm">/**
+     * Gets the HTTP status response code that will be written to the response when the message occurs.
+     * @return An HTTP status response.
+     */</span>
+    <span class="kt">int</span> <span class="nf">getResponseCode</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="spring-classes">Spring Classes</h2>
+
+<p>Before getting to work, there are a couple of Spring classes that we need to get acquainted with:</p>
+
+<h3 id="defaulthandlerexceptionresolver">DefaultHandlerExceptionResolver</h3>
+
+<p>Like many other Spring classes, the <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-exceptionhandlers-resolver">DefaultHandlerExceptionResolver</a> has a long and rather self explanatory name. Its purpose as quoted from the <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/support/DefaultHandlerExceptionResolver.html">javadoc</a>:</p>
+
+<blockquote>
+  <p>Default implementation of the HandlerExceptionResolver interface that resolves standard Spring exceptions and translates them to corresponding HTTP status codes. This exception resolver is enabled by default in the org.springframework.web.servlet.DispatcherServlet.</p>
+</blockquote>
+
+<p>Take a look at the implementation of its <a href="https://github.com/SpringSource/spring-framework/blob/v3.1.2.RELEASE/org.springframework.web.servlet/src/main/java/org/springframework/web/servlet/mvc/support/DefaultHandlerExceptionResolver.java#L93">doResolveException()</a> method available at GitHub. As can be seen, it delegates to the many <code class="language-plaintext highlighter-rouge">handle*()</code> methods depending on the type of exception that occurs, and then the HTTP Status code is assigned accordingly. Both the <code class="language-plaintext highlighter-rouge">doResolveException()</code> method and all <code class="language-plaintext highlighter-rouge">handle*()</code> methods are <code class="language-plaintext highlighter-rouge">protected</code> which means that here is an opportunity to extend the class and provide alternative implementations. This also suggests that any subclass should be specific about which handle methods to override, which makes it less suitable for a generic solution.</p>
+
+<h3 id="annotationmethodhandlerexceptionresolver">AnnotationMethodHandlerExceptionResolver</h3>
+
+<p>Have you ever wondered what makes a custom <code class="language-plaintext highlighter-rouge">@ExceptionHandler</code> method tick? The implementation is handled by the <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/mvc/annotation/AnnotationMethodHandlerExceptionResolver.html">AnnotationMethodHandlerExceptionResolver</a>. In contrast to the previously mentioned <code class="language-plaintext highlighter-rouge">DefaultHandlerExceptionResolver</code>, it is able to serialize return values annotated with the <a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-responsebody">@ResponseBody</a> into the HTTP response body, something that will be necessary for our project at hand. A closer look at the <a href="https://github.com/SpringSource/spring-framework/blob/v3.1.2.RELEASE/org.springframework.web.servlet/src/main/java/org/springframework/web/servlet/mvc/annotation/AnnotationMethodHandlerExceptionResolver.java#L415">handleResponseBody()</a> method at GitHub reveals the implementation details.</p>
+
+<h2 id="custom-handlerexceptionresolver">Custom HandlerExceptionResolver</h2>
+
+<p>Another observation of the <code class="language-plaintext highlighter-rouge">DefaultHandlerExceptionResolver</code> and the <code class="language-plaintext highlighter-rouge">AnnotationMethodHandlerExceptionResolver</code> classes is that they extend the same parent class, namely the <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/web/servlet/handler/AbstractHandlerExceptionResolver.html">AbstractHandlerExceptionResolver</a>. With this knowledge, we can implement a custom <code class="language-plaintext highlighter-rouge">ErrorMessageHandlerExceptionResolver</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ErrorMessageHandlerExceptionResolver</span> <span class="kd">extends</span> <span class="nc">AbstractHandlerExceptionResolver</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="no">DEFAULT_ORDER</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+    
+    <span class="kd">private</span> <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">Class</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">Exception</span><span class="o">&gt;,</span> <span class="nc">ErrorMessageFactory</span><span class="o">&gt;</span> <span class="n">errorMessageFactories</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="nc">HttpMessageConverter</span><span class="o">&lt;?&gt;[]</span> <span class="n">messageConverters</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">ErrorMessageHandlerExceptionResolver</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">setOrder</span><span class="o">(</span><span class="no">DEFAULT_ORDER</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setErrorMessageFactories</span><span class="o">(</span><span class="nc">ErrorMessageFactory</span><span class="o">[]</span> <span class="n">errorMessageFactories</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">errorMessageFactories</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;(</span><span class="n">errorMessageFactories</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">ErrorMessageFactory</span><span class="o">&lt;?&gt;</span> <span class="n">errorMessageFactory</span> <span class="o">:</span> <span class="n">errorMessageFactories</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">this</span><span class="o">.</span><span class="na">errorMessageFactories</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">errorMessageFactory</span><span class="o">.</span><span class="na">getExceptionClass</span><span class="o">(),</span> <span class="n">errorMessageFactory</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setMessageConverters</span><span class="o">(</span><span class="nc">HttpMessageConverter</span><span class="o">&lt;?&gt;[]</span> <span class="n">messageConverters</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">messageConverters</span> <span class="o">=</span> <span class="n">messageConverters</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">"unchecked"</span><span class="o">)</span>
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">ModelAndView</span> <span class="nf">doResolveException</span><span class="o">(</span><span class="nc">HttpServletRequest</span> <span class="n">request</span><span class="o">,</span> <span class="nc">HttpServletResponse</span> <span class="n">response</span><span class="o">,</span> <span class="nc">Object</span> <span class="n">handler</span><span class="o">,</span> <span class="nc">Exception</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ErrorMessageFactory</span> <span class="n">errorMessageFactory</span> <span class="o">=</span> <span class="n">errorMessageFactories</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">getClass</span><span class="o">());</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">errorMessageFactory</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">response</span><span class="o">.</span><span class="na">setStatus</span><span class="o">(</span><span class="n">errorMessageFactory</span><span class="o">.</span><span class="na">getResponseCode</span><span class="o">());</span>
+            <span class="nc">ErrorMessage</span> <span class="n">errorMessage</span> <span class="o">=</span> <span class="n">errorMessageFactory</span><span class="o">.</span><span class="na">getErrorMessage</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+            <span class="nc">ServletWebRequest</span> <span class="n">webRequest</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ServletWebRequest</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="k">return</span> <span class="nf">handleResponseBody</span><span class="o">(</span><span class="n">errorMessage</span><span class="o">,</span> <span class="n">webRequest</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">handlerException</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">logger</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">"Handling of ["</span> <span class="o">+</span> <span class="n">ex</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">()</span> <span class="o">+</span> <span class="s">"] resulted in Exception"</span><span class="o">,</span> <span class="n">handlerException</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="cm">/**
+     * Copied from {@link org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerExceptionResolver}
+     */</span>
+    <span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">"unchecked"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">ModelAndView</span> <span class="nf">handleResponseBody</span><span class="o">(</span><span class="nc">Object</span> <span class="n">returnValue</span><span class="o">,</span> <span class="nc">ServletWebRequest</span> <span class="n">webRequest</span><span class="o">)</span>
+            <span class="kd">throws</span> <span class="nc">ServletException</span><span class="o">,</span> <span class="nc">IOException</span> <span class="o">{</span>
+
+        <span class="nc">HttpInputMessage</span> <span class="n">inputMessage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ServletServerHttpRequest</span><span class="o">(</span><span class="n">webRequest</span><span class="o">.</span><span class="na">getRequest</span><span class="o">());</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">MediaType</span><span class="o">&gt;</span> <span class="n">acceptedMediaTypes</span> <span class="o">=</span> <span class="n">inputMessage</span><span class="o">.</span><span class="na">getHeaders</span><span class="o">().</span><span class="na">getAccept</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">acceptedMediaTypes</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">acceptedMediaTypes</span> <span class="o">=</span> <span class="nc">Collections</span><span class="o">.</span><span class="na">singletonList</span><span class="o">(</span><span class="nc">MediaType</span><span class="o">.</span><span class="na">ALL</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="nc">MediaType</span><span class="o">.</span><span class="na">sortByQualityValue</span><span class="o">(</span><span class="n">acceptedMediaTypes</span><span class="o">);</span>
+        <span class="nc">HttpOutputMessage</span> <span class="n">outputMessage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ServletServerHttpResponse</span><span class="o">(</span><span class="n">webRequest</span><span class="o">.</span><span class="na">getResponse</span><span class="o">());</span>
+        <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnValueType</span> <span class="o">=</span> <span class="n">returnValue</span><span class="o">.</span><span class="na">getClass</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">messageConverters</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">for</span> <span class="o">(</span><span class="nc">MediaType</span> <span class="n">acceptedMediaType</span> <span class="o">:</span> <span class="n">acceptedMediaTypes</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">for</span> <span class="o">(</span><span class="nc">HttpMessageConverter</span> <span class="n">messageConverter</span> <span class="o">:</span> <span class="k">this</span><span class="o">.</span><span class="na">messageConverters</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">if</span> <span class="o">(</span><span class="n">messageConverter</span><span class="o">.</span><span class="na">canWrite</span><span class="o">(</span><span class="n">returnValueType</span><span class="o">,</span> <span class="n">acceptedMediaType</span><span class="o">))</span> <span class="o">{</span>
+                        <span class="n">messageConverter</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">returnValue</span><span class="o">,</span> <span class="n">acceptedMediaType</span><span class="o">,</span> <span class="n">outputMessage</span><span class="o">);</span>
+                        <span class="k">return</span> <span class="k">new</span> <span class="nf">ModelAndView</span><span class="o">();</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="na">isWarnEnabled</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">logger</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">"Could not find HttpMessageConverter that supports return type ["</span> <span class="o">+</span> <span class="n">returnValueType</span> <span class="o">+</span> <span class="s">"] and "</span> <span class="o">+</span>
+                    <span class="n">acceptedMediaTypes</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="implementation-comments">Implementation Comments</h3>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">setOrder()</code> method is called by the constructor. The <code class="language-plaintext highlighter-rouge">AbstractHandlerExceptionResolver</code> implements the <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/core/Ordered.html">Ordered</a> interface that Spring uses to prioritize between different exception handlers if there is more than one implementation in the current application context.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">setErrorMessageFactories()</code> is where the different <code class="language-plaintext highlighter-rouge">ErrorMessageFactory</code>s are supplied.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">setMessageConverters()</code> is used to provide the necessary <a href="http://static.springsource.org/spring/docs/3.1.x/javadoc-api/org/springframework/http/converter/HttpMessageConverter.html">HttpMessageConverter</a>s needed for the serialization of the <code class="language-plaintext highlighter-rouge">ErrorMessage</code>s.</li>
+</ul>
+
+<h2 id="errormessagefactory-implementations">ErrorMessageFactory implementations</h2>
+
+<p>Now, we create different implementations of the <code class="language-plaintext highlighter-rouge">ErrorMessageFactory</code> interface for various exceptions. For example, the <code class="language-plaintext highlighter-rouge">@ExceptionHandler</code> for the <code class="language-plaintext highlighter-rouge">MethodArgumentNotValidException</code> that was implemented in the previous blog post can be implemented as an <code class="language-plaintext highlighter-rouge">MethodArgumentNotValidExceptionErrorMessageFactory</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MethodArgumentNotValidExceptionErrorMessageFactory</span> <span class="kd">implements</span> <span class="nc">ErrorMessageFactory</span><span class="o">&lt;</span><span class="nc">MethodArgumentNotValidException</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Class</span><span class="o">&lt;</span><span class="nc">MethodArgumentNotValidException</span><span class="o">&gt;</span> <span class="nf">getExceptionClass</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">MethodArgumentNotValidException</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">getResponseCode</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">HttpServletResponse</span><span class="o">.</span><span class="na">SC_BAD_REQUEST</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">ErrorMessage</span> <span class="nf">getErrorMessage</span><span class="o">(</span><span class="nc">MethodArgumentNotValidException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FieldError</span><span class="o">&gt;</span> <span class="n">fieldErrors</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getFieldErrors</span><span class="o">();</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">ObjectError</span><span class="o">&gt;</span> <span class="n">globalErrors</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getGlobalErrors</span><span class="o">();</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">errors</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">fieldErrors</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">+</span> <span class="n">globalErrors</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+        <span class="nc">String</span> <span class="n">error</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">FieldError</span> <span class="n">fieldError</span> <span class="o">:</span> <span class="n">fieldErrors</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">()</span> <span class="o">+</span> <span class="s">", "</span> <span class="o">+</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">();</span>
+            <span class="n">errors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">error</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">ObjectError</span> <span class="n">objectError</span> <span class="o">:</span> <span class="n">globalErrors</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">objectError</span><span class="o">.</span><span class="na">getObjectName</span><span class="o">()</span> <span class="o">+</span> <span class="s">", "</span> <span class="o">+</span> <span class="n">objectError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">();</span>
+            <span class="n">errors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">error</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ErrorMessage</span><span class="o">(</span><span class="n">errors</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Other examples include a <a href="https://gist.github.com/3104749#file_http_media_type_not_supported_exception_error_message_factory.java">HttpMediaTypeNotSupportedExceptionErrorMessageFactory</a> for generating error messages for unsupported media types and a <a href="https://gist.github.com/3104749#file_http_message_not_readable_exception_error_message_factory.java">HttpMessageNotReadableExceptionErrorMessageFactory</a> for cases when the reading of a request message body fails, e.g. due to a parse exception. These are just some examples, it is easy to implement more factories if necessary.</p>
+
+<h2 id="putting-it-together">Putting it together</h2>
+
+<p>The last piece of the solution is to create a <code class="language-plaintext highlighter-rouge">WebApplicationContext</code> in which the <code class="language-plaintext highlighter-rouge">ErrorMessageHandlerExceptionResolver</code> bean, the <code class="language-plaintext highlighter-rouge">ErrorMessageFactory</code> beans and the <code class="language-plaintext highlighter-rouge">HttpMessageConverter</code>s are wired together. Several options are available, e.g. Java based configuration, adding <code class="language-plaintext highlighter-rouge">@Component</code> and <code class="language-plaintext highlighter-rouge">@Autowire</code> annotations (or their JSR-330 counterparts) to the provided snippets and let component scanning take care of the rest, or to use the more traditional XML based configuration. The choice is not different from any other Spring MVC project configuration, it is just a matter of personal preference.</p>
+
+<h2 id="future-improvements">Future Improvements</h2>
+
+<p>The suggested solution is based on Spring 3.1, and it is very likely that the suggested solution will be obsoleted by the Spring 3.2 release. Spring has also recognized the advantages of returning a response body in conjunction with an HTTP error code. Issue <a href="https://jira.springsource.org/browse/SPR-8406">SPR-8406 - Create separate handler stereotype for RESTful web services</a> in the Spring Jira addresses the problem, a solution based on the new <a href="https://github.com/SpringSource/spring-framework/blob/3.2.0.M2/spring-webmvc/src/main/java/org/springframework/web/servlet/mvc/method/annotation/ResponseEntityExceptionHandler.java">ResponseEntityExceptionHandler</a> class and the new <a href="https://github.com/SpringSource/spring-framework/blob/3.2.0.M2/spring-web/src/main/java/org/springframework/web/bind/annotation/ControllerAdvice.java">@ControllerAdvice</a> annotation has been implemented and is available as part of the Spring 3.2 M2 release.</p>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<ul>
+  <li>Spring 3.1.2.RELEASE</li>
+  <li>jackson-databind 2.0.5</li>
+</ul>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Spring Framework source code at <a href="https://github.com/SpringSource/spring-framework/">GitHub</a></li>
+  <li>Spring reference documentation:
+    <ul>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-exceptionhandlers-resolver">DefaultHandlerExceptionResolver</a></li>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-ann-exceptionhandler">@ExceptionHandler</a></li>
+      <li><a href="http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/mvc.html#mvc-exceptionhandlers">HandlerExceptionResolver</a></li>
+    </ul>
+  </li>
+  <li>Examples of <code class="language-plaintext highlighter-rouge">ErrorMessageFactory</code> implementations:
+    <ul>
+      <li><a href="https://gist.github.com/3104749#file_http_media_type_not_supported_exception_error_message_factory.java">HttpMediaTypeNotSupportedExceptionErrorMessageFactory</a></li>
+      <li><a href="https://gist.github.com/3104749#file_http_message_not_readable_exception_error_message_factory.java">HttpMessageTypeNotReadableExceptionErrorMessageFactory</a></li>
+      <li><a href="https://gist.github.com/3104749#file_method_argument_not_valid_exception_error_message_factory.java">MethodArgumentNotValidExceptionErrorMessageFactory</a></li>
+    </ul>
+  </li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2012-09-23T00:00:00+02:00">September 23, 2012</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2012/09/16/improve-your-spring-rest-api-part-i/" class="pagination--pager" title="Improve Your Spring REST API, Part I
+">Previous</a>
+    
+    
+      <a href="/blog/2013/02/03/improve-your-spring-rest-api-part-iii/" class="pagination--pager" title="Improve Your Spring REST API, Part III
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

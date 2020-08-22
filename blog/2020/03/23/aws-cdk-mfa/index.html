@@ -1,0 +1,623 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>AWS CDK MFA - Random Code Ramblings</title>
+<meta name="description" content="The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="AWS CDK MFA">
+<meta property="og:url" content="https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/">
+
+
+  <meta property="og:description" content="The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-03-23T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="AWS CDK MFA">
+    <meta itemprop="description" content="The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.">
+    <meta itemprop="datePublished" content="2020-03-23T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">AWS CDK MFA
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#update">Update</a></li>
+  <li><a href="#background">Background</a></li>
+  <li><a href="#prerequisites">Prerequisites</a></li>
+  <li><a href="#configuration">Configuration</a>
+    <ul>
+      <li><a href="#cdkjson">cdk.json</a></li>
+      <li><a href="#awsconfig">~/.aws/config</a></li>
+      <li><a href="#cdkmultiprofilepluginjson">cdkmultiprofileplugin.json</a></li>
+    </ul>
+  </li>
+  <li><a href="#usage">Usage</a></li>
+  <li><a href="#dependencies">Dependencies</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>The <a href="https://aws.amazon.com/cdk/">AWS CDK (Cloud Development Kit)</a> is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.</p>
+
+<h2 id="update">Update</h2>
+
+<p>The AWS CDK version <a href="https://github.com/aws/aws-cdk/releases/tag/v1.60.0">v1.60.0</a> was released August 19, 2020 and it partly solves some of problems mentioned in this post. One drawback with this version is that the MFA credentials are not cached, i.e. they need to entered every time a CDK CLI command is invoked. A new feature request has been created <a href="https://github.com/aws/aws-cdk/issues/9855">#9855 - [cli] Cache mfa credentials</a> to address this issue. Meanwhile, keep on reading if you are interested in a MFA solution for the CDK CLI that provides caching as well.</p>
+
+<h2 id="background">Background</h2>
+
+<p>I recently had the opportunity to try the AWS CDK in a real project. The <a href="https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html">getting started guide</a> provided a good introduction and soon it was time for the first deployment. The intended deployment account was configured to use MFA for the AWS CLI (see my previous blog <a href="/blog/2017/11/22/aws-cli-mfa/">AWS CLI MFA</a>) which made deployment more complicated. That said, the paragraph about Specifying Your Credentials and Region using AWS CLI profiles seemed to provide a solution. I thought I could just pass my AWS CLI configured MFA profile and it would “just work” (spoiler: it didn’t):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>npx cdk deploy <span class="nt">--profile</span> my-project-mfa
+Need to perform AWS calls <span class="k">for </span>account 123456789012, but no credentials found. Tried: default credentials.
+</code></pre></div></div>
+
+<p>Regrettably, it turns out that the AWS CDK does not currently support MFA natively. There are a couple of open issues in the AWS CDK GitHub repository that addresses this concern (<a href="https://github.com/aws/aws-cdk/issues/1248">#1248</a> and <a href="https://github.com/aws/aws-cdk/issues/1656">#1656</a>). However they are more than a year old, so rather than waiting for them to be resolved, I thought I’d better look for other solutions. Preferably a solution that could leverage my MFA configuration referenced earlier. In the end, I found the <a href="https://www.npmjs.com/package/cdk-multi-profile-plugin">cdk-multi-profile-plugin</a> npm package and I am quite happy with the result, especially since I was already using npm as a package manager for my CDK project.</p>
+
+<h2 id="prerequisites">Prerequisites</h2>
+
+<ul>
+  <li>
+    <p>Please spend some time to read up on how MFA can be configured for AWS CLI access if you are not familiar with the topic. For example, read my <a href="/blog/2017/11/22/aws-cli-mfa/">AWS CLI MFA</a> blog or the AWS CLI user guide about <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-role.html#cli-configure-role-mfa">Using Multi-Factor Authentication</a>.</p>
+  </li>
+  <li>
+    <p>Install the <a href="https://www.npmjs.com/package/cdk-multi-profile-plugin">cdk-multi-profile-plugin</a>:</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nv">$ </span>npm <span class="nb">install </span>cdk-multi-profile-plugin <span class="nt">--save-dev</span>
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>There are a few different ways to configure the <code>cdk-multi-profile-plugin</code> depending on how it is used. In my team, every developer is responsible for managing his or her own development environment. As a consequence, the developers also create and manage AWS CLI profiles independently of the other team members. There are a few things required in order for this to work:</p>
+
+<h3 id="cdkjson">cdk.json</h3>
+
+<p>Add the plugin to the <a href="https://github.com/aws/aws-cdk/blob/master/packages/aws-cdk/README.md#configuration">cdk.json</a> file, i.e. the CDK configuration file in the project root (this file was generated when by the <code class="language-plaintext highlighter-rouge">cdk init</code> command, see the <a href="https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html">Getting Started Guide</a>):</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"app"</span><span class="p">:</span><span class="w"> </span><span class="s2">"npx ts-node bin/YOURAPP.ts"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"plugin"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"cdk-multi-profile-plugin"</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Make sure to replace the <code class="language-plaintext highlighter-rouge">bin/YOURAPP.ts</code> with the correct value for your CDK project before adding this file to version control.</p>
+
+<h3 id="awsconfig">~/.aws/config</h3>
+
+<p>Next, imagine that you have the following AWS CLI profiles in your <code class="language-plaintext highlighter-rouge">~/.aws/config</code> file (see <a href="/blog/2017/11/22/aws-cli-mfa/#aws-cli-profiles">previous blog post</a> for details):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>profile my-project-mfa]
+source_profile <span class="o">=</span> my-project
+role_arn <span class="o">=</span> arn:aws:iam::123456789012:role/AdminMFARole
+mfa_serial <span class="o">=</span> arn:aws:iam::123456789012:mfa/my-user-name
+</code></pre></div></div>
+
+<p>Explanation:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">source_profile</code> name of the profile configured in the <code class="language-plaintext highlighter-rouge">~/.aws/config</code> file, i.e. the profile that has the <code class="language-plaintext highlighter-rouge">aws_access_key_id</code> and <code class="language-plaintext highlighter-rouge">aws_secret_access_key</code></li>
+  <li><code class="language-plaintext highlighter-rouge">role_arn</code> ARN of role to be assumed when accessing resources in the account (either using the AWS CLI or in this case using the CDK)</li>
+  <li><code class="language-plaintext highlighter-rouge">mfa_serial</code> ARN of your configured MFA device</li>
+</ul>
+
+<p>The values are specific both for each developer and for each project, make sure to update them accordingly.</p>
+
+<h3 id="cdkmultiprofilepluginjson">cdkmultiprofileplugin.json</h3>
+
+<p>Lastly, we must associate each AWS account in the <a href="https://docs.aws.amazon.com/cdk/latest/guide/environments.html">CDK Environment</a> with a corresponding AWS CLI profile that we can use to access that environment. For this reason, each developer creates his or her own <code class="language-plaintext highlighter-rouge">cdkmultiprofileplugin.json</code> configuration file and adds it to the project root, e.g.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"awsProfiles"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"123456789012"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my-project-mfa"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The number <code class="language-plaintext highlighter-rouge">123456789012</code> maps to the AWS Account ID used in the CDK Environment configuration. The value <code class="language-plaintext highlighter-rouge">my-project-mfa</code> is the name of the AWS CLI profile for the same account as outlined in the <a href="#awsconfig">~/.aws/config</a> paragraph. You can add more account / CLI profile pairs if the CDK Environment has multiple deployment accounts.</p>
+
+<p>Do not add this file to version control unless you have agreed to use common CLI profile names. If this is the case, keep in mind that there are other configuration options as well. The plugin <a href="https://github.com/hupe1980/cdk-multi-profile-plugin/blob/master/cdk-multi-profile-plugin/README.md">README</a> presents all options so that you can choose a suitable solution for your project.</p>
+
+<h2 id="usage">Usage</h2>
+
+<p>Now that we have all pieces in place, we can build and deploy the stack!</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>npm run build <span class="o">&amp;&amp;</span> npx cdk deploy
+
+🚀  Using profile my-project-mfa <span class="k">for </span>account 123456789012 <span class="k">in </span>mode ForReading
+  
+? MFA token <span class="k">for </span>arn:aws:iam::123456789012:mfa/my-user-name: <span class="o">[</span>enters MFA token]
+
+This deployment will make potentially sensitive changes according to your current security approval level <span class="o">(</span><span class="nt">--require-approval</span> broadening<span class="o">)</span><span class="nb">.</span>
+Please confirm you intend to make the following modifications:
+
+<span class="o">[</span>Presents stack changes]
+
+Do you wish to deploy these changes <span class="o">(</span>y/n<span class="o">)</span>?  y
+
+TestStack: deploying...
+
+ 🚀  Using profile my-project-mfa <span class="k">for </span>account 123456789012 <span class="k">in </span>mode ForWriting
+
+TestStack: creating CloudFormation changeset...
+
+<span class="o">[</span>CloudFormation stack events]
+
+✅  TestStack
+</code></pre></div></div>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<ul>
+  <li><a href="https://www.npmjs.com/package/aws-cdk/v/1.28.0">aws-cdk: 1.28.0</a></li>
+  <li><a href="https://www.npmjs.com/package/cdk-multi-profile-plugin/v/1.1.2">cdk-multi-profile-plugin: 1.1.2</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-03-23T00:00:00+01:00">March 23, 2020</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" class="pagination--pager" title="AWS Elasticsearch JavaScript Client
+">Previous</a>
+    
+    
+      <a href="#" class="pagination--pager disabled">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2016/11/06/introduction-to-claudia-js/" rel="permalink">Introduction to Claudia.js
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Introduction to the Claudia.js deployment tool for AWS Lambda and AWS API Gateway. Some basic installation guides and a simple code example is provided.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

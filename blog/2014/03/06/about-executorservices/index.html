@@ -1,0 +1,612 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>About ExecutorServices - Random Code Ramblings</title>
+<meta name="description" content="Discussion about how a dynamic ThreadPoolExecutor can be implemented that increase the number of worker threads used before it starts queueing tasks.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="About ExecutorServices">
+<meta property="og:url" content="https://matsev.github.io/blog/2014/03/06/about-executorservices/">
+
+
+  <meta property="og:description" content="Discussion about how a dynamic ThreadPoolExecutor can be implemented that increase the number of worker threads used before it starts queueing tasks.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2014-03-06T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2014/03/06/about-executorservices/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="About ExecutorServices">
+    <meta itemprop="description" content="Discussion about how a dynamic ThreadPoolExecutor can be implemented that increase the number of worker threads used before it starts queueing tasks.">
+    <meta itemprop="datePublished" content="2014-03-06T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">About ExecutorServices
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#cached-thread-pool">Cached Thread Pool</a></li>
+  <li><a href="#fixed-thread-pool">Fixed Thread Pool</a></li>
+  <li><a href="#threadpoolexecutor">ThreadPoolExecutor</a></li>
+  <li><a href="#dynamic-threadpoolexecutor">Dynamic ThreadPoolExecutor</a></li>
+  <li><a href="#dependent-tasks">Dependent Tasks</a></li>
+  <li><a href="#sizing-thread-pools">Sizing Thread Pools</a></li>
+  <li><a href="#acknowledgements">Acknowledgements</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Dealing with asynchronous programming is not easy, at least not if you are a Java programmer. Not only do you have to take care of <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Callable.html">Callable</a>s, <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Runnable.html">Runnable</a>s, <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Future.html">Future</a>s and likes, you also need to configure the details of how they should be executed by providing an <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html">ExecutorService</a>. The <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html">Executors</a> class provides some static factory methods that can be used, at the expense of being less configurable.</p>
+
+<h2 id="cached-thread-pool">Cached Thread Pool</h2>
+
+<p>If you have short-lived asynchronous tasks, you may find the <code class="language-plaintext highlighter-rouge">Executors.newCachedThreadPool()</code> appealing. The <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()">JavaDoc</a> states that:</p>
+
+<blockquote>
+  <p>Calls to execute will reuse previously constructed threads if available. If no existing thread is available, a new thread will be created and added to the pool. Threads that have not been used for sixty seconds are terminated and removed from the cache. Thus, a pool that remains idle for long enough will not consume any resources.</p>
+</blockquote>
+
+<p>A major consideration before choosing this solution is that the executor service may spawn <em>many</em> threads. If the application receives 1000 tasks simultaneously, then you may find that you have 1000 threads in your thread pool if the first task did not finish before the last task was submitted. This may cause an undesired load on the deployment environment, or a remote environment that may be targeted by the asynchronous tasks.</p>
+
+<h2 id="fixed-thread-pool">Fixed Thread Pool</h2>
+
+<p>Another option is to create a thread pool with a fixed number of threads calling the <code class="language-plaintext highlighter-rouge">Executors.newFixedThreadPool(nThreads)</code>, where <code class="language-plaintext highlighter-rouge">nThreads</code> is an integer that specifies the number of threads. The usage is described in the <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool(int)">JavaDoc</a>:</p>
+
+<blockquote>
+  <p>Creates a thread pool that reuses a fixed number of threads operating off a shared unbounded queue. At any point, at most nThreads threads will be active processing tasks. If additional tasks are submitted when all threads are active, they will wait in the queue until a thread is available.</p>
+</blockquote>
+
+<p>A common pattern is to let <code class="language-plaintext highlighter-rouge">nThreads</code> equal the number of cores available if the tasks are computational heavy and do not involve I/O. For tasks that have a more asynchronous nature, e.g. they must wait for a remote network call to complete, <code class="language-plaintext highlighter-rouge">nThreads</code> can be increased, see <a href="#sizing-thread-pools">Sizing Thread Pools</a> below. The trade-off is that the dynamic nature of the cached thread pool is sacrificed with a fixed pool size that will always occupy the specified resources, even if all threads potentially will idle indefinitely. On the other hand, the load will never sprint unpredictably when things get busy, because new tasks will be added to the internal queue if no thread is available.</p>
+
+<h2 id="threadpoolexecutor">ThreadPoolExecutor</h2>
+
+<p>How do you solve a problem that involves infrequent bursts of I/O related tasks? Neither the unpredictable load of the cached thread pool, nor the fixed thread pool where threads idle waiting seems like ideal implementations. The desired solution may be something like “an executor service that grows to a maximum of 20 threads, that will be cached for maximum 60 seconds when idle before termination, and let a blocking queue handle remaining tasks while waiting for a thread to become available”. The first naive solution may be to instantiate a <code class="language-plaintext highlighter-rouge">ThreadPoolExecutor</code> like:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">corePoolSize</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+<span class="kt">int</span> <span class="n">maximumPoolSize</span> <span class="o">=</span> <span class="mi">20</span><span class="o">;</span>
+<span class="kt">long</span> <span class="n">keepAliveTime</span> <span class="o">=</span> <span class="mi">60L</span>
+<span class="nc">BlockingQueue</span> <span class="n">workQueue</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedBlockingQueue</span><span class="o">&lt;&gt;();</span>
+
+<span class="nc">ExecutorService</span> <span class="n">executorService</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ThreadPoolExecutor</span><span class="o">(</span>
+    <span class="n">corePoolSize</span><span class="o">,</span> <span class="n">maximumPoolSize</span><span class="o">,</span> <span class="n">keepAliveTime</span><span class="o">,</span> <span class="nc">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">,</span> <span class="n">workQueue</span><span class="o">);</span> 
+</code></pre></div></div>
+
+<p>However, when studying the details of the <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html">JavaDoc</a> one realizes that this solution works, but not quite in the way we wanted. The devil is in the details:</p>
+
+<blockquote>
+  <p>If there are more than corePoolSize but less than maximumPoolSize threads running, a new thread will be created only if the queue is full.</p>
+</blockquote>
+
+<p>In practice, this means that it is likely that the executor service’s internal thread pool created above never will grow bigger than one, because the pool will not spawn new threads until the queue is full (which, given that the <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/LinkedBlockingQueue.html">LinkedBlockingQueue</a> has an internal capacity of <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Integer.html#MAX_VALUE">Integer.MAX_VALUE</a> may never happen).</p>
+
+<h2 id="dynamic-threadpoolexecutor">Dynamic ThreadPoolExecutor</h2>
+
+<p>Is there a way to make the number of threads grow <em>first</em>, and postpone putting tasks on the queue until <em>after</em> all threads have been created and are busy executing tasks? Yes, but it is not as straight forward as one would wish: First, find the <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html#allowCoreThreadTimeOut(boolean)">ThreadPoolExecutor.allowCoreThreadTimeOut(boolean)</a> method:</p>
+
+<blockquote>
+  <p>Sets the policy governing whether core threads may time out and terminate if no tasks arrive within the keep-alive time, being replaced if needed when new tasks arrive. When false, core threads are never terminated due to lack of incoming tasks. When true, the same keep-alive policy applying to non-core threads applies also to core threads.</p>
+</blockquote>
+
+<p>Next, return to the <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html">JavaDoc</a> of the class:</p>
+
+<blockquote>
+  <p>A ThreadPoolExecutor will automatically adjust the pool size […] according to the bounds set by corePoolSize […] and maximumPoolSize […]. When a new task is submitted in method execute(java.lang.Runnable), and fewer than corePoolSize threads are running, a new thread is created to handle the request, even if other worker threads are idle.</p>
+</blockquote>
+
+<p>Combining these two findings programmatically can look something like:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">corePoolSize</span> <span class="o">=</span> <span class="mi">20</span><span class="o">;</span>
+<span class="kt">int</span> <span class="n">maximumPoolSize</span> <span class="o">=</span> <span class="mi">20</span><span class="o">;</span>
+<span class="kt">long</span> <span class="n">keepAliveTime</span> <span class="o">=</span> <span class="mi">60L</span>
+<span class="nc">BlockingQueue</span> <span class="n">workQueue</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LinkedBlockingQueue</span><span class="o">&lt;&gt;();</span>
+
+<span class="nc">ThreadPoolExecutor</span> <span class="n">threadPoolExecutor</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ThreadPoolExecutor</span><span class="o">(</span>
+    <span class="n">corePoolSize</span><span class="o">,</span> <span class="n">maximumPoolSize</span><span class="o">,</span> <span class="n">keepAliveTime</span><span class="o">,</span> <span class="nc">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">,</span> <span class="n">workQueue</span><span class="o">);</span>
+<span class="n">threadPoolExecutor</span><span class="o">.</span><span class="na">allowCoreThreadTimeOut</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span> 
+</code></pre></div></div>
+
+<p>Two things have been changed compared to the previous snippet. The <code class="language-plaintext highlighter-rouge">corePoolSize</code> has been set to the same value as the <code class="language-plaintext highlighter-rouge">maximumPoolSize</code> and acts as an upper bound of the pool size. A fixed-size thread pool has effectively been created, but it has a twist. The addition of the <code class="language-plaintext highlighter-rouge">allowCoreThreadTimeOut(true)</code> allows the thread pool to shrink to zero when idle. You may be somewhat disturbed that the <code class="language-plaintext highlighter-rouge">corePoolSize</code> and the <code class="language-plaintext highlighter-rouge">maximumPoolSize</code> have the same value, but remember that there is little point of making the <code class="language-plaintext highlighter-rouge">maximumPoolSize</code> larger since the thread pool will not start to grow until the queue is full. Consequently, the <code class="language-plaintext highlighter-rouge">maximumPoolSize</code> is irrelevant as long as you have fewer than <code class="language-plaintext highlighter-rouge">corePoolSize + Integer.MAX_VALUE</code> concurrent tasks to execute.</p>
+
+<h2 id="dependent-tasks">Dependent Tasks</h2>
+
+<p>In general, it is important to make sure that the tasks that should be executed by the executor service are independent of each other. If not, chances are that the threads that are supposed to execute work start to wait and performance will suffer. If things go really bad all tasks that are currently being executed are blocked, and the task that will resolve the knot is stuck in the queue, forever waiting for a thread to become available. A special case of dependent tasks are tasks that can be divided into smaller tasks recursively, and then the final result can be aggregated from the partial results. The <a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ForkJoinPool.html">ForkJoinPool</a> was added to Java 7 for exactly this purpose. More details can be found in the and the <a href="http://docs.oracle.com/javase/tutorial/essential/concurrency/forkjoin.html">Fork/Join framework tutorial</a>.</p>
+
+<h2 id="sizing-thread-pools">Sizing Thread Pools</h2>
+
+<p>In the book <a href="http://www.amazon.com/Java-Concurrency-Practice-Brian-Goetz/dp/0321349601">Java Concurrency in Practice</a>, Ch. “8.2 Sizing thread pools”, it is stated that the optimal pool size for a desired utilization can be calculated as:</p>
+
+<blockquote>
+  <p>Nthreads = Ncpu * Ucpu * (1 + W/C)</p>
+</blockquote>
+
+<p>where</p>
+
+<ul>
+  <li>Ncpu is the number of CPUs (available through <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/Runtime.html#availableProcessors%28%29">Runtime.getRuntime().availableProcessors()</a>)</li>
+  <li>Ucpu is the target CPU utilization (between 0 and 1)</li>
+  <li>W/C is the ratio of wait time to compute time</li>
+</ul>
+
+<p>For heavy computations without blocking or I/O, where a 100% utilization is desired, this can be simplified to Nthreads = Ncpu. The idea is that creating more threads than CPUs will decrease the performance because of context switching and increased memory consumption.</p>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>Thanks to <a href="author/andersgoransson/">Anders Göransson</a> (author of <a href="http://shop.oreilly.com/product/0636920029397.do">Efficient Android Threading</a>) and <a href="author/albintheander/">Albin Theander</a> for feedback.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://docs.oracle.com/javase/tutorial/essential/concurrency/pools.html">Thread Pools</a> Java Tutorial</li>
+  <li><a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html">ExecutorService</a> JavaDoc</li>
+  <li><a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()">Executors.newCachedThreadPool()</a> JavaDoc</li>
+  <li><a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newFixedThreadPool(int)">Executors.newFixedThreadPool(int)</a> JavaDoc</li>
+  <li><a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ThreadPoolExecutor.html">ThreadPoolExecutor</a> JavaDoc</li>
+  <li><a href="http://docs.oracle.com/javase/tutorial/essential/concurrency/forkjoin.html">Fork/Join</a> Java Tutorial</li>
+  <li><a href="http://www.amazon.com/Java-Concurrency-Practice-Brian-Goetz/dp/0321349601">Java Concurrency in Practice</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2014-03-06T00:00:00+01:00">March 6, 2014</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2014/02/16/spring-propertysource/" class="pagination--pager" title="Spring @PropertySource
+">Previous</a>
+    
+    
+      <a href="/blog/2014/05/24/geecon-2014/" class="pagination--pager" title="GeeCON 2014
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

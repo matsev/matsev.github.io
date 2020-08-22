@@ -1,0 +1,625 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>jUnit @Rule and Spring Caches - Random Code Ramblings</title>
+<meta name="description" content="Example of how you can create a custom jUnit @Rule to invalidate Spring caches to avoid residual data when executing integration tests.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="jUnit @Rule and Spring Caches">
+<meta property="og:url" content="https://matsev.github.io/blog/2014/12/07/junit-rule-and-spring-caches/">
+
+
+  <meta property="og:description" content="Example of how you can create a custom jUnit @Rule to invalidate Spring caches to avoid residual data when executing integration tests.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2014-12-07T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2014/12/07/junit-rule-and-spring-caches/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="jUnit @Rule and Spring Caches">
+    <meta itemprop="description" content="Example of how you can create a custom jUnit @Rule to invalidate Spring caches to avoid residual data when executing integration tests.">
+    <meta itemprop="datePublished" content="2014-12-07T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">jUnit @Rule and Spring Caches
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#spring-integration-tests">Spring Integration Tests</a></li>
+  <li><a href="#cacheinvalidationrule">CacheInvalidationRule</a></li>
+  <li><a href="#usage">Usage</a></li>
+  <li><a href="#changing-cache-implementations">Changing Cache Implementations</a></li>
+  <li><a href="#caveat">Caveat</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>If you have worked a while with jUnit you may have seen jUnit <a href="https://github.com/junit-team/junit/wiki/Rules">Rules</a>. Simply put, a field in a test class annotated with <a href="http://junit.org/javadoc/latest/org/junit/Rule.html">@Rule</a> is a class that lets you execute some code that runs before and/or after your unit test, similar to the <a href="http://junit.org/javadoc/latest/org/junit/Before.html">@Before</a> and <a href="http://junit.org/javadoc/latest/org/junit/After.html">@After</a> annotations. Consequently, they solve the same problem, However, the code exercised by the <code class="language-plaintext highlighter-rouge">@Before</code> and <code class="language-plaintext highlighter-rouge">@After</code> annotations is usually tied to the specific test class whereas the logic implemented in a <code class="language-plaintext highlighter-rouge">@Rule</code> tends to be of more generic nature. For example, jUnit provides the <a href="http://junit.org/javadoc/latest/org/junit/rules/TemporaryFolder.html">TemporaryFolder</a> that creates a temporary folder that can be used during a test and deletes it and any files and folders recursively that were created after the test. Another example is the <a href="http://junit.org/javadoc/latest/org/junit/rules/ExpectedException.html">ExpectedException</a> that is useful when verifying exceptions.</p>
+
+<h2 id="spring-integration-tests">Spring Integration Tests</h2>
+
+<p>As stated in the <a href="http://docs.spring.io/spring-framework/docs/4.1.x/spring-framework-reference/html/testing.html#testcontext-ctx-management-caching">Testing chapter</a> in the Spring Reference Docs:</p>
+
+<blockquote>
+  <p>Once the TestContext framework loads an <code class="language-plaintext highlighter-rouge">ApplicationContext</code> (or <code class="language-plaintext highlighter-rouge">WebApplicationContext</code>) for a test, that context will be cached and reused for all subsequent tests that declare the same unique context configuration within the same test suite.</p>
+</blockquote>
+
+<p>Among other things, this means that if your application contains a cache managed by Spring (for example if you use the <a href="http://docs.spring.io/spring-framework/docs/4.1.x/spring-framework-reference/html/cache.html#cache-annotations-cacheable">@Cachable</a> annotation), there is a possibility that there are residual objects from previous tests in the cache when a new test begins. As a consequence, you may experience that the tests will behave different during different executions, for example if a single test is executed compared to when it is executed as part of the entire test suite. To prevent this you can either create a specific <code class="language-plaintext highlighter-rouge">@Before</code> method that clears the cache that can be copied between test files, create a common <code class="language-plaintext highlighter-rouge">AbstractTest</code> class with the eviction logic that can be inherited to all relevant test classes, create a separate <code class="language-plaintext highlighter-rouge">TestSupport</code> class that the test classes can delegate to, or create a custom test rule.</p>
+
+<h2 id="cacheinvalidationrule">CacheInvalidationRule</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CacheInvalidationRule</span> <span class="kd">extends</span> <span class="nc">ExternalResource</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">CacheManager</span> <span class="n">cacheManager</span><span class="o">;</span>    
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">public</span> <span class="nf">CacheInvalidationRule</span><span class="o">(</span><span class="nc">CacheManager</span> <span class="n">cacheManager</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">cacheManager</span> <span class="o">=</span> <span class="n">cacheManager</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">before</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">cacheManager</span><span class="o">.</span><span class="na">getCacheNames</span><span class="o">().</span><span class="na">stream</span><span class="o">().</span>   <span class="c1">// gets the name of all caches as a stream</span>
+                <span class="n">map</span><span class="o">(</span><span class="nl">cacheManager:</span><span class="o">:</span><span class="n">getCache</span><span class="o">).</span>     <span class="c1">// map the cache names to a stream of Cache:s</span>
+                <span class="n">forEach</span><span class="o">(</span><span class="nl">Cache:</span><span class="o">:</span><span class="n">clear</span><span class="o">);</span>           <span class="c1">// and clear() them</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Alternatively, if you are not yet able to use Java 8 in production:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Override</span>
+<span class="kd">protected</span> <span class="kt">void</span> <span class="nf">before</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Collection</span> <span class="n">cacheNames</span> <span class="o">=</span> <span class="n">cacheManager</span><span class="o">.</span><span class="na">getCacheNames</span><span class="o">();</span>
+    <span class="k">for</span> <span class="o">(</span><span class="nc">String</span> <span class="n">name</span> <span class="o">:</span> <span class="n">cacheNames</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Cache</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">cacheManager</span><span class="o">.</span><span class="na">getCache</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+        <span class="n">cache</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <a href="http://junit.org/javadoc/latest/org/junit/rules/ExternalResource.html">ExternalResource</a> is an abstract class provided by jUnit which implements the <a href="http://junit.org/javadoc/latest/org/junit/rules/TestRule.html">TestResource</a> interface. Moreover, it provides an <code class="language-plaintext highlighter-rouge">before()</code> method and an <code class="language-plaintext highlighter-rouge">after()</code> method that can be overridden. Here, we chose to clear all caches provided by the cache manager.</p>
+
+<h2 id="usage">Usage</h2>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="nc">SpringJUnit4ClassRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@ContextConfiguration</span><span class="o">(</span><span class="n">classes</span> <span class="o">=</span> <span class="nc">TestApplicationContext</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ExampleTest</span> <span class="o">{</span>
+
+    <span class="nd">@Rule</span>
+    <span class="nd">@Autowired</span>
+    <span class="kd">public</span> <span class="nc">CacheInvalidationRule</span> <span class="n">cacheInvalidationRule</span><span class="o">;</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">testThatDependOnClearCaches</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// test some application logic</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In order for this to work, the <code class="language-plaintext highlighter-rouge">TestApplicationContext</code> can either <code class="language-plaintext highlighter-rouge">@ComponentScan</code> the package in which the <code class="language-plaintext highlighter-rouge">CacheInvalidationRule</code> is located (since it is annotated with the <code class="language-plaintext highlighter-rouge">@Service</code> annotation) or declare it as a bean, e.g.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@Import</span><span class="o">(</span><span class="nc">ApplicationContextThatHasCacheManagerDeclaration</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestApplicationContext</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">CacheManager</span> <span class="n">cacheManager</span><span class="o">;</span>
+
+    <span class="nd">@Bean</span>
+    <span class="nc">CacheInvalidationRule</span> <span class="nf">cacheInvalidationRule</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">CacheInvalidationRule</span><span class="o">(</span><span class="n">cacheManager</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In either way, the <code class="language-plaintext highlighter-rouge">CacheInvalidationRule</code> is available in the <code class="language-plaintext highlighter-rouge">TestApplicationContext</code> and can thus be autowired in the <code class="language-plaintext highlighter-rouge">ExampleTest</code>. Do not forget the <code class="language-plaintext highlighter-rouge">@Rule</code> annotation required by jUnit.</p>
+
+<h2 id="changing-cache-implementations">Changing Cache Implementations</h2>
+
+<p>Depending on your application requirements, you may choose different cache implementations. If you use simple caches like EhCache or Guava you can probably use the cache configuration like it is. On the other hand, it may not be desirable to have tests that depend on external infrastructure such as a GemFire cluster. One way to avoid this is to add an in memory cache backed by Java’s standard <code class="language-plaintext highlighter-rouge">ConcurrentHashMap</code> to your test configuration:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@EnableCaching</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">InMemoryCacheTestApplicationContext</span> <span class="o">{</span>
+
+    <span class="nd">@Bean</span>
+    <span class="nd">@Primary</span>
+    <span class="nc">CacheManager</span> <span class="nf">cacheManager</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">SimpleCacheManager</span> <span class="n">cacheManager</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SimpleCacheManager</span><span class="o">();</span>
+        <span class="nc">Set</span> <span class="n">caches</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashSet</span><span class="o">&lt;&gt;();</span>
+        <span class="nc">Cache</span> <span class="n">cache</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ConcurrentMapCache</span><span class="o">(</span><span class="s">"cache"</span><span class="o">);</span>
+        <span class="n">caches</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">cache</span><span class="o">);</span>
+        <span class="c1">// potentially create and add more caches</span>
+        <span class="n">cacheManager</span><span class="o">.</span><span class="na">setCaches</span><span class="o">(</span><span class="n">caches</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">cacheManager</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Bean</span>
+    <span class="nc">CacheInvalidationRule</span> <span class="nf">cacheInvalidationRule</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">CacheInvalidationRule</span><span class="o">(</span><span class="n">cacheManager</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In the example above, only a single cache was added to the cache manager, but you can easily imagine how more caches can be added. The inclusion of the <code class="language-plaintext highlighter-rouge">@Primary</code> annotation brings about that it is this cache manager that shall be used by Spring during the test and not the default one that may be included by some other (production) application context.</p>
+
+<h2 id="caveat">Caveat</h2>
+
+<p>It is only possible to use the cache invalidation rule if you have access to the cache manager that lives in your application context from the test class. For Spring integration tests (i.e. those that use the <code class="language-plaintext highlighter-rouge">SpringJUnit4ClassRunner</code>) this is not a problem. However, if you create a webapp that is tested by firing up an embedded Tomcat or embedded Jetty, which starts Spring internally, then the application context and its cache manager is not available to the test class, at least not out of the box. In contrast, Spring Boot can use its embedded servlet container and still have access to its application context, and thus autowire any of its beans, see my previous blog post <a href="/blog/2014/07/04/integration-testing-a-spring-boot-application/">Integration Testing a Spring Boot Application</a>.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>jUnit <a href="https://github.com/junit-team/junit/wiki/Rules">Rules</a></li>
+  <li>jUnit <a href="http://junit.org/javadoc/latest/org/junit/Rule.html">@Rule</a></li>
+  <li>jUnit <a href="http://junit.org/javadoc/latest/org/junit/rules/ExternalResource.html">External Resource</a></li>
+  <li>Spring <a href="http://docs.spring.io/spring/docs/4.1.x/spring-framework-reference/html/cache.html#cache-store-configuration-jdk">ConcurrentHashMap cache</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2014-12-07T00:00:00+01:00">December 7, 2014</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2014/10/19/spring-boot-error-responses/" class="pagination--pager" title="Spring Boot Error Responses
+">Previous</a>
+    
+    
+      <a href="/blog/2015/05/31/scaling-out-with-spring-session/" class="pagination--pager" title="Scaling Out with Spring Session
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

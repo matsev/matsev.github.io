@@ -1,0 +1,657 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Custom Resource for Generating Lambdas - Random Code Ramblings</title>
+<meta name="description" content="Blog post about how you can use AWS Custom Resources to generate an AWS Lambda function with a predefined name.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Custom Resource for Generating Lambdas">
+<meta property="og:url" content="https://matsev.github.io/blog/2016/03/03/custom-resource-for-generating-lambdas/">
+
+
+  <meta property="og:description" content="Blog post about how you can use AWS Custom Resources to generate an AWS Lambda function with a predefined name.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2016-03-03T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2016/03/03/custom-resource-for-generating-lambdas/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Custom Resource for Generating Lambdas">
+    <meta itemprop="description" content="Blog post about how you can use AWS Custom Resources to generate an AWS Lambda function with a predefined name.">
+    <meta itemprop="datePublished" content="2016-03-03T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Custom Resource for Generating Lambdas
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#update">Update</a></li>
+  <li><a href="#motivation">Motivation</a></li>
+  <li><a href="#outline">Outline</a></li>
+  <li><a href="#custom-resource-declaration">Custom Resource Declaration</a></li>
+  <li><a href="#unwanted-deletions">Unwanted Deletions</a></li>
+  <li><a href="#create-lambda">Create Lambda</a></li>
+  <li><a href="#delete-lambda">Delete Lambda</a></li>
+  <li><a href="#limitation">Limitation</a></li>
+  <li><a href="#lessons-learned">Lessons Learned</a></li>
+  <li><a href="#next-step">Next Step</a></li>
+  <li><a href="#references">References</a></li>
+  <li><a href="#acknowledgements">Acknowledgements</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p><a href="https://aws.amazon.com/lambda/">AWS Lambda</a> enables you to quickly setup a backend solution for your mobile application. <a href="https://aws.amazon.com/cloudformation/">AWS CloudFormation</a> allows you to create templates for your infrastructure that can be versioned controlled. When used together, the CloudFormation API provides <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html">AWS::Lambda::Function</a> for creating Lambdas, however the API does not allow you to specify the name of the Lambda function (they will get a name like “MyStackname-LambdaFunctionName-49IO410DTKWM”). By implementing a <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html">Custom Resource</a> this limitation can be circumvented. Continue to read for an explanation of how, or jump directly to the source code in my <a href="https://github.com/matsev/aws-cloudformation-lambda-generator">sample project</a> at GitHub.</p>
+
+<h2 id="update">Update</h2>
+
+<p>AWS recently added the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#cfn-lambda-function-functionname">FunctionName</a> element to the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html">AWS::Lambda::Function</a> resource which makes this blog post superfluous if you are just looking for a simple way to give your Lambda function a predefined name. However, you may still find it interesting if you would like to learn more about AWS custom resources.</p>
+
+<h2 id="motivation">Motivation</h2>
+
+<p>Benefits of specifying Lambda names in a Custom Resource instead of the native CloudFormation format include:</p>
+
+<ul>
+  <li>The names will be predictable and consistent when the stack is (re-)created.</li>
+  <li>If your Lambda is to be used by mobile app developers that use the AWS Mobile SDKs, it is much easier to communicate a human readable name.</li>
+  <li>If you develop scripts for <a href="http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">versioning and aliasing</a> the function, it easier to parameterize (or hardcode) the function names.</li>
+</ul>
+
+<p>Some disadvantages are:</p>
+
+<ul>
+  <li>You may not need it, for example if your Lambda function is only used within the template, then you can just <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-ref.html">Ref</a> it when needed.</li>
+  <li>As you are about to see, generating your own Lambdas increase the complexity of the template.</li>
+  <li>Function names must be unique per <em>account</em> and <em>region</em> (not per stack). This constraint is not specific for the approach described in this blog post, the same rule applies if you use the AWS console or the AWS CLI to create Lambdas.</li>
+</ul>
+
+<h2 id="outline">Outline</h2>
+
+<p>When first looking at the problem, the solution seemed pretty straight forward. Since the AWS JavaScript SDK has a <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html">Lambda API</a>, one could use the <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#createFunction-property">createFunction()</a> (parameters include <code class="language-plaintext highlighter-rouge">FunctionName</code>), <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#updateFunctionConfiguration-property">updateFunctionConfiguration()</a> and <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#deleteFunction-property">deleteFunction()</a> to manage a Lambda’s lifecycle. The idea is to map the different <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requesttypes.html">types of requests</a> in a <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html">Custom Resource</a> to these function calls and then it would “just work”. Apart from listening and reacting to the different request types, a Custom Resource must also report back to CloudFormation when it has finished its operation. The response is specified in the documentation of the different types of requests, but there is a <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-cfnresponsemodule">cfn-response</a> module that provides an API for this task.</p>
+
+<h2 id="custom-resource-declaration">Custom Resource Declaration</h2>
+
+<p>As part of the solution, the following Custom Resource declaration is used:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">
+</span><span class="nl">"AlphaLambdaGenerator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Custom::AlphaLambdaGenerator"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"ServiceToken"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Fn::GetAtt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"LambdaGenerator"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Arn"</span><span class="p">]},</span><span class="w">
+        </span><span class="nl">"Lambda"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"FunctionName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AlphaLambda"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"Role"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Fn::GetAtt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"LambdaExecutionRole"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Arn"</span><span class="p">]}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ServiceToken</code> property is part of the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html">AWS::Custom::Resource</a> contract. It points to the <code class="language-plaintext highlighter-rouge">LambdaGenerator</code> that is responsible for managing the generated Lambda(s). The <code class="language-plaintext highlighter-rouge">Lambda</code> sub-document contains properties specific for the Lambda that will be created and it uses the same syntax as the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html">AWS::Lambda::Function</a>. The <code class="language-plaintext highlighter-rouge">FunctionName</code> and the <code class="language-plaintext highlighter-rouge">Role</code> parameters are mandatory. If no <code class="language-plaintext highlighter-rouge">Code</code> property is specified an “echo” Lambda function will be generated that has <code class="language-plaintext highlighter-rouge">nodejs</code> as <code class="language-plaintext highlighter-rouge">Runtime</code> and <code class="language-plaintext highlighter-rouge">index.handler</code> as <code class="language-plaintext highlighter-rouge">Handler</code> function. Alternatively, by using the <code class="language-plaintext highlighter-rouge">Code</code> property and providing the <code class="language-plaintext highlighter-rouge">S3Bucket</code> and <code class="language-plaintext highlighter-rouge">S3Key</code> parameters and it is also possible to use a different Lambda <code class="language-plaintext highlighter-rouge">Runtime</code>.</p>
+
+<h2 id="unwanted-deletions">Unwanted Deletions</h2>
+
+<p>As mentioned earlier, Lambda function names must be unique per account and per region. In the happy flow these facts do not matter, a Lambda will be created when the stack is initiated and it will be deleted when the stack is taken down. However, if you accidentally copy / paste the Custom Resource in your CloudFormation template and forget to change the function name the stack stack update will fail. What is worse, during its rollback it will delete any existing Lambda with the same name that was created by another Custom Resource. Likewise, if the same Cloud Formation template is used to create a second stack in the same account, all Lambda names will be duplicated, the stack creation will fail and during the rollback all Lambdas in the existing stack will be deleted. Neither of these scenarios are acceptable. For this reason, one can pay attention to when and how the <code class="language-plaintext highlighter-rouge">physicalResourceId</code> parameter is passed when replying to the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-cfnresponsemodule">cfn-response</a>. By doing so, it is possible to mitigate the consequences of the the mistakes. In the first case, the stack update will still fail, but at least the rollback will not bring down any existing Lambda. In the second case, the new stack creation will also fail, but the working stack will be unaffected.</p>
+
+<h2 id="create-lambda">Create Lambda</h2>
+
+<p>The function that creates the custom Lambda function needs some configuration parameters. For this matter, the <code class="language-plaintext highlighter-rouge">Lambda</code> object in the Custom Resource declaration is copied to the <code class="language-plaintext highlighter-rouge">event.ResourceProperties.Lambda</code> property by CloudFormation (the <code class="language-plaintext highlighter-rouge">Lambda</code> name can be chosen arbitrarily and you can several. Any custom <code class="language-plaintext highlighter-rouge">Properties.*</code> object in the Custom Resource declaration will be available to your custom Lambda function in the <code class="language-plaintext highlighter-rouge">event.ResourceProperties.*</code>). There are a few things to consider when creating the Lambda function programmatically using a Custom Resource. First, there is a check if the Custom Resource configuration contains any reference to an existing implementation in a S3 bucket, if not it will call the <code class="language-plaintext highlighter-rouge">createEchoFunction(..)</code> so that the generated Lambda will get a simple “echo” implementation. Secondly, the <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#createFunction-property">createFunction()</a> function will be called to actually create the Lambda. Lastly, notify CloudFormation that Custom Resource has completed its execution by calling the <code class="language-plaintext highlighter-rouge">send()</code> function of the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-cfnresponsemodule">cfn-response</a>. If the creation succeeded, the <code class="language-plaintext highlighter-rouge">physicalResourceId</code> parameter is provided so that it can be used later when a delete request occurs. If the creation failed, the parameter is omitted.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">createLambda</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">lambdaParams</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">ResourceProperties</span><span class="p">.</span><span class="nx">Lambda</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">functionName</span> <span class="o">=</span> <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">FunctionName</span><span class="p">;</span>
+
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Creating lambda:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">lambdaParams</span><span class="p">));</span>
+
+    <span class="c1">// Check whether or not there is an Lambda function implementation in an S3 bucket that should be used</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span> <span class="o">||</span> <span class="o">!</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span><span class="p">.</span><span class="nx">S3Bucket</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// No code provided, create initial version.</span>
+        <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Handler</span> <span class="o">=</span> <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Handler</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">index.handler</span><span class="dl">'</span><span class="p">;</span>
+        <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span> <span class="o">=</span> <span class="p">{</span><span class="na">ZipFile</span><span class="p">:</span> <span class="nx">createEchoFunction</span><span class="p">(</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)};</span>
+        <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Description</span> <span class="o">=</span> <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Description</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">Initial "echo" lambda</span><span class="dl">'</span><span class="p">;</span>
+        <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Runtime</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">nodejs</span><span class="dl">'</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nx">lambda</span><span class="p">.</span><span class="nx">createFunction</span><span class="p">(</span><span class="nx">lambdaParams</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+            <span class="c1">// Lambda creation failed, do not provide the physicalResourceId</span>
+            <span class="nx">response</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">FAILED</span><span class="p">,</span> <span class="nx">err</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// Lambda creation succeeded, provide functionName as physicalResourceId so that this stack can delete it</span>
+            <span class="nx">response</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">SUCCESS</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">functionName</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="delete-lambda">Delete Lambda</h2>
+
+<p>When the Lambda is deleted, the process is reversed. First, check if the delete request has the same <code class="language-plaintext highlighter-rouge">physicalResourceId</code> as used in the create request by comparing it against the <code class="language-plaintext highlighter-rouge">functionName</code>. If they match, call the <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#deleteFunction-property">deleteFunction()</a> and respond back to CloudFormation. If they do not match, it means that some other stack or some other Custom Resource has created the Lambda and for this reason it should not be deleted now. Nevertheless, a delete request has been received from the stack and the function sends a success response back to CloudFormation since this is a valid state.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">deleteLambda</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">lambdaParams</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">ResourceProperties</span><span class="p">.</span><span class="nx">Lambda</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">functionName</span> <span class="o">=</span> <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">FunctionName</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">physicalResourceId</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">PhysicalResourceId</span><span class="p">;</span>
+
+    <span class="c1">// Check if the physicalResourceId has the same value as provided by the createLambda() function</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">physicalResourceId</span> <span class="o">===</span> <span class="nx">functionName</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="c1">// Yes, this Lambda was indeed created by this stack, ok to delete</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Deleting Lambda:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">functionName</span><span class="p">);</span>
+
+        <span class="nx">lambda</span><span class="p">.</span><span class="nx">deleteFunction</span><span class="p">({</span><span class="na">FunctionName</span><span class="p">:</span> <span class="nx">functionName</span><span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">FAILED</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">functionName</span><span class="p">);</span>
+            <span class="p">}</span>
+            <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">SUCCESS</span><span class="p">,</span> <span class="nx">data</span><span class="p">,</span> <span class="nx">functionName</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+
+        <span class="c1">// No, this Lambda was created by someone else, do not delete, but send success response</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Do not delete Lambda:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">functionName</span> <span class="p">,</span><span class="dl">'</span><span class="s1"> (physicalResourceId:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">physicalResourceId</span><span class="p">,</span> <span class="dl">'</span><span class="s1">)</span><span class="dl">'</span><span class="p">);</span>
+        <span class="nx">response</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">SUCCESS</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="limitation">Limitation</h2>
+
+<p>It is not possible to change the <code class="language-plaintext highlighter-rouge">FunctionName</code> parameter in the Custom Resource, e.g. simply changing from <code class="language-plaintext highlighter-rouge">AlphaLambda</code> to <code class="language-plaintext highlighter-rouge">BetaLambda</code> will not work. A workaround is if you at the same time also rename the logical resource from <code class="language-plaintext highlighter-rouge">AlphaGenerator</code> in this example to let’s say <code class="language-plaintext highlighter-rouge">BetaGenerator</code>. Consequently, CloudFormation will send a delete request to <code class="language-plaintext highlighter-rouge">AlphaGenerator</code> which in turn will delete the <code class="language-plaintext highlighter-rouge">AlphaLambda</code>. At the same time a <code class="language-plaintext highlighter-rouge">BetaGenerator</code> Custom Resource will be created, which will create the <code class="language-plaintext highlighter-rouge">BetaLambda</code> accordingly.</p>
+
+<h2 id="lessons-learned">Lessons Learned</h2>
+
+<ul>
+  <li>Make sure that there is a log policy created before the Custom Resource is called. This can be achieved by either inlining the policy in the role that is used by the Lambda, or by adding <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-dependson.html">DependsOn</a> attribute to the Lambda declaration. Without the log policy being present when the Custom Resource is executed, its log calls will not show up in CloudWatch, making it very difficult to trace the flow of execution and to find the cause of potential bugs in Lambda implementation.</li>
+  <li>Be cautious of how and when you use the <code class="language-plaintext highlighter-rouge">physicalResourceId</code> when sending the response from the Custom Resource to CloudFormation. The doucmentation of <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-cfnresponsemodule">cfn-response</a> suggests that the parameter is optional. In some sense this claim is true since the function call will default to use the name of a log stream name if the parameter is missing. As a side effect, if CloudFormation assigns the same log stream to two resources they will get the same <code class="language-plaintext highlighter-rouge">physicalResourceId</code>. Later, if one of the Custom Resources is deleted, Cloud Formation will send a delete request to the other one as well because of their shared <code class="language-plaintext highlighter-rouge">physicalResourceId</code>. Moreover, the <code class="language-plaintext highlighter-rouge">physicalResourceId</code> can be used to guard against false deletions if there is a risk that a Custom Resource may receive more than one delete request due to human errors like duplicated function names in a CloudFormation template or attempts to deploy the same CloudFormation template twice as explained in the <a href="#delete-lambda">Delete Lambda</a> paragraph.</li>
+  <li>When using the native <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html">AWS::Lambda::Function</a> declaration it is possible to inline the Lambda’s JavaScript implementation as a <code class="language-plaintext highlighter-rouge">String</code> using the <code class="language-plaintext highlighter-rouge">ZipFile</code> property as shown in <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/walkthrough-custom-resources-lambda-cross-stack-ref.html#create-ec2-stack">this example</a>. Note, the implementation must not <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html">exceed 2048</a> characters.</li>
+  <li>It is <em>not</em> possible to inline the JavaScript of a Lambda function as a <code class="language-plaintext highlighter-rouge">String</code> in the <code class="language-plaintext highlighter-rouge">ZipFile</code> property when creating a Lambda function using the AWS JavaScript SDK <a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#createFunction-property">Lambda.createFunction(…)</a>. To get this working, one can zip the function implementation into a node.js <a href="https://nodejs.org/docs/latest-v0.10.x/api/buffer.html">Buffer</a> one avoid errors that when CloudFormation attempted to unzip it. Make sure that the module name and export function match the <a href="http://docs.aws.amazon.com/lambda/latest/dg/API_CreateFunction.html#SSS-CreateFunction-request-Handler">Handler</a> property.</li>
+  <li>Incorrect usage of <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html#cfn-lambda-function-code-cfnresponsemodule">cfn-response</a> may result in errors during stack creation, update deletion and / or rollback. Similarly, if you experience that the stack hangs indefinitely, you may also benefit from revisiting the parts of the code that deal with <code class="language-plaintext highlighter-rouge">cfn-response</code>.</li>
+  <li>Lambda versions are immutable. As a consequence, if a Lambda’s configuration (such as memory size and timeout) is updated, the changes are applied to the <code class="language-plaintext highlighter-rouge">$LATEST</code> version of the Lambda. In other words, if you are using <a href="http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">versioning and aliasing</a> you must make sure to publish a new version and update the alias before any client request will be affected by the change.</li>
+</ul>
+
+<h2 id="next-step">Next Step</h2>
+
+<p>The initial Lambda implementation is deliberately just a simple “echo” function. The idea is to hook up a CI server to handle the Lambda updates and let it take care of the production code. When the unit tests pass it will package and upload the new Lambda implementation to the <code class="language-plaintext highlighter-rouge">$LATEST</code> version. If the integration tests also pass the CI server will publish a new version and update the alias promptly.</p>
+
+<h2 id="references">References</h2>
+
+<p>There are several references in this blog, the most important ones are:</p>
+
+<ul>
+  <li><a href="http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html">Lambda API</a> in the AWS JavaScript SDK</li>
+  <li><a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html">AWS::CloudFormation::CustomResource</a> in the AWS CloudFormation User Guide</li>
+  <li><a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html">AWS::Lambda::Function</a> in the AWS CloudFormation User Guide</li>
+  <li><a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-code.html">AWS Lambda Function Code</a> (including the <code class="language-plaintext highlighter-rouge">cfn-response</code> module) in the AWS CloudFormation User Guide</li>
+  <li><a href="https://github.com/matsev/aws-cloudformation-lambda-generator">Sample project</a> at GitHub</li>
+</ul>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>Thanks to <a href="https://blog.jayway.com/author/carl-nordenfeltjayway-com/">Carl Nordenfelt</a>, Jesper Nilsson and <a href="https://blog.jayway.com/author/mattiaslindskog">Mattias Lindskog</a> for feedback and support.</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2016-03-03T00:00:00+01:00">March 3, 2016</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2015/12/06/working-efficiently-with-gradle-modules/" class="pagination--pager" title="Working Efficiently with Gradle Modules
+">Previous</a>
+    
+    
+      <a href="/blog/2016/06/02/route53-configuration-for-elastic-beanstalk/" class="pagination--pager" title="Route53 Configuration for Elastic Beanstalk
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,703 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Scaling Out with Spring Session - Random Code Ramblings</title>
+<meta name="description" content="A brief introduction to how Spring Session can be used when scaling out servlet sessions.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Scaling Out with Spring Session">
+<meta property="og:url" content="https://matsev.github.io/blog/2015/05/31/scaling-out-with-spring-session/">
+
+
+  <meta property="og:description" content="A brief introduction to how Spring Session can be used when scaling out servlet sessions.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2015-05-31T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2015/05/31/scaling-out-with-spring-session/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Scaling Out with Spring Session">
+    <meta itemprop="description" content="A brief introduction to how Spring Session can be used when scaling out servlet sessions.">
+    <meta itemprop="datePublished" content="2015-05-31T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Scaling Out with Spring Session
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#example-application">Example Application</a></li>
+  <li><a href="#spring-session-architecture">Spring Session architecture</a></li>
+  <li><a href="#adding-dependencies">Adding dependencies</a></li>
+  <li><a href="#spring-session-config">Spring Session Config</a></li>
+  <li><a href="#registering-the-spring-session-config">Registering the Spring Session Config</a></li>
+  <li><a href="#adding-the-spring-session-servlet-filter">Adding the Spring Session servlet filter</a></li>
+  <li><a href="#verification">Verification</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Stateless architecture has become increasingly popular during resent years and for good reasons. However, stateful session based applications continue to play an important role, for example when issuing <a href="https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet">CSRF tokens</a> for improved security. When deployed on a single server with little load, session management is pretty straight forward as long as you use a reasonable expiration timeout and do not store to much data in the session. Things become trickier when scaling out because each request needs to be associated with its corresponding session that may reside on another server. To overcome this, server vendors have implemented various kinds of session replication between their servers. Alternatively, load balancers can be configured to use sticky sessions. Both these solutions work, but with <a href="http://projects.spring.io/spring-session/">Spring Session</a> Spring has created another option. This blog will show how you can use <a href="http://redis.io/">Redis</a> together with Spring Session to scale out sessions. The suggested solution can be used with any servlet (not just Spring based) which also makes it suitable if you need to scale out legacy web apps.</p>
+
+<h2 id="example-application">Example Application</h2>
+
+<p>First, we take a look at a simple, session based, <code class="language-plaintext highlighter-rouge">HelloServlet</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">HelloServlet</span> <span class="kd">extends</span> <span class="nc">HttpServlet</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">NAME</span> <span class="o">=</span> <span class="s">"name"</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">doGet</span><span class="o">(</span><span class="nc">HttpServletRequest</span> <span class="n">req</span><span class="o">,</span> <span class="nc">HttpServletResponse</span> <span class="n">resp</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// get name from session, or return default</span>
+        <span class="nc">String</span> <span class="n">name</span> <span class="o">=</span> <span class="nc">Optional</span><span class="o">.</span><span class="na">ofNullable</span><span class="o">(</span><span class="n">req</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="kc">false</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">session</span> <span class="o">-&gt;</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span> <span class="n">session</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="no">NAME</span><span class="o">))</span>
+                <span class="o">.</span><span class="na">orElse</span><span class="o">(</span><span class="s">"World"</span><span class="o">);</span>
+        <span class="c1">// create a greeting with the name</span>
+        <span class="nc">String</span> <span class="n">greeting</span> <span class="o">=</span> <span class="nc">String</span><span class="o">.</span><span class="na">format</span><span class="o">(</span><span class="s">"Hello %s!"</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+
+        <span class="c1">// write response</span>
+        <span class="k">try</span> <span class="o">(</span><span class="nc">ServletOutputStream</span> <span class="n">out</span> <span class="o">=</span> <span class="n">resp</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">out</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">greeting</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="nc">StandardCharsets</span><span class="o">.</span><span class="na">UTF_8</span><span class="o">));</span>
+            <span class="n">out</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">doPost</span><span class="o">(</span><span class="nc">HttpServletRequest</span> <span class="n">req</span><span class="o">,</span> <span class="nc">HttpServletResponse</span> <span class="n">resp</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// get the name parameter from the request (possibly null)</span>
+        <span class="nc">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="na">getParameter</span><span class="o">(</span><span class="no">NAME</span><span class="o">);</span>
+        <span class="c1">// store the name variable as a session attribute</span>
+        <span class="n">req</span><span class="o">.</span><span class="na">getSession</span><span class="o">().</span><span class="na">setAttribute</span><span class="o">(</span><span class="no">NAME</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>When called with a HTTP GET, the servlet will respond with either <code class="language-plaintext highlighter-rouge">Hello Mattias!</code> if there is a session that has an attribute called <code class="language-plaintext highlighter-rouge">name</code> with the value <code class="language-plaintext highlighter-rouge">Mattias</code>. If not, the servlet will respond with a default <code class="language-plaintext highlighter-rouge">Hello World!</code>. When called with a HTTP POST, the servlet will read the <code class="language-plaintext highlighter-rouge">name</code> parameter from the request, create a new session (or re-use an existing) and store the value of the name in the corresponding session attribute. First request, no session, i.e. GET the default answer:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl http://localhost:8080
+Hello World!
+</code></pre></div></div>
+
+<p>Second request, create a session by POSTing a request with a <code class="language-plaintext highlighter-rouge">name</code> attribute:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-i</span> <span class="nt">-d</span> <span class="s2">"name=Mattias"</span> http://localhost:8080
+<span class="o">[</span>...]
+Set-Cookie: Set-Cookie: <span class="nv">JSESSIONID</span><span class="o">=</span>A8F4049EE2A2CBDEA70EBD232328610A<span class="p">;</span> <span class="nv">Path</span><span class="o">=</span>/<span class="p">;</span> HttpOnly
+<span class="o">[</span>...]
+</code></pre></div></div>
+
+<p>Side note, the <code class="language-plaintext highlighter-rouge">-i</code> (or <code class="language-plaintext highlighter-rouge">—-include</code>) is a cURL flag for including HTTP headers in the response and the <code class="language-plaintext highlighter-rouge">-d</code> (or <code class="language-plaintext highlighter-rouge">—data</code>) flag is used to submit data as request parameters. In the response, we take note of the value of the <code class="language-plaintext highlighter-rouge">Set-Cookie</code> header. Third request, GET and validate the session state:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-H</span> <span class="s2">"Cookie: JSESSIONID=A8F4049EE2A2CBDEA70EBD232328610A"</span> http://localhost:8080
+Hello Mattias!
+</code></pre></div></div>
+
+<p>The problem we are facing is that when we perform the same request on another instance of the application, the default response is returned despite that the session is provided:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-H</span> <span class="s2">"Cookie: JSESSIONID=A8F4049EE2A2CBDEA70EBD232328610A"</span> http://localhost:8081
+Hello World!
+</code></pre></div></div>
+
+<p>Enter Spring Session!</p>
+
+<h2 id="spring-session-architecture">Spring Session architecture</h2>
+
+<p>The idea behind Spring Session is pretty straight forward:</p>
+
+<ul>
+  <li>Create a new Servlet filter</li>
+  <li>Add the filter to the filter chain of your servlet</li>
+  <li>Connect the filter to the Redis connection (or an other <a href="http://docs.spring.io/spring-session/docs/1.0.1.RELEASE/reference/html5/#api-mapsessionrepository">MapSessionRepository</a> backed by Hazelcast, GemFire, Coherence or any other data grid that can give you a <code class="language-plaintext highlighter-rouge">Map</code> reference, but that is outside the scope of this blog)</li>
+</ul>
+
+<h2 id="adding-dependencies">Adding dependencies</h2>
+
+<p>First we need to add a couple of dependencies. If you use Maven, you can add the following lines to your pom:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupid&gt;</span>org.springframework.session<span class="nt">&lt;/groupid&gt;</span>
+    <span class="nt">&lt;artifactid&gt;</span>spring-session-data-redis<span class="nt">&lt;/artifactid&gt;</span>
+    <span class="nt">&lt;version&gt;</span>1.0.1.RELEASE<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupid&gt;</span>org.springframework<span class="nt">&lt;/groupid&gt;</span>
+    <span class="nt">&lt;artifactid&gt;</span>spring-web<span class="nt">&lt;/artifactid&gt;</span>
+    <span class="nt">&lt;version&gt;</span>4.1.6.RELEASE<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<p>The first dependency is required for the Redis connection, the second is required by Spring to create the servlet filter.</p>
+
+<h2 id="spring-session-config">Spring Session Config</h2>
+
+<p>Spring Session comes with support for Redis connection (based on the <a href="https://github.com/xetorthio/jedis">Jedis client</a> internally). You will find an example of a Spring XML based configuration below, but you can substitute that for a <a href="http://docs.spring.io/spring-session/docs/1.0.x/reference/html5/guides/httpsession.html#httpsession-spring-configuration">Java based configuration</a> instead.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!--?xml version="1.0" encoding="UTF-8"?--&gt;</span>
+<span class="nt">&lt;beans</span> <span class="na">xmlns=</span><span class="s">"http://www.springframework.org/schema/beans"</span> <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="na">xmlns:context=</span><span class="s">"http://www.springframework.org/schema/context"</span> <span class="na">xmlns:p=</span><span class="s">"http://www.springframework.org/schema/p"</span> <span class="na">xsi:schemalocation=</span><span class="s">"
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"</span><span class="nt">&gt;</span>
+
+    <span class="nt">&lt;context:annotation-config&gt;</span>
+
+    <span class="nt">&lt;bean</span> <span class="na">class=</span><span class="s">"org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;context:property-placeholder</span> <span class="na">location=</span><span class="s">"classpath:application.properties"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;bean</span> <span class="na">class=</span><span class="s">"org.springframework.data.redis.connection.jedis.JedisConnectionFactory"</span> <span class="na">p:port=</span><span class="s">"${spring.redis.port}"</span><span class="nt">&gt;&lt;/bean&gt;</span>
+        <span class="nt">&lt;/context:property-placeholder&gt;</span>
+    <span class="nt">&lt;/bean&gt;</span>
+    <span class="nt">&lt;/context:annotation-config&gt;</span>
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<p>The last two lines instruct Spring to look for an <code class="language-plaintext highlighter-rouge">application.properties</code> file with a <code class="language-plaintext highlighter-rouge">spring.redis.port</code> value. In this example, it is just a one-liner:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">spring.redis.port</span><span class="p">=</span><span class="s">6379</span>
+</code></pre></div></div>
+
+<h2 id="registering-the-spring-session-config">Registering the Spring Session Config</h2>
+
+<p>You need to add a few lines to the <code class="language-plaintext highlighter-rouge">web.xml</code> in order for the Spring Session configuration to be loaded (unless your application uses Spring already):</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;context-param&gt;</span>
+    <span class="nt">&lt;param-name&gt;</span>contextConfigLocation<span class="nt">&lt;/param-name&gt;</span>
+    <span class="nt">&lt;param-value&gt;</span>/WEB-INF/spring/*.xml<span class="nt">&lt;/param-value&gt;</span>
+<span class="nt">&lt;/context-param&gt;</span>
+
+<span class="nt">&lt;listener&gt;</span>
+    <span class="nt">&lt;listener-class&gt;</span>org.springframework.web.context.ContextLoaderListener<span class="nt">&lt;/listener-class&gt;</span>
+<span class="nt">&lt;/listener&gt;</span>
+</code></pre></div></div>
+
+<h2 id="adding-the-spring-session-servlet-filter">Adding the Spring Session servlet filter</h2>
+
+<p>The last change that is required in your application is that you add a new servlet filter. Open the <code class="language-plaintext highlighter-rouge">web.xml</code> again, and add these lines:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;filter&gt;</span>
+    <span class="nt">&lt;filter-name&gt;</span>springSessionRepositoryFilter<span class="nt">&lt;/filter-name&gt;</span>
+    <span class="nt">&lt;filter-class&gt;</span>org.springframework.web.filter.DelegatingFilterProxy<span class="nt">&lt;/filter-class&gt;</span>
+<span class="nt">&lt;/filter&gt;</span>
+<span class="nt">&lt;filter-mapping&gt;</span>
+    <span class="nt">&lt;filter-name&gt;</span>springSessionRepositoryFilter<span class="nt">&lt;/filter-name&gt;</span>
+    <span class="nt">&lt;url-pattern&gt;</span>/*<span class="nt">&lt;/url-pattern&gt;</span>
+<span class="nt">&lt;/filter-mapping&gt;</span>
+</code></pre></div></div>
+
+<p>You can see all required changes in a <a href="https://github.com/matsev/spring-session-example/commit/cab2883d637ebcbf176d9ce66b95891011face17">single commit</a>.</p>
+
+<h2 id="verification">Verification</h2>
+
+<p>Now that we have updated the application, it is time to verify that it works as expected.</p>
+
+<ul>
+  <li>Rebuild your application</li>
+  <li>Make sure that your Redis cluster is up and running at port <code class="language-plaintext highlighter-rouge">6379</code> (which is the default port). If it is running on different port, you need to update the <code class="language-plaintext highlighter-rouge">spring.redis.port</code> setting accordingly</li>
+  <li>Start two instances of the application, lets say one on port 8080 and one on port 8081, that are connected to the same Redis cluster</li>
+  <li>Issue the request as before</li>
+</ul>
+
+<p>First, POST the session state to one of the server instance:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-i</span> <span class="nt">-d</span> <span class="s2">"name=Mattias"</span> localhost:8080
+<span class="o">[</span>...]
+Set-Cookie: <span class="nv">SESSION</span><span class="o">=</span>12b70435-9e6a-4e67-b544-01394dd59da0<span class="p">;</span> <span class="nv">Path</span><span class="o">=</span>/<span class="p">;</span> HttpOnly
+<span class="o">[</span>...]
+</code></pre></div></div>
+
+<p>Verify the session state by making a GET request to the same instance:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-H</span> <span class="s2">"Cookie: SESSION=12b70435-9e6a-4e67-b544-01394dd59da0"</span> localhost:8080
+Hello Mattias!
+</code></pre></div></div>
+
+<p>And if we repeat the same request on the other server, we see that we have the same session data:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl <span class="nt">-H</span> <span class="s2">"Cookie: SESSION=12b70435-9e6a-4e67-b544-01394dd59da0"</span> localhost:8081
+Hello Mattias!
+</code></pre></div></div>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>You can start and stop server instances as you please without worrying about loosing sessions, i.e. failover and autoscaling is handled automatically from a session point of view.</li>
+  <li>You do not need sticky sessions or any advanced load balancer configuration. A simple round-robin strategy to distribute the load will suffice.</li>
+  <li>From an operations point of view there is still work to do. Someone needs to setup and manage the Redis cluster (<a href="http://aws.amazon.com/elasticache/">Amazon ElasticCache</a> is a good fit if you are running on AWS).</li>
+  <li>If you are using Spring Boot you probably do not want to add neither the <code class="language-plaintext highlighter-rouge">spring-session.xml</code> configuration nor the <code class="language-plaintext highlighter-rouge">web.xml</code>. Take a look at the <a href="http://docs.spring.io/spring-session/docs/1.0.x/reference/html5/guides/boot.html">Spring Boot Guide</a> to see what a Java based configuration may look like.</li>
+  <li>What if you are developing a RESTful API and do not like cookies? Take a look at <a href="http://docs.spring.io/spring-session/docs/1.0.x/reference/html5/guides/rest.html">Spring Session Rest</a>.</li>
+</ul>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Spring Session <a href="http://projects.spring.io/spring-session/">project page</a></li>
+  <li>Spring Session <a href="http://docs.spring.io/spring-session/docs/1.0.x/reference/html5/">reference docs</a></li>
+  <li>Spring Session <a href="https://github.com/spring-projects/spring-session">source code</a></li>
+  <li><a href="https://github.com/matsev/spring-session-example">source code</a> for the project above</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2015-05-31T00:00:00+02:00">May 31, 2015</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2014/12/07/junit-rule-and-spring-caches/" class="pagination--pager" title="jUnit @Rule and Spring Caches
+">Previous</a>
+    
+    
+      <a href="/blog/2015/11/23/reusing-spring-boots-dependency-management/" class="pagination--pager" title="Reusing Spring Boot’s Dependency Management
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,594 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Improve Your Spring REST API, Part III - Random Code Ramblings</title>
+<meta name="description" content="Some time ago, I wrote about how the error response of a Spring based REST API can be enhanced, in order to provide the clients with a better understanding of why a request error occurred. In the first post I explained how a server-side exception triggered by an incoming request can be translated into a generic ErrorMessage class, which in turn was serialized to the response body. In the second part, the solution was generalized, to prevent the @ExceptionHandler methods from being duplicated to all controllers. However, the release of Spring 3.2 last December provides a new feature which greatly simplifies the general solution.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Improve Your Spring REST API, Part III">
+<meta property="og:url" content="https://matsev.github.io/blog/2013/02/03/improve-your-spring-rest-api-part-iii/">
+
+
+  <meta property="og:description" content="Some time ago, I wrote about how the error response of a Spring based REST API can be enhanced, in order to provide the clients with a better understanding of why a request error occurred. In the first post I explained how a server-side exception triggered by an incoming request can be translated into a generic ErrorMessage class, which in turn was serialized to the response body. In the second part, the solution was generalized, to prevent the @ExceptionHandler methods from being duplicated to all controllers. However, the release of Spring 3.2 last December provides a new feature which greatly simplifies the general solution.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2013-02-03T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2013/02/03/improve-your-spring-rest-api-part-iii/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Improve Your Spring REST API, Part III">
+    <meta itemprop="description" content="Some time ago, I wrote about how the error response of a Spring based REST API can be enhanced, in order to provide the clients with a better understanding of why a request error occurred. In the first post I explained how a server-side exception triggered by an incoming request can be translated into a generic ErrorMessage class, which in turn was serialized to the response body. In the second part, the solution was generalized, to prevent the @ExceptionHandler methods from being duplicated to all controllers. However, the release of Spring 3.2 last December provides a new feature which greatly simplifies the general solution.">
+    <meta itemprop="datePublished" content="2013-02-03T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Improve Your Spring REST API, Part III
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#controlleradvice">@ControllerAdvice</a></li>
+  <li><a href="#responseentityexceptionhandler">ResponseEntityExceptionHandler</a></li>
+  <li><a href="#comments">Comments</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Some time ago, I wrote about how the error response of a Spring based REST API can be enhanced, in order to provide the clients with a better understanding of why a request error occurred. In the <a href="/blog/2012/09/16/improve-your-spring-rest-api-part-i/">first</a> post I explained how a server-side exception triggered by an incoming request can be translated into a generic <a href="https://gist.github.com/4519323#file-errormessage-java">ErrorMessage</a> class, which in turn was serialized to the response body. In the <a href="/blog/2012/09/23/improve-your-spring-rest-api-part-ii/">second</a> part, the solution was generalized, to prevent the <a href="http://static.springsource.org/spring/docs/3.2.x/spring-framework-reference/html/mvc.html#mvc-ann-exceptionhandler">@ExceptionHandler</a> methods from being duplicated to all controllers. However, the release of <a href="http://blog.springsource.org/2012/12/13/spring-framework-3-2-goes-ga/">Spring 3.2</a> last December provides a new feature which greatly simplifies the general solution.</p>
+
+<h2 id="controlleradvice">@ControllerAdvice</h2>
+
+<p>The <a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/ControllerAdvice.html">@ControllerAdvice</a> is a new <a href="http://docs.oracle.com/javase/7/docs/api/java/lang/annotation/ElementType.html?is-external=true#TYPE">TYPE</a> annotation that was added as part of the release. A class annotated with it will act as a global helper class for all controllers. In other words, any local, controller specific <code class="language-plaintext highlighter-rouge">@ExceptionHandler</code> method that is moved from the <code class="language-plaintext highlighter-rouge">@Controller</code> class to a class annotated with <code class="language-plaintext highlighter-rouge">@ControllerAdvice</code>, will be applicable for the entire application. Consequently, all the boiler plate code that was created in the generic solution in my last post can be removed. The revisited solution can be as simple as:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@ControllerAdvice</span>
+<span class="kd">class</span> <span class="nc">GlobalControllerExceptionHandler</span> <span class="o">{</span>
+    
+    <span class="nd">@ExceptionHandler</span>
+    <span class="nd">@ResponseStatus</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">BAD_REQUEST</span><span class="o">)</span>
+    <span class="nd">@ResponseBody</span>
+    <span class="nc">ErrorMessage</span> <span class="nf">handleException</span><span class="o">(</span><span class="nc">SomeException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ErrorMessage</span> <span class="n">errorMessage</span> <span class="o">=</span> <span class="n">createErrorMessage</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">errorMessage</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@ExceptionHandler</span>
+    <span class="nd">@ResponseStatus</span><span class="o">(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">GONE</span><span class="o">)</span>
+    <span class="nd">@ResponseBody</span>
+    <span class="nc">ErrorMessage</span> <span class="nf">handleException</span><span class="o">(</span><span class="nc">OtherException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ErrorMessage</span> <span class="n">errorMessage</span> <span class="o">=</span> <span class="n">createErrorMessage</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+        <span class="k">return</span> <span class="n">errorMessage</span><span class="o">;</span>
+    <span class="o">}</span>   
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The previous posts contained error handling examples of some Spring MVC exceptions, namely the <code class="language-plaintext highlighter-rouge">MethodArgumentNotValidException</code>, the <code class="language-plaintext highlighter-rouge">HttpMediaTypeNotSupportedException</code> and the <code class="language-plaintext highlighter-rouge">HttpMessageNotReadableException</code>. A corresponding Spring 3.2 based implementation can be found in the <a href="https://gist.github.com/4519323#file-globalcontrollerexceptionhandler-java">GlobalControllerExceptionHandler</a>, or continue reading for yet another implementation.</p>
+
+<h2 id="responseentityexceptionhandler">ResponseEntityExceptionHandler</h2>
+
+<p>The above example works well, but it can be hard to identify the Spring MVC specific exceptions to implement a common error response handling strategy for them. One way of overcoming this problem is to extend the <a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/mvc/method/annotation/ResponseEntityExceptionHandler.html">ResponseEntityExceptionHandler</a> class, which was also added to the Spring 3.2 release. Similarly to the <a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/mvc/support/DefaultHandlerExceptionResolver.html">DefaultHandlerExceptionResolver</a>, it provides methods for handling the exceptions, but it allows the developer to specify <a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/http/ResponseEntity.html">ResponseEntity</a>s as return values (as opposed to the <a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/ModelAndView.html">ModelAndView</a>s that are returned by the methods in the <code class="language-plaintext highlighter-rouge">DefaultHandlerExceptionResolver</code>). The implementation is still straight forward, create a class, annotate it with the <code class="language-plaintext highlighter-rouge">@ControllerAdvice</code>, extend the <code class="language-plaintext highlighter-rouge">ResponseEntityExceptionHandler</code> class and override the methods with the exception types that you are interested in:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@ControllerAdvice</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">CustomResponseEntityExceptionHandler</span> <span class="kd">extends</span> <span class="nc">ResponseEntityExceptionHandler</span> <span class="o">{</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">Object</span><span class="o">&gt;</span> <span class="nf">handleMethodArgumentNotValid</span><span class="o">(</span><span class="nc">MethodArgumentNotValidException</span> <span class="n">ex</span><span class="o">,</span> <span class="nc">HttpHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">HttpStatus</span> <span class="n">status</span><span class="o">,</span> <span class="nc">WebRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">FieldError</span><span class="o">&gt;</span> <span class="n">fieldErrors</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getFieldErrors</span><span class="o">();</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">ObjectError</span><span class="o">&gt;</span> <span class="n">globalErrors</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getBindingResult</span><span class="o">().</span><span class="na">getGlobalErrors</span><span class="o">();</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">errors</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;(</span><span class="n">fieldErrors</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">+</span> <span class="n">globalErrors</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+        <span class="nc">String</span> <span class="n">error</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">FieldError</span> <span class="n">fieldError</span> <span class="o">:</span> <span class="n">fieldErrors</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getField</span><span class="o">()</span> <span class="o">+</span> <span class="s">", "</span> <span class="o">+</span> <span class="n">fieldError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">();</span>
+            <span class="n">errors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">error</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">ObjectError</span> <span class="n">objectError</span> <span class="o">:</span> <span class="n">globalErrors</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">objectError</span><span class="o">.</span><span class="na">getObjectName</span><span class="o">()</span> <span class="o">+</span> <span class="s">", "</span> <span class="o">+</span> <span class="n">objectError</span><span class="o">.</span><span class="na">getDefaultMessage</span><span class="o">();</span>
+            <span class="n">errors</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">error</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="nc">ErrorMessage</span> <span class="n">errorMessage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ErrorMessage</span><span class="o">(</span><span class="n">errors</span><span class="o">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ResponseEntity</span><span class="o">(</span><span class="n">errorMessage</span><span class="o">,</span> <span class="n">headers</span><span class="o">,</span> <span class="n">status</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">Object</span><span class="o">&gt;</span> <span class="nf">handleHttpMediaTypeNotSupported</span><span class="o">(</span><span class="nc">HttpMediaTypeNotSupportedException</span> <span class="n">ex</span><span class="o">,</span> <span class="nc">HttpHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">HttpStatus</span> <span class="n">status</span><span class="o">,</span> <span class="nc">WebRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">unsupported</span> <span class="o">=</span> <span class="s">"Unsupported content type: "</span> <span class="o">+</span> <span class="n">ex</span><span class="o">.</span><span class="na">getContentType</span><span class="o">();</span>
+        <span class="nc">String</span> <span class="n">supported</span> <span class="o">=</span> <span class="s">"Supported content types: "</span> <span class="o">+</span> <span class="nc">MediaType</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">getSupportedMediaTypes</span><span class="o">());</span>
+        <span class="nc">ErrorMessage</span> <span class="n">errorMessage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ErrorMessage</span><span class="o">(</span><span class="n">unsupported</span><span class="o">,</span> <span class="n">supported</span><span class="o">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ResponseEntity</span><span class="o">(</span><span class="n">errorMessage</span><span class="o">,</span> <span class="n">headers</span><span class="o">,</span> <span class="n">status</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">Object</span><span class="o">&gt;</span> <span class="nf">handleHttpMessageNotReadable</span><span class="o">(</span><span class="nc">HttpMessageNotReadableException</span> <span class="n">ex</span><span class="o">,</span> <span class="nc">HttpHeaders</span> <span class="n">headers</span><span class="o">,</span> <span class="nc">HttpStatus</span> <span class="n">status</span><span class="o">,</span> <span class="nc">WebRequest</span> <span class="n">request</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Throwable</span> <span class="n">mostSpecificCause</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="na">getMostSpecificCause</span><span class="o">();</span>
+        <span class="nc">ErrorMessage</span> <span class="n">errorMessage</span><span class="o">;</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">mostSpecificCause</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="nc">String</span> <span class="n">exceptionName</span> <span class="o">=</span> <span class="n">mostSpecificCause</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getName</span><span class="o">();</span>
+            <span class="nc">String</span> <span class="n">message</span> <span class="o">=</span> <span class="n">mostSpecificCause</span><span class="o">.</span><span class="na">getMessage</span><span class="o">();</span>
+            <span class="n">errorMessage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ErrorMessage</span><span class="o">(</span><span class="n">exceptionName</span><span class="o">,</span> <span class="n">message</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">errorMessage</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ErrorMessage</span><span class="o">(</span><span class="n">ex</span><span class="o">.</span><span class="na">getMessage</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ResponseEntity</span><span class="o">(</span><span class="n">errorMessage</span><span class="o">,</span> <span class="n">headers</span><span class="o">,</span> <span class="n">status</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="comments">Comments</h2>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">@ControllerAdvice</code> annotation is an <code class="language-plaintext highlighter-rouge">@Component</code>. As such, an annotated class will be registered as a Spring bean if the package in which it is located in is subject to component scanning.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">@ControllerAdvice</code> also supports methods annotated with <a href="http://static.springsource.org/spring/docs/3.2.x/spring-framework-reference/html/mvc.html#mvc-ann-webdatabinder">@InitBinder</a> and <a href="http://static.springsource.org/spring/docs/3.2.x/spring-framework-reference/html/mvc.html#mvc-ann-modelattrib-methods">@ModelAttribute</a>.</li>
+</ul>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/web/bind/annotation/ControllerAdvice.html">@ControllerAdvice</a></li>
+  <li><a href="http://static.springsource.org/spring/docs/3.2.x/javadoc-api/org/springframework/web/servlet/mvc/method/annotation/ResponseEntityExceptionHandler.html">ResponseEntityExceptionHandler</a></li>
+  <li><a href="http://static.springsource.org/spring/docs/3.2.x/spring-framework-reference/html/mvc.html#mvc-ann-rest-spring-mvc-exceptions">Spring MVC Exceptions</a></li>
+  <li><a href="http://static.springsource.org/spring-framework/docs/3.2.0.RELEASE/spring-framework-reference/html/new-in-3.2.html">New Features and Enhancements in Spring Framework 3.2</a></li>
+  <li>Video about Spring <a href="http://www.youtube.com/watch?v=GSsWMLiKF-M#t=2994s">Error reporting in REST scenarios</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2013-02-03T00:00:00+01:00">February 3, 2013</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2012/09/23/improve-your-spring-rest-api-part-ii/" class="pagination--pager" title="Improve Your Spring REST API, Part II
+">Previous</a>
+    
+    
+      <a href="/blog/2013/03/07/scandinavian-developer-conference-report/" class="pagination--pager" title="Scandinavian Developer Conference Report
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

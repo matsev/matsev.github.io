@@ -1,0 +1,639 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>AWS Glue Dev Endpoint Deleter - Random Code Ramblings</title>
+<meta name="description" content="Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them on a scheduled interval.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="AWS Glue Dev Endpoint Deleter">
+<meta property="og:url" content="https://matsev.github.io/blog/2018/07/03/aws-glue-dev-endpoint-deleter/">
+
+
+  <meta property="og:description" content="Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them on a scheduled interval.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2018-07-03T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2018/07/03/aws-glue-dev-endpoint-deleter/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="AWS Glue Dev Endpoint Deleter">
+    <meta itemprop="description" content="Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them on a scheduled interval.">
+    <meta itemprop="datePublished" content="2018-07-03T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">AWS Glue Dev Endpoint Deleter
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#background">Background</a></li>
+  <li><a href="#outline">Outline</a></li>
+  <li><a href="#solution">Solution</a></li>
+  <li><a href="#resources">Resources</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>Development of AWS Glue scripts can potentially add unnecessary expenses to your invoice if you are not careful. This blog post shows one way to avoid some of the cost in an automated fashion by using AWS CloudFormation and AWS Lambda.</p>
+
+<h2 id="background">Background</h2>
+
+<p>A while ago, I had the opportunity to explore <a href="https://aws.amazon.com/glue/">AWS Glue</a>, a serverless extract, transform and load (ETL) service from AWS. The AWS Glue service offering also includes an optional developer endpoint, a hosted <a href="https://zeppelin.apache.org/">Apache Zeppelin</a> notebook, that facilitates the development and testing of AWS Glue scripts in an interactive manner. Typically, you only pay for the compute resources consumed while running your ETL job. However, in contrast to the rest of AWS Glue family, usage of developer endpoints are charged hourly, regardless if you actively use them or not. You can see this when launching a dev endpoint from the AWS Console:</p>
+
+<blockquote>
+  <p>Billing for a development endpoint is based on the Data Processing Unit (DPU) hours used during the entire time it remains in the READY state. To stop charges, delete the endpoint. To delete, choose the endpoint in the list, and then choose Action, Delete.</p>
+</blockquote>
+
+<p>Is this something that we should care about? Each dev endpoint gets 5 DPUs by default (with a minimum of 2 DPUs), and they are currently <a href="https://aws.amazon.com/glue/pricing/">priced at $0.44 per DPU-hour</a> (billed per second, 10 minutes minimum). Put it differently, you pay $2.20 per hour or $52.80 per day for the default configuration (or more than $100 for a weekend if you forget to delete your endpoint before you go home for the weekend which I did). For me, this was expensive enough to motivate an automatic dev endpoint deleter.</p>
+
+<h2 id="outline">Outline</h2>
+
+<p>The solution consists of the following components:</p>
+
+<ul>
+  <li>A Lambda function that lists all Glue developer endpoints and subsequently deletes them.</li>
+  <li>A CloudWatch Event that triggers the Lambda function at scheduled intervals (typically at the end of each workday).</li>
+  <li>A Lambda Permission that allows the CloudWatch Event to invoke the Lambda function.</li>
+  <li>An IAM Role that allows the Lambda function to get and delete the Glue developer endpoints.</li>
+  <li>A CloudFormation template that comprises all resources. Thus, the stack can be re-used across AWS accounts and AWS regions.</li>
+</ul>
+
+<h2 id="solution">Solution</h2>
+
+<p>The entire solution is presented in the CloudFormation template below. By inlining the Lambda source code into the template a single file is enough for both the infrastructure as well as the application logic. I have chosen to declare the cron expression as a parameter. I have scheduled the CloudWatch Events to trigger the Lambda when I leave the office, typically at 5PM. Since the cron expression is given in UTC the actual time will depend on daylight saving. A cron expression of <code class="language-plaintext highlighter-rouge">0 16 * * ? *</code> translates to 5PM CET (Central European Time) in the winter and 6PM CEST (Central European Summer Time) in the summer.</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">AWSTemplateFormatVersion</span><span class="pi">:</span> <span class="s">2010-09-09</span>
+<span class="na">Description</span><span class="pi">:</span> <span class="s">Stack that deletes all Glue Developer Endpoints in a region</span>
+
+<span class="na">Parameters</span><span class="pi">:</span>
+
+  <span class="na">CronExpression</span><span class="pi">:</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s">String</span>
+    <span class="na">Description</span><span class="pi">:</span> <span class="s">The cron expression for triggering the Glue Dev endpoint deletion (in UTC)</span>
+    <span class="na">Default</span><span class="pi">:</span> <span class="s">0 16 * * ? *</span>
+    <span class="na">ConstraintDescription</span><span class="pi">:</span> <span class="s">Must be a valid cron expression</span>
+
+
+<span class="na">Resources</span><span class="pi">:</span>
+
+  <span class="na">DeleteGlueEndpointsLambda</span><span class="pi">:</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::Lambda::Function</span>
+    <span class="na">Properties</span><span class="pi">:</span>
+      <span class="na">Description</span><span class="pi">:</span> <span class="s">A Lambda function that gets and deletes the AWS Glue Dev endpoints</span>
+      <span class="na">Handler</span><span class="pi">:</span> <span class="s">index.handler</span>
+      <span class="na">Code</span><span class="pi">:</span>
+        <span class="na">ZipFile</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">'use strict';</span>
+
+          <span class="s">const AWS = require('aws-sdk');</span>
+          <span class="s">const glue = new AWS.Glue({apiVersion: '2017-03-31'});</span>
+
+          <span class="s">function deleteDevEndpoints(endpointNames) {</span>
+            <span class="s">console.info('Deleting Glue DevEndpoints:', JSON.stringify(endpointNames));</span>
+            <span class="s">const promises = endpointNames</span>
+              <span class="s">.map(params =&gt; {</span>
+                <span class="s">return glue.deleteDevEndpoint(params).promise()</span>
+                  <span class="s">.then(data =&gt; {</span>
+                    <span class="s">console.info('Deleted:', JSON.stringify(params));</span>
+                    <span class="s">return data;</span>
+                  <span class="s">});</span>
+              <span class="s">});</span>
+            <span class="s">return Promise.all(promises);</span>
+          <span class="s">}</span>
+
+          <span class="s">function extractEndPointNames(data) {</span>
+            <span class="s">return data.DevEndpoints</span>
+              <span class="s">.map(({ EndpointName }) =&gt; ({ EndpointName }));</span>
+          <span class="s">}</span>
+
+          <span class="s">exports.handler = (event, context, callback) =&gt; {</span>
+            <span class="s">console.info('Event:', JSON.stringify(event));</span>
+            <span class="s">glue.getDevEndpoints().promise()</span>
+              <span class="s">.then(extractEndPointNames)</span>
+              <span class="s">.then(deleteDevEndpoints)</span>
+              <span class="s">.then(data =&gt; {</span>
+                <span class="s">callback(null, data);</span>
+              <span class="s">})</span>
+              <span class="s">.catch(callback);</span>
+          <span class="s">};</span>
+      <span class="na">Role</span><span class="pi">:</span> <span class="kt">!GetAtt</span> <span class="s">LambdaExecutionRole.Arn</span>
+      <span class="na">Runtime</span><span class="pi">:</span> <span class="s">nodejs6.10</span>
+
+  <span class="na">TriggerRule</span><span class="pi">:</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::Events::Rule</span>
+    <span class="na">Properties</span><span class="pi">:</span>
+      <span class="na">Description</span><span class="pi">:</span> <span class="s">Trigger for the DeleteGlueEndpointsLambda</span>
+      <span class="na">ScheduleExpression</span><span class="pi">:</span> <span class="kt">!Sub</span> <span class="s">cron(${CronExpression})</span>
+      <span class="na">Targets</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">Arn</span><span class="pi">:</span> <span class="kt">!GetAtt</span> <span class="s">DeleteGlueEndpointsLambda.Arn</span>
+        <span class="na">Id</span><span class="pi">:</span> <span class="s">TriggerId</span>
+
+  <span class="na">InvokeLambdaPermission</span><span class="pi">:</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::Lambda::Permission</span>
+    <span class="na">Properties</span><span class="pi">:</span>
+      <span class="na">FunctionName</span><span class="pi">:</span> <span class="kt">!GetAtt</span> <span class="s">DeleteGlueEndpointsLambda.Arn</span>
+      <span class="na">Action</span><span class="pi">:</span> <span class="s">lambda:InvokeFunction</span>
+      <span class="na">Principal</span><span class="pi">:</span> <span class="s">events.amazonaws.com</span>
+      <span class="na">SourceArn</span><span class="pi">:</span> <span class="kt">!GetAtt</span> <span class="s">TriggerRule.Arn</span>
+
+  <span class="na">LambdaExecutionRole</span><span class="pi">:</span>
+    <span class="na">Type</span><span class="pi">:</span> <span class="s">AWS::IAM::Role</span>
+    <span class="na">Properties</span><span class="pi">:</span>
+      <span class="na">AssumeRolePolicyDocument</span><span class="pi">:</span>
+        <span class="na">Version</span><span class="pi">:</span> <span class="s">2012-10-17</span>
+        <span class="na">Statement</span><span class="pi">:</span>
+          <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+            <span class="na">Principal</span><span class="pi">:</span>
+              <span class="na">Service</span><span class="pi">:</span> <span class="s">lambda.amazonaws.com</span>
+            <span class="na">Action</span><span class="pi">:</span> <span class="s">sts:AssumeRole</span>
+      <span class="na">ManagedPolicyArns</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole</span>
+      <span class="na">Policies</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="na">PolicyName</span><span class="pi">:</span> <span class="s">GlueDeleteEndpointPolicy</span>
+          <span class="na">PolicyDocument</span><span class="pi">:</span>
+            <span class="na">Version</span><span class="pi">:</span> <span class="s">2012-10-17</span>
+            <span class="na">Statement</span><span class="pi">:</span>
+              <span class="pi">-</span> <span class="na">Effect</span><span class="pi">:</span> <span class="s">Allow</span>
+                <span class="na">Action</span><span class="pi">:</span>
+                  <span class="pi">-</span> <span class="s">glue:GetDevEndpoint</span>
+                  <span class="pi">-</span> <span class="s">glue:GetDevEndpoints</span>
+                  <span class="pi">-</span> <span class="s">glue:DeleteDevEndpoint</span>
+                <span class="na">Resource</span><span class="pi">:</span>
+                  <span class="pi">-</span> <span class="s1">'</span><span class="s">*'</span>
+</code></pre></div></div>
+
+<h2 id="resources">Resources</h2>
+
+<p>The AWS documentation is comprehensive, yet it can be hard to navigate. Here are some links that you may find useful:</p>
+
+<ul>
+  <li><a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/ScheduledEvents.html">Schedule Expressions for Rules</a></li>
+  <li><a href="https://docs.aws.amazon.com/lambda/latest/dg/intro-permission-model.html">AWS Lambda Permissions Model</a></li>
+  <li><a href="https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html">CloudFormation Resource Types Reference</a></li>
+  <li><a href="https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html">Lambda Function Handler</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2018-07-03T00:00:00+02:00">July 3, 2018</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2017/11/22/aws-cli-mfa/" class="pagination--pager" title="AWS CLI MFA
+">Previous</a>
+    
+    
+      <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" class="pagination--pager" title="AWS Elasticsearch JavaScript Client
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2016/11/06/introduction-to-claudia-js/" rel="permalink">Introduction to Claudia.js
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Introduction to the Claudia.js deployment tool for AWS Lambda and AWS API Gateway. Some basic installation guides and a simple code example is provided.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,962 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Asynchronous Spring Service - Random Code Ramblings</title>
+<meta name="description" content="An example of how you can implement an asynchronous web server based on Spring 4.0.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Asynchronous Spring Service">
+<meta property="og:url" content="https://matsev.github.io/blog/2014/09/09/asynchronous-spring-service/">
+
+
+  <meta property="og:description" content="An example of how you can implement an asynchronous web server based on Spring 4.0.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2014-09-09T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2014/09/09/asynchronous-spring-service/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Asynchronous Spring Service">
+    <meta itemprop="description" content="An example of how you can implement an asynchronous web server based on Spring 4.0.">
+    <meta itemprop="datePublished" content="2014-09-09T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Asynchronous Spring Service
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#problem">Problem</a></li>
+  <li><a href="#remote-server-communication">Remote Server Communication</a></li>
+  <li><a href="#asynchronous-object-transformation">Asynchronous Object Transformation</a></li>
+  <li><a href="#controller">Controller</a></li>
+  <li><a href="#glue-code">Glue Code</a></li>
+  <li><a href="#build-script">Build script</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+  <li><a href="#result">Result</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>It is not unusual that your web service needs to communicate with another web service in order to serve its clients. In the old days, that would imply that an incoming request to your server would capture one servlet connection, and perform a blocking call to the remote service before it can send a response to the client. It works, but it does not scale very well if you have multiple concurrent clients. However, as of Servlet 3.0 we have support for asynchronous servlets (see my colleague Henrik’s <a href="https://blog.jayway.com/2014/05/16/async-servlets/">blog post</a>), and as of Servlet 3.1 it also supports <a href="https://blogs.oracle.com/arungupta/entry/what_s_new_in_servlet">non-blocking I/O</a> which means that we can get a significantly increased throughput.</p>
+
+<h2 id="problem">Problem</h2>
+
+<p>In this blog post, we will implement an asynchronous servlet that talks to a remote server using Spring. For demonstration purposes, <a href="https://developer.github.com/v3/search/#search-repositories">GitHub’s repository search API</a> will be used as the remote service. The problem is basically divided into three main classes:</p>
+
+<ul>
+  <li>A <a href="“#remote-server-communication”">GitHubRepoListService</a> has been implemented using the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/spring-framework-reference/html/remoting.html#rest-async-resttemplate">AsyncRestTemplate</a> to communicate with a remote service.</li>
+  <li>The <a href="“#async-response-transformation”">RepositoryListDtoAdapter</a> is responsible for converting the response extracted from the <code class="language-plaintext highlighter-rouge">AsyncRestTemplate</code> from Pojos specific to the GitHub response to other Pojos more suitable for the clients of our service. As such, it also acts as an anti-corruption layer between GitHub and the rest of our service implementation.</li>
+  <li>Lastly, there is the <a href="“#controller”">AsyncController</a> that is the entry point for our clients.</li>
+</ul>
+
+<p>Of course, the service would not compile without some <a href="#glue-code">glue code</a> and a <a href="#build-script">build script</a>. For reference, the project is available on <a href="https://github.com/matsev/asyncservletdemo">GitHub</a>.</p>
+
+<p><a name="remote-server-communication"></a></p>
+<h2 id="remote-server-communication">Remote Server Communication</h2>
+
+<p>First, we implement a server that uses a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/web/client/AsyncRestTemplate.html">AsyncRestTemplate</a> to communicate with GitHub:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Service</span>
+<span class="kd">class</span> <span class="nc">GitHubRepoListService</span> <span class="kd">implements</span> <span class="nc">RepoListService</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">String</span> <span class="no">SEARCH_URL</span> <span class="o">=</span> <span class="s">"https://api.github.com/search/repositories?q={query}"</span><span class="o">;</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">AsyncRestTemplate</span> <span class="n">asyncRestTemplate</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">ListenableFuture</span><span class="o">&lt;</span><span class="nc">RepoListDto</span><span class="o">&gt;</span> <span class="nf">search</span><span class="o">(</span><span class="nc">String</span> <span class="n">query</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">ListenableFuture</span><span class="o">&lt;</span><span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">GitHubItems</span><span class="o">&gt;&gt;</span> <span class="n">gitHubItems</span> <span class="o">=</span> 
+            <span class="n">asyncRestTemplate</span><span class="o">.</span><span class="na">getForEntity</span><span class="o">(</span><span class="no">QUESTIONS_URL</span><span class="o">,</span> <span class="nc">GitHubItems</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">query</span><span class="o">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">RepositoryListDtoAdapter</span><span class="o">(</span><span class="n">query</span><span class="o">,</span> <span class="n">gitHubItems</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The response of the <code class="language-plaintext highlighter-rouge">AsyncRestTemplate</code> request is a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/util/concurrent/ListenableFuture.html">ListenableFuture</a> that eventually will reference a <code class="language-plaintext highlighter-rouge">GitHubItems</code>, which is then wrapped in a custom <code class="language-plaintext highlighter-rouge">RepositoryListDtoAdapter</code> that converts it to a <code class="language-plaintext highlighter-rouge">ListenableFuture&lt;RepoListDto&gt;</code>, see below.</p>
+
+<h2 id="asynchronous-object-transformation">Asynchronous Object Transformation</h2>
+
+<p>If you have not used the <code class="language-plaintext highlighter-rouge">AsyncRestTemplate</code> or if you are not used to asynchronous Java programming, you may find that transforming one object to another is more complex than one would expect. It may be tempting to just call <code class="language-plaintext highlighter-rouge">gitHubItems.get()</code> to fetch the response entity and then continue from there, but remember that we are dealing with a future which means that the <code class="language-plaintext highlighter-rouge">get()</code>method is a blocking call that waits for the future to complete before returning. A better solution is to use the <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/util/concurrent/ListenableFutureAdapter.html">ListenableFutureAdapter</a> which can then do the transformation in an asynchronous way:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">RepositoryListDtoAdapter</span> <span class="kd">extends</span> <span class="nc">ListenableFutureAdapter</span><span class="o">&lt;</span><span class="nc">RepoListDto</span><span class="o">,</span> <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">GitHubItems</span><span class="o">&gt;&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">query</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">RepositoryListDtoAdapter</span><span class="o">(</span><span class="nc">String</span> <span class="n">query</span><span class="o">,</span> <span class="nc">ListenableFuture</span><span class="o">&lt;</span><span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">GitHubItems</span><span class="o">&gt;&gt;</span> <span class="n">gitHubItems</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="n">gitHubItems</span><span class="o">);</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="nc">RepoListDto</span> <span class="nf">adapt</span><span class="o">(</span><span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">GitHubItems</span><span class="o">&gt;</span> <span class="n">responseEntity</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">ExecutionException</span> <span class="o">{</span>
+        <span class="nc">GitHubItems</span> <span class="n">gitHubItems</span> <span class="o">=</span> <span class="n">responseEntity</span><span class="o">.</span><span class="na">getBody</span><span class="o">();</span>
+        <span class="nc">List</span><span class="o">&lt;</span><span class="nc">RepoDto</span><span class="o">&gt;</span> <span class="n">repoDtos</span> <span class="o">=</span> <span class="n">gitHubItems</span><span class="o">.</span><span class="na">items</span><span class="o">().</span><span class="na">stream</span><span class="o">()</span>
+            <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">toRepositoryDto</span><span class="o">).</span><span class="na">collect</span><span class="o">(</span><span class="nc">Collectors</span><span class="o">.</span><span class="na">toList</span><span class="o">());</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">RepoListDto</span><span class="o">(</span><span class="n">query</span><span class="o">,</span> <span class="n">gitHubItems</span><span class="o">.</span><span class="na">totalCount</span><span class="o">(),</span> <span class="n">repoDtos</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="nc">Function</span><span class="o">&lt;</span><span class="nc">GitHubItem</span><span class="o">,</span> <span class="nc">RepoDto</span><span class="o">&gt;</span> <span class="n">toRepositoryDto</span> <span class="o">=</span> <span class="n">item</span> <span class="o">-&gt;</span> <span class="o">{</span>
+        <span class="nc">GitHubOwner</span> <span class="n">owner</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="na">owner</span><span class="o">();</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">RepoDto</span><span class="o">(</span><span class="n">item</span><span class="o">.</span><span class="na">fullName</span><span class="o">(),</span> <span class="n">item</span><span class="o">.</span><span class="na">getUrl</span><span class="o">(),</span> <span class="n">item</span><span class="o">.</span><span class="na">description</span><span class="o">(),</span>
+                            <span class="n">owner</span><span class="o">.</span><span class="na">userName</span><span class="o">(),</span> <span class="n">owner</span><span class="o">.</span><span class="na">url</span><span class="o">(),</span> <span class="n">owner</span><span class="o">.</span><span class="na">avatarUrl</span><span class="o">());</span>
+    <span class="o">};</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="controller">Controller</h2>
+
+<p>The frontend of our service is a controller that maps incoming requests, extracts the <code class="language-plaintext highlighter-rouge">query</code> parameter and delegate to the <code class="language-plaintext highlighter-rouge">RepoListService</code> to do the remote call as described earlier. We need to convert the <code class="language-plaintext highlighter-rouge">ListableFuture</code> to a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/web/context/request/async/DeferredResult.html">DeferredResult</a> before returning it to our clients in order to take advantage of Spring’s <a href="http://docs.spring.io/spring-framework/docs/4.0.x/spring-framework-reference/html/mvc.html#mvc-ann-async">asynchronous request processing</a> (see also <a href="#considerations">Considerations</a>). For this reason, we create a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/util/concurrent/ListenableFutureCallback.html">ListenableFutureCallback</a> that we add to the <code class="language-plaintext highlighter-rouge">ListenableFuture</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RestController</span>
+<span class="kd">class</span> <span class="nc">AsyncController</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">Logger</span> <span class="n">log</span> <span class="o">=</span> <span class="nc">LoggerFactory</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="nc">AsyncController</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">RepoListService</span> <span class="n">repoListService</span><span class="o">;</span>
+
+    <span class="nd">@RequestMapping</span><span class="o">(</span><span class="s">"/async"</span><span class="o">)</span>
+    <span class="nc">DeferredResult</span><span class="o">&lt;</span><span class="nc">ResponseEntity</span><span class="o">&lt;?&gt;&gt;</span> <span class="n">async</span><span class="o">(</span><span class="nd">@RequestParam</span><span class="o">(</span><span class="s">"q"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">query</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">DeferredResult</span><span class="o">&lt;</span><span class="nc">ResponseEntity</span><span class="o">&lt;?&gt;&gt;</span> <span class="n">deferredResult</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DeferredResult</span><span class="o">&lt;&gt;();</span>
+        <span class="nc">ListenableFuture</span><span class="o">&lt;</span><span class="nc">RepoListDto</span><span class="o">&gt;</span> <span class="n">repositoryListDto</span> <span class="o">=</span> <span class="n">repoListService</span><span class="o">.</span><span class="na">search</span><span class="o">(</span><span class="n">query</span><span class="o">);</span>
+        <span class="n">repositoryListDto</span><span class="o">.</span><span class="na">addCallback</span><span class="o">(</span>
+                <span class="k">new</span> <span class="nc">ListenableFutureCallback</span><span class="o">&lt;</span><span class="nc">RepoListDto</span><span class="o">&gt;()</span> <span class="o">{</span>
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSuccess</span><span class="o">(</span><span class="nc">RepoListDto</span> <span class="n">result</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">RepoListDto</span><span class="o">&gt;</span> <span class="n">responseEntity</span> <span class="o">=</span> 
+                            <span class="k">new</span> <span class="nc">ResponseEntity</span><span class="o">&lt;&gt;(</span><span class="n">result</span><span class="o">,</span> <span class="nc">HttpStatus</span><span class="o">.</span><span class="na">OK</span><span class="o">);</span>
+                        <span class="n">deferredResult</span><span class="o">.</span><span class="na">setResult</span><span class="o">(</span><span class="n">responseEntity</span><span class="o">);</span>
+                    <span class="o">}</span>
+
+                    <span class="nd">@Override</span>
+                    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onFailure</span><span class="o">(</span><span class="nc">Throwable</span> <span class="n">t</span><span class="o">)</span> <span class="o">{</span>
+                        <span class="n">log</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">"Failed to fetch result from remote service"</span><span class="o">,</span> <span class="n">t</span><span class="o">);</span>
+                        <span class="nc">ResponseEntity</span><span class="o">&lt;</span><span class="nc">Void</span><span class="o">&gt;</span> <span class="n">responseEntity</span> <span class="o">=</span> 
+                            <span class="k">new</span> <span class="nc">ResponseEntity</span><span class="o">&lt;&gt;(</span><span class="nc">HttpStatus</span><span class="o">.</span><span class="na">SERVICE_UNAVAILABLE</span><span class="o">);</span>
+                        <span class="n">deferredResult</span><span class="o">.</span><span class="na">setResult</span><span class="o">(</span><span class="n">responseEntity</span><span class="o">);</span>
+                    <span class="o">}</span>
+                <span class="o">}</span>
+        <span class="o">);</span>
+        <span class="k">return</span> <span class="n">deferredResult</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ListenableFutureCallback</code> interface has two methods that we need to implement. If all goes well, the <code class="language-plaintext highlighter-rouge">onSuccess()</code> method is called. Consequently, the response that is transformed by the <code class="language-plaintext highlighter-rouge">RepositoryListDtoAdapter</code> is wrapped in a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/http/ResponseEntity.html">ResponseEntity</a> together with a success status, which in turn is passed to the <code class="language-plaintext highlighter-rouge">DeferredResult</code> instance. If something goes wrong, the <code class="language-plaintext highlighter-rouge">onFailure()</code> method is called, an empty response entity with a failure status code is created instead.</p>
+
+<h2 id="glue-code">Glue Code</h2>
+
+<p>Since the project is implemented using Spring Boot, we use a simple <code class="language-plaintext highlighter-rouge">Application</code> class to configure Spring:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@ComponentScan</span>
+<span class="nd">@EnableAutoConfiguration</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Application</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">SpringApplication</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="nc">Application</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Bean</span>
+    <span class="nc">AsyncRestTemplate</span> <span class="nf">asyncRestTemplate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">AsyncRestTemplate</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The rest of the code is basically plumbing to handle the serialization and deserialization of requests and responses. The JSON response from GitHub is mapped to <code class="language-plaintext highlighter-rouge">GitHubItems</code> by the <code class="language-plaintext highlighter-rouge">AsyncRestTemplate</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@JsonIgnoreProperties</span><span class="o">(</span><span class="n">ignoreUnknown</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">GitHubItems</span> <span class="o">{</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"total_count"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kt">int</span> <span class="n">totalCount</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"items"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">GitHubItem</span><span class="o">&gt;</span> <span class="n">items</span><span class="o">;</span>
+
+    <span class="kt">int</span> <span class="nf">totalCount</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">totalCount</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">GitHubItem</span><span class="o">&gt;</span> <span class="nf">items</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">items</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">GitHubItem</code> is implemented like:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@JsonIgnoreProperties</span><span class="o">(</span><span class="n">ignoreUnknown</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">GitHubItem</span> <span class="o">{</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"full_name"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">fullName</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"html_url"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="no">URL</span> <span class="n">url</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"description"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">description</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"owner"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">GitHubOwner</span> <span class="n">owner</span><span class="o">;</span>
+
+    <span class="nc">String</span> <span class="nf">fullName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">fullName</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="no">URL</span> <span class="nf">getUrl</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">url</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nc">String</span> <span class="nf">description</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">description</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nc">GitHubOwner</span> <span class="nf">owner</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">owner</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>and the <code class="language-plaintext highlighter-rouge">GitHubOwner</code> is implemented as:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@JsonIgnoreProperties</span><span class="o">(</span><span class="n">ignoreUnknown</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">class</span> <span class="nc">GitHubOwner</span> <span class="o">{</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"login"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">userName</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"html_url"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="no">URL</span> <span class="n">url</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"avatar_url"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="no">URL</span> <span class="n">avatarUrl</span><span class="o">;</span>
+
+    <span class="nc">String</span> <span class="nf">userName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">userName</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="no">URL</span> <span class="nf">url</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">url</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="no">URL</span> <span class="nf">avatarUrl</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">avatarUrl</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The response that is sent to the client consists of two Pojos. At the top level, there is a <code class="language-plaintext highlighter-rouge">RepoListDto</code> that contains information about the client’s search query, the total number of repositories at GitHub that matched the query and a list of <code class="language-plaintext highlighter-rouge">RepoDto</code>s that represents each repository:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RepoListDto</span> <span class="o">{</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"query"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">query</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"nbr_of_repositories"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">nbrOfRepositories</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"repositories"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span>  <span class="nc">List</span><span class="o">&lt;</span><span class="nc">RepoDto</span><span class="o">&gt;</span> <span class="n">repositories</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">RepoListDto</span><span class="o">(</span><span class="nc">String</span> <span class="n">query</span><span class="o">,</span> <span class="kt">int</span> <span class="n">nbrOfRepositories</span><span class="o">,</span> <span class="nc">List</span><span class="o">&lt;</span><span class="nc">RepoDto</span><span class="o">&gt;</span> <span class="n">repositories</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">query</span> <span class="o">=</span> <span class="n">query</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">nbrOfRepositories</span> <span class="o">=</span> <span class="n">nbrOfRepositories</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">repositories</span> <span class="o">=</span> <span class="n">repositories</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Each individual GitHub repository is presented as a <code class="language-plaintext highlighter-rouge">RepoDto</code>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RepoDto</span> <span class="o">{</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"name"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"url"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="no">URL</span> <span class="n">url</span><span class="o">;</span>
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"description"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">description</span><span class="o">;</span>
+
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"owner"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">String</span> <span class="n">owner</span><span class="o">;</span>
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"owner_url"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="no">URL</span> <span class="n">ownerUrl</span><span class="o">;</span>
+    <span class="nd">@JsonProperty</span><span class="o">(</span><span class="s">"owner_avatar"</span><span class="o">)</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="no">URL</span> <span class="n">ownerAvatar</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">RepoDto</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="no">URL</span> <span class="n">url</span><span class="o">,</span> <span class="nc">String</span> <span class="n">description</span><span class="o">,</span> <span class="nc">String</span> <span class="n">owner</span><span class="o">,</span> <span class="no">URL</span> <span class="n">ownerUrl</span><span class="o">,</span> <span class="no">URL</span> <span class="n">ownerAvatar</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">description</span> <span class="o">=</span> <span class="n">description</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">owner</span> <span class="o">=</span> <span class="n">owner</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ownerUrl</span> <span class="o">=</span> <span class="n">ownerUrl</span><span class="o">;</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">ownerAvatar</span> <span class="o">=</span> <span class="n">ownerAvatar</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="build-script">Build script</h2>
+
+<p>The project was built using Maven and the following <code class="language-plaintext highlighter-rouge">pom.xml</code>:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">&lt;!--?xml version="1.0" encoding="UTF-8"?--&gt;</span>
+<span class="nt">&lt;project</span> <span class="na">xmlns=</span><span class="s">"http://maven.apache.org/POM/4.0.0"</span> <span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span> <span class="na">xsi:schemalocation=</span><span class="s">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;modelversion&gt;</span>4.0.0<span class="nt">&lt;/modelversion&gt;</span>
+
+    <span class="nt">&lt;groupid&gt;</span>com.jayway.asyncservlet<span class="nt">&lt;/groupid&gt;</span>
+    <span class="nt">&lt;artifactid&gt;</span>demo<span class="nt">&lt;/artifactid&gt;</span>
+    <span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
+
+    <span class="nt">&lt;name&gt;</span>AsyncServlet<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;description&gt;</span>Demo project of how an asynchronous server can use an AsyncRestTemplate<span class="nt">&lt;/description&gt;</span>
+
+    <span class="nt">&lt;parent&gt;</span>
+        <span class="nt">&lt;groupid&gt;</span>org.springframework.boot<span class="nt">&lt;/groupid&gt;</span>
+        <span class="nt">&lt;artifactid&gt;</span>spring-boot-starter-parent<span class="nt">&lt;/artifactid&gt;</span>
+        <span class="nt">&lt;version&gt;</span>1.1.6.RELEASE<span class="nt">&lt;/version&gt;</span>
+        <span class="nt">&lt;relativepath&gt;</span>
+    <span class="nt">&lt;/relativepath&gt;&lt;/parent&gt;</span>
+
+    <span class="nt">&lt;dependencies&gt;</span>
+        <span class="nt">&lt;dependency&gt;</span>
+            <span class="nt">&lt;groupid&gt;</span>org.springframework.boot<span class="nt">&lt;/groupid&gt;</span>
+            <span class="nt">&lt;artifactid&gt;</span>spring-boot-starter-web<span class="nt">&lt;/artifactid&gt;</span>
+        <span class="nt">&lt;/dependency&gt;</span>
+        <span class="nt">&lt;dependency&gt;</span>
+            <span class="nt">&lt;groupid&gt;</span>org.apache.httpcomponents<span class="nt">&lt;/groupid&gt;</span>
+            <span class="nt">&lt;artifactid&gt;</span>httpasyncclient<span class="nt">&lt;/artifactid&gt;</span>
+        <span class="nt">&lt;/dependency&gt;</span>
+        <span class="nt">&lt;dependency&gt;</span>
+            <span class="nt">&lt;groupid&gt;</span>org.springframework.boot<span class="nt">&lt;/groupid&gt;</span>
+            <span class="nt">&lt;artifactid&gt;</span>spring-boot-starter-test<span class="nt">&lt;/artifactid&gt;</span>
+            <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>
+        <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;/dependencies&gt;</span>
+
+    <span class="nt">&lt;properties&gt;</span>
+        <span class="nt">&lt;project.build.sourceencoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceencoding&gt;</span>
+        <span class="nt">&lt;start-class&gt;</span>com.jayway.asyncservlet.Application<span class="nt">&lt;/start-class&gt;</span>
+        <span class="nt">&lt;java.version&gt;</span>1.8<span class="nt">&lt;/java.version&gt;</span>
+        <span class="nt">&lt;servlet-api.version&gt;</span>3.1.0<span class="nt">&lt;/servlet-api.version&gt;</span>
+        <span class="nt">&lt;tomcat.version&gt;</span>8.0.12<span class="nt">&lt;/tomcat.version&gt;</span>
+    <span class="nt">&lt;/properties&gt;</span>
+
+    <span class="nt">&lt;build&gt;</span>
+        <span class="nt">&lt;plugins&gt;</span>
+            <span class="nt">&lt;plugin&gt;</span>
+                <span class="nt">&lt;groupid&gt;</span>org.springframework.boot<span class="nt">&lt;/groupid&gt;</span>
+                <span class="nt">&lt;artifactid&gt;</span>spring-boot-maven-plugin<span class="nt">&lt;/artifactid&gt;</span>
+            <span class="nt">&lt;/plugin&gt;</span>
+        <span class="nt">&lt;/plugins&gt;</span>
+    <span class="nt">&lt;/build&gt;</span>
+<span class="nt">&lt;/project&gt;</span>
+</code></pre></div></div>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>In this blog, I have showed how the <code class="language-plaintext highlighter-rouge">AsyncRestTemplate</code> to communicate with an external restful service. However, before using it in production I suggest that you configure the internals of the <code class="language-plaintext highlighter-rouge">AsyncRestTemplate</code> such as connection timeout, read timeout, max number of connections, max connections per route etc. The <a href="http://hc.apache.org/httpcomponents-asyncclient-4.0.x/examples.html">Apache HttpAsyncClient examples</a>, <a href="http://vincentdevillers.blogspot.fr/2013/10/a-best-spring-asyncresttemplate.html">this blog post</a> and <a href="http://stackoverflow.com/questions/21943662/how-do-i-set-a-timeout-on-springs-asyncresttemplate">this question on Stack Overflow</a> all provide good advice.</li>
+  <li>The asynchronous service will tolerate a much higher load than a synchronous solution would. However, from a client perspective the latency may be an issue since it is first calling your service, which in turn has to call the remote service and wait for its response, before a new response can be created and returned. To mitigate this problem, different cache solutions come to mind. Consider caching the responses from the remote services, caching the Pojos generated by our service and / or using HTTP headers to implement appropriate caching of the responses generated by our service in the HTTP layer.</li>
+  <li>Our asynchronous service is well prepared to handle big load, but is the remote service capable of handling the load you are delegating to it? The suggested cache solution may work if the remote service returns generic answers, but if the remote service returns unique responses for similar requests the cache solution will not do. And what happens if the remote service goes down? One way of handling such requirements, and to protect your server from cascading failures, is to wrap the remote call in a <a href="http://martinfowler.com/bliki/CircuitBreaker.html">circuit breaker</a>.</li>
+  <li>If you can migrate to Spring 4.1 that was released <a href="https://spring.io/blog/2014/09/04/spring-framework-4-1-ga-is-here">last week</a> you do no longer need to convert your result to <code class="language-plaintext highlighter-rouge">DeferredResult</code>. Simply return the <code class="language-plaintext highlighter-rouge">ListenableFuture</code> from your controller (see the <a href="https://spring.io/blog/2014/07/28/spring-framework-4-1-spring-mvc-improvements">list of improvements</a>).</li>
+</ul>
+
+<h2 id="result">Result</h2>
+
+<p>The response as returned from GitHub directly:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl https://api.github.com/search/repositories?q<span class="o">=</span>spring+boot | jq <span class="nb">.</span>
+<span class="o">{</span>
+  <span class="s2">"total_count"</span>: 883,
+  <span class="s2">"incomplete_results"</span>: <span class="nb">false</span>,
+  <span class="s2">"items"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"id"</span>: 6296790,
+      <span class="s2">"name"</span>: <span class="s2">"spring boot"</span>,
+      <span class="s2">"full_name"</span>: <span class="s2">"spring-projects/spring-boot"</span>,
+      <span class="s2">"owner"</span>: <span class="o">{</span>
+        <span class="s2">"login"</span>: <span class="s2">"spring-projects"</span>,
+        <span class="s2">"id"</span>: 317776,
+        <span class="s2">"avatar_url"</span>: <span class="s2">"https://avatars.githubusercontent.com/u/317776?v=2"</span>,
+        <span class="s2">"gravatar_id"</span>: <span class="s2">"6f8a529bd100f4272a9ff1b8cdfbd26e"</span>,
+        <span class="s2">"url"</span>: <span class="s2">"https://api.github.com/users/spring-projects"</span>,
+        <span class="s2">"html_url"</span>: <span class="s2">"https://github.com/spring-projects"</span>,
+        <span class="s2">"followers_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/followers"</span>,
+        <span class="s2">"following_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/following{/other_user}"</span>,
+        <span class="s2">"gists_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/gists{/gist_id}"</span>,
+        <span class="s2">"starred_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/starred{/owner}{/repo}"</span>,
+        <span class="s2">"subscriptions_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/subscriptions"</span>,
+        <span class="s2">"organizations_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/orgs"</span>,
+        <span class="s2">"repos_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/repos"</span>,
+        <span class="s2">"events_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/events{/privacy}"</span>,
+        <span class="s2">"received_events_url"</span>: <span class="s2">"https://api.github.com/users/spring-projects/received_events"</span>,
+        <span class="s2">"type"</span>: <span class="s2">"Organization"</span>,
+        <span class="s2">"site_admin"</span>: <span class="nb">false</span>
+      <span class="o">}</span>,
+      <span class="s2">"private"</span>: <span class="nb">false</span>,
+      <span class="s2">"html_url"</span>: <span class="s2">"https://github.com/spring-projects/spring-boot"</span>,
+      <span class="s2">"description"</span>: <span class="s2">"Spring Boot"</span>,
+      <span class="s2">"fork"</span>: <span class="nb">false</span>,
+      <span class="s2">"url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot"</span>,
+      <span class="s2">"forks_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/forks"</span>,
+      <span class="s2">"keys_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/keys{/key_id}"</span>,
+      <span class="s2">"collaborators_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/collaborators{/collaborator}"</span>,
+      <span class="s2">"teams_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/teams"</span>,
+      <span class="s2">"hooks_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/hooks"</span>,
+      <span class="s2">"issue_events_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/issues/events{/number}"</span>,
+      <span class="s2">"events_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/events"</span>,
+      <span class="s2">"assignees_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/assignees{/user}"</span>,
+      <span class="s2">"branches_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/branches{/branch}"</span>,
+      <span class="s2">"tags_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/tags"</span>,
+      <span class="s2">"blobs_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/git/blobs{/sha}"</span>,
+      <span class="s2">"git_tags_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/git/tags{/sha}"</span>,
+      <span class="s2">"git_refs_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/git/refs{/sha}"</span>,
+      <span class="s2">"trees_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/git/trees{/sha}"</span>,
+      <span class="s2">"statuses_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/statuses/{sha}"</span>,
+      <span class="s2">"languages_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/languages"</span>,
+      <span class="s2">"stargazers_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/stargazers"</span>,
+      <span class="s2">"contributors_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/contributors"</span>,
+      <span class="s2">"subscribers_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/subscribers"</span>,
+      <span class="s2">"subscription_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/subscription"</span>,
+      <span class="s2">"commits_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/commits{/sha}"</span>,
+      <span class="s2">"git_commits_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/git/commits{/sha}"</span>,
+      <span class="s2">"comments_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/comments{/number}"</span>,
+      <span class="s2">"issue_comment_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/issues/comments/{number}"</span>,
+      <span class="s2">"contents_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/contents/{+path}"</span>,
+      <span class="s2">"compare_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/compare/{base}...{head}"</span>,
+      <span class="s2">"merges_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/merges"</span>,
+      <span class="s2">"archive_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/{archive_format}{/ref}"</span>,
+      <span class="s2">"downloads_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/downloads"</span>,
+      <span class="s2">"issues_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/issues{/number}"</span>,
+      <span class="s2">"pulls_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/pulls{/number}"</span>,
+      <span class="s2">"milestones_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/milestones{/number}"</span>,
+      <span class="s2">"notifications_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/notifications{?since,all,participating}"</span>,
+      <span class="s2">"labels_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/labels{/name}"</span>,
+      <span class="s2">"releases_url"</span>: <span class="s2">"https://api.github.com/repos/spring-projects/spring-boot/releases{/id}"</span>,
+      <span class="s2">"created_at"</span>: <span class="s2">"2012-10-19T15:02:57Z"</span>,
+      <span class="s2">"updated_at"</span>: <span class="s2">"2014-09-05T09:37:27Z"</span>,
+      <span class="s2">"pushed_at"</span>: <span class="s2">"2014-09-05T02:22:04Z"</span>,
+      <span class="s2">"git_url"</span>: <span class="s2">"git://github.com/spring-projects/spring-boot.git"</span>,
+      <span class="s2">"ssh_url"</span>: <span class="s2">"git@github.com:spring-projects/spring-boot.git"</span>,
+      <span class="s2">"clone_url"</span>: <span class="s2">"https://github.com/spring-projects/spring-boot.git"</span>,
+      <span class="s2">"svn_url"</span>: <span class="s2">"https://github.com/spring-projects/spring-boot"</span>,
+      <span class="s2">"homepage"</span>: <span class="s2">"http://projects.spring.io/spring-boot"</span>,
+      <span class="s2">"size"</span>: 46263,
+      <span class="s2">"stargazers_count"</span>: 1028,
+      <span class="s2">"watchers_count"</span>: 1028,
+      <span class="s2">"language"</span>: <span class="s2">"Java"</span>,
+      <span class="s2">"has_issues"</span>: <span class="nb">true</span>,
+      <span class="s2">"has_downloads"</span>: <span class="nb">true</span>,
+      <span class="s2">"has_wiki"</span>: <span class="nb">true</span>,
+      <span class="s2">"forks_count"</span>: 849,
+      <span class="s2">"mirror_url"</span>: null,
+      <span class="s2">"open_issues_count"</span>: 173,
+      <span class="s2">"forks"</span>: 849,
+      <span class="s2">"open_issues"</span>: 173,
+      <span class="s2">"watchers"</span>: 1028,
+      <span class="s2">"default_branch"</span>: <span class="s2">"master"</span>,
+      <span class="s2">"score"</span>: 78.31211
+    <span class="o">}</span>,
+    // more repositories...
+  <span class="o">]</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The response that is returned by our service:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>curl http://localhost:8080/async?q<span class="o">=</span>spring+boot | jq <span class="nb">.</span>
+<span class="o">{</span>
+  <span class="s2">"query"</span>: <span class="s2">"spring boot"</span>,
+  <span class="s2">"nbr_of_repositories"</span>: 860,
+  <span class="s2">"repositories"</span>: <span class="o">[</span>
+    <span class="o">{</span>
+      <span class="s2">"name"</span>: <span class="s2">"spring-projects/spring-boot"</span>,
+      <span class="s2">"url"</span>: <span class="s2">"https://github.com/spring-projects/spring-boot"</span>,
+      <span class="s2">"description"</span>: <span class="s2">"Spring Boot"</span>,
+      <span class="s2">"owner"</span>: <span class="s2">"spring-projects"</span>,
+      <span class="s2">"owner_url"</span>: <span class="s2">"https://github.com/spring-projects"</span>,
+      <span class="s2">"owner_avatar"</span>: <span class="s2">"https://avatars.githubusercontent.com/u/317776?v=2"</span>
+    <span class="o">}</span>,
+    // more repositories...
+  <span class="o">]</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Side note, <a href="http://stedolan.github.io/jq/">jq</a> is a convenient tool for JSON processing that you can <a href="http://stedolan.github.io/jq/download/">install</a>.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>Spring Reference docs <a href="http://docs.spring.io/spring-framework/docs/4.0.x/spring-framework-reference/html/mvc.html#mvc-ann-async">Asynchronous Request Processing</a>.</li>
+  <li>GitHub <a href="https://developer.github.com/v3/search/#search-repositories">search repositories API</a>.</li>
+  <li>GitHub <a href="https://developer.github.com/v3/#rate-limiting">rate limiting</a>.</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2014-09-09T00:00:00+02:00">September 9, 2014</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2014/07/22/spring-boot-custom-healthindicator/" class="pagination--pager" title="Spring Boot Custom HealthIndicator
+">Previous</a>
+    
+    
+      <a href="/blog/2014/10/19/spring-boot-error-responses/" class="pagination--pager" title="Spring Boot Error Responses
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

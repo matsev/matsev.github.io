@@ -1,0 +1,689 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Spring Integration Tests, Part I, Creating Mock Objects - Random Code Ramblings</title>
+<meta name="description" content="When writing integration tests with Spring, it can sometimes be convenient to mock one or more of Spring bean dependencies. However, during some circumstances strange things may happen… (In this post, Mockito has been used for creating mock objects, but the same problem applies to EasyMock as well. You can find the corresponding files if you follow the provided links.)">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Spring Integration Tests, Part I, Creating Mock Objects">
+<meta property="og:url" content="https://matsev.github.io/blog/2011/11/30/spring-integration-tests-part-i-creating-mock-objects/">
+
+
+  <meta property="og:description" content="When writing integration tests with Spring, it can sometimes be convenient to mock one or more of Spring bean dependencies. However, during some circumstances strange things may happen… (In this post, Mockito has been used for creating mock objects, but the same problem applies to EasyMock as well. You can find the corresponding files if you follow the provided links.)">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2011-11-30T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2011/11/30/spring-integration-tests-part-i-creating-mock-objects/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Spring Integration Tests, Part I, Creating Mock Objects">
+    <meta itemprop="description" content="When writing integration tests with Spring, it can sometimes be convenient to mock one or more of Spring bean dependencies. However, during some circumstances strange things may happen… (In this post, Mockito has been used for creating mock objects, but the same problem applies to EasyMock as well. You can find the corresponding files if you follow the provided links.)">
+    <meta itemprop="datePublished" content="2011-11-30T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Spring Integration Tests, Part I, Creating Mock Objects
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#test-setup">Test setup</a></li>
+  <li><a href="#explanation">Explanation</a></li>
+  <li><a href="#factorybean-to-the-rescue">FactoryBean to the rescue</a></li>
+  <li><a href="#alternative-solution">Alternative solution</a></li>
+  <li><a href="#disclaimer">Disclaimer</a></li>
+  <li><a href="#acknowledgements">Acknowledgements</a></li>
+  <li><a href="#dependencies">Dependencies</a></li>
+  <li><a href="#references">References</a></li>
+  <li><a href="#edit">Edit</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>When writing integration tests with Spring, it can sometimes be convenient to mock one or more of Spring bean dependencies. However, during some circumstances strange things may happen… (In this post, <a href="http://www.mockito.org">Mockito</a> has been used for creating mock objects, but the same problem applies to <a href="http://www.easymock.org">EasyMock</a> as well. You can find the corresponding files if you follow the provided links.)</p>
+
+<h2 id="test-setup">Test setup</h2>
+
+<p>In the following example the <code class="language-plaintext highlighter-rouge">SomeClass</code> needs a reference to an instance of the <code class="language-plaintext highlighter-rouge">SomeDependency</code> interface:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.jayway.example</span><span class="o">;</span>
+
+<span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SomeClass</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">private</span> <span class="nc">SomeDependency</span> <span class="n">someDependency</span><span class="o">;</span>
+
+    <span class="c1">// more code...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.jayway.example</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">SomeDependency</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>When writing the integration test, we use the static <a href="http://docs.mockito.googlecode.com/hg/org/mockito/Mockito.html#mock(java.lang.Class)">Mockito.mock(Class classToMock)</a> method to create a mock instance. The straightforward approach would be to let Spring instantiate the mock object with a <a href="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-class-static-factory-method">static factory method</a> in the xml configuration, e.g.</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;beans...&gt;</span>
+    <span class="nt">&lt;context:component-scan</span> <span class="na">base-package=</span><span class="s">"com.jayway.example"</span><span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">"someDependencyMock"</span> <span class="na">class=</span><span class="s">"org.mockito.Mockito"</span> <span class="na">factory-method=</span><span class="s">"mock"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;constructor-arg</span> <span class="na">value=</span><span class="s">"com.jayway.example.SomeDependency"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/bean&gt;</span>
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<p>(Corresponding <a href="https://gist.github.com/1397610#file_failing_easymock_config.xml">EasyMock config</a>.)</p>
+
+<p>To verify that the beans are created and wired correctly, we write a simple test:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@RunWith</span><span class="o">(</span><span class="nc">SpringJUnit4ClassRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@ContextConfiguration</span><span class="o">(</span><span class="s">"failing-mockito-config.xml"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BeanWiringTest</span> <span class="o">{</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="nc">SomeClass</span> <span class="n">someClass</span><span class="o">;</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="nc">SomeDependency</span> <span class="n">someDependencyMock</span><span class="o">;</span>
+
+    <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">shouldAutowireDependencies</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">assertNotNull</span><span class="o">(</span><span class="n">someClass</span><span class="o">);</span>
+        <span class="n">assertNotNull</span><span class="o">(</span><span class="n">someDependencyMock</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>(Same test for EasyMock, just update the <code class="language-plaintext highlighter-rouge">@ContextConfiguration</code> with the EasyMock config file.) To our surprise, the test fails:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>...]
+java.lang.IllegalStateException: Failed to load ApplicationContext
+Caused by: org.springframework.beans.factory.BeanCreationException:
+    Error creating bean with name <span class="s1">'someClass'</span>: Injection of autowired dependencies failed<span class="p">;</span>
+nested exception is org.springframework.beans.factory.BeanCreationException:
+    Could not autowire field: private com.jayway.example.SomeDependency com.jayway.example.SomeClass.someDependency<span class="p">;</span>
+nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException:
+    No matching bean of <span class="nb">type</span> <span class="o">[</span>com.jayway.example.SomeDependency] found <span class="k">for </span>dependency:
+    expected at least 1 bean which qualifies as autowire candidate <span class="k">for </span>this dependency.
+    Dependency annotations: <span class="o">{</span>@org.springframework.beans.factory.annotation.Autowired<span class="o">(</span><span class="nv">required</span><span class="o">=</span><span class="nb">true</span><span class="o">)}</span>
+<span class="o">[</span>...]
+</code></pre></div></div>
+
+<h2 id="explanation">Explanation</h2>
+
+<p>In order to find a solution to the problem, we need to understand Spring’s initialization process:</p>
+
+<ol>
+  <li><em>Load bean definitions.</em> This step includes scanning the application context XML files, scanning packages defined by <code class="language-plaintext highlighter-rouge">component-scan</code>, and loading the bean definitions found into the bean factory. (BeanFactoryPostProcessors such as the PropertyPlaceHolderConfigurer may be called to update the bean definitions.)</li>
+  <li><em>Instantiate beans and store them in the application context.</em> The bean factory creates the bean from the bean definitions. Bean dependencies get injected.</li>
+  <li><em>Bean post processing.</em> All initializing methods (e.g. annotated with <code class="language-plaintext highlighter-rouge">@PostConstruct</code>, <code class="language-plaintext highlighter-rouge">init-method</code>s declared in the XML and the <code class="language-plaintext highlighter-rouge">afterPropertiesSet()</code> method will execute. Annotations such as <code class="language-plaintext highlighter-rouge">@Required</code> will be validated. Dynamic proxies in an AOP environment will be created and so on.</li>
+</ol>
+
+<p>The problem that we see occurs due to a corner case in the first two steps. When the bean definition is created Spring scans through the application context XML file. It finds the declaration of the mock bean and a reflective call is made to find out the return type of the method defined by the <code class="language-plaintext highlighter-rouge">factory-method</code> declaration in an attempt to determine the bean’s type. The return type of this method is declared as the formal type parameter <code class="language-plaintext highlighter-rouge">&lt;T&gt;</code> (remember that we use the</p>
+
+<p><a href="http://docs.mockito.googlecode.com/hg/org/mockito/Mockito.html#mock(java.lang.Class)">Mockito.mock(Class&lt;T&gt; classToMock)</a> as factory method). Consequently, the bean definition of <code class="language-plaintext highlighter-rouge">someDependencyMock</code> will be of <code class="language-plaintext highlighter-rouge">java.lang.Object</code> and not <code class="language-plaintext highlighter-rouge">SomeDependency</code> as one would think. In the second step, the <code class="language-plaintext highlighter-rouge">someClass</code> bean is instantiated. Springs discovers the <code class="language-plaintext highlighter-rouge">@Autowired</code> annotation and tries to fetch an existing <code class="language-plaintext highlighter-rouge">SomeDependency</code> bean from the application context. None has yet been created, so the bean factory proceeds and looks for suitable bean definition in order to create an instance of the requested bean on the fly. This operation fails because the bean definition of <code class="language-plaintext highlighter-rouge">someDependency</code> is mapped to <code class="language-plaintext highlighter-rouge">java.lang.Object</code>. At this point, Spring bails out and throws the <code class="language-plaintext highlighter-rouge">NoSuchBeanDefinitionException</code>.</p>
+
+<h2 id="factorybean-to-the-rescue">FactoryBean to the rescue</h2>
+
+<p>The problem is solved by implementing a custom <a href="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-extension-factorybean">FactoryBean</a> that can be used whenever we need to mock an object:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">com.jayway.springmock</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.mockito.Mockito</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.springframework.beans.factory.FactoryBean</span><span class="o">;</span>
+
+<span class="cm">/**
+ * A {@link FactoryBean} for creating mocked beans based on Mockito so that they 
+ * can be {@link @Autowired} into Spring test configurations.
+ *
+ * @author Mattias Severson, Jayway
+ *
+ * @see FactoryBean
+ * @see org.mockito.Mockito
+ */</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">MockitoFactoryBean</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="nc">FactoryBean</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">Class</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">classToBeMocked</span><span class="o">;</span>
+
+    <span class="cm">/**
+     * Creates a Mockito mock instance of the provided class.
+     * @param classToBeMocked The class to be mocked.
+     */</span>
+    <span class="kd">public</span> <span class="nf">MockitoFactoryBean</span><span class="o">(</span><span class="nc">Class</span><span class="o">&lt;</span><span class="no">T</span><span class="o">&gt;</span> <span class="n">classToBeMocked</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">classToBeMocked</span> <span class="o">=</span> <span class="n">classToBeMocked</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="no">T</span> <span class="nf">getObject</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="nc">Mockito</span><span class="o">.</span><span class="na">mock</span><span class="o">(</span><span class="n">classToBeMocked</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Class</span><span class="o">&lt;?&gt;</span> <span class="n">getObjectType</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">classToBeMocked</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isSingleton</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>(In the <a href="https://gist.github.com/1397610#file_easy_mock_factory_bean.java">EasyMockFactoryBean</a>, I have added an enum to define the type of mock object.)</p>
+
+<p>Next, the Spring test config is updated to use the factory bean:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;beans...&gt;</span>
+    <span class="nt">&lt;context:component-scan</span> <span class="na">base-package=</span><span class="s">"com.jayway.example"</span><span class="nt">/&gt;</span>
+
+    <span class="nt">&lt;bean</span> <span class="na">id=</span><span class="s">"someDependencyMock"</span> <span class="na">class=</span><span class="s">"com.jayway.springmock.MockitoFactoryBean"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;constructor-arg</span> <span class="na">name=</span><span class="s">"classToBeMocked"</span> <span class="na">value=</span><span class="s">"com.jayway.example.SomeDependency"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/bean&gt;</span>
+<span class="nt">&lt;/beans&gt;</span>
+</code></pre></div></div>
+
+<p>(Corresponding <a href="https://gist.github.com/1397610#file_easymock_factory_bean.xml">EasyMock config</a>.) Spring will still instantiate the beans in the order that they were declared in the <code class="language-plaintext highlighter-rouge">mockito-test-config.xml</code>, i.e. starting by creating an instance of <code class="language-plaintext highlighter-rouge">SomeClass</code> and then attempt to inject an instance of a <code class="language-plaintext highlighter-rouge">SomeDependency</code> into it before any has been created. The good news is that bean factory will scan through all declared <code class="language-plaintext highlighter-rouge">FactoryBean</code>s, calls its <a href="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/beans/factory/FactoryBean.html#getObjectType()">getObjectType()</a> method, and if the returned type is correct, call its <a href="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/beans/factory/FactoryBean.html#getObject()">getObject()</a> which should return an instance of the requested type.</p>
+
+<h2 id="alternative-solution">Alternative solution</h2>
+
+<p>There is another more brittle solution to the problem. By simply changing the order of the tags in the initial application context, e.g. putting the bean declaration that defines the mock above the component scan, will cause the test to pass. The bean definition will still be wrong in the sense that the <code class="language-plaintext highlighter-rouge">someDependencyMock</code> will be defined as a <code class="language-plaintext highlighter-rouge">java.lang.Object</code>, but there is another important difference. In this case, the bean factory will invoke the <a href="http://docs.mockito.googlecode.com/hg/org/mockito/Mockito.html#mock(java.lang.Class)">Mockito.mock(Class&lt;T&gt; classToMock)</a> method with <code class="language-plaintext highlighter-rouge">SomeDependency</code> as parameter causing the <code class="language-plaintext highlighter-rouge">someDependencyMock</code> bean to be created and subsequently stored in the application context. Later, the <code class="language-plaintext highlighter-rouge">someClass</code> bean is created and the dependency can obtained from the application context when requested by the bean factory and the wiring of the beans will succeed. However, making sure that the order of the bean declarations in the XML is always correct may neither be simple nor obvious, and it will get increasingly more difficult the more beans you add to the configuration.</p>
+
+<h2 id="disclaimer">Disclaimer</h2>
+
+<p>As stated in the in the first paragraph, I would only consider this solution for <em>integration</em> tests because of performance reasons. The application context itself adds some overhead, but the big performance hit is to create and wire all beans that are associated with it. When writing <em>unit</em> tests there is no need for this, so you could revert to constructor or setter dependency injection, Spring’s <a href="http://static.springsource.org/spring/docs/3.0.x/javadoc-api/org/springframework/test/util/ReflectionTestUtils.html#setField%28java.lang.Object,%20java.lang.String,%20java.lang.Object%29">ReflectionTestUtils.setField()</a>, PowerMock’s <a href="http://powermock.googlecode.com/svn/docs/powermock-1.4.10/apidocs/org/powermock/reflect/Whitebox.html#setInternalState%28java.lang.Object,%20java.lang.Class,%20java.lang.Object%29">Whitebox.setInternalState()</a>, Mockito’s <a href="http://docs.mockito.googlecode.com/hg/org/mockito/InjectMocks.html">@InjectMocks</a> or similar techniques.</p>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>Thanks to <a href="http://stackoverflow.com/users/97641/wilhelm-kleu">Wilhelm Kleu</a> at stack overflow for <a href="http://stackoverflow.com/questions/6340007/autowiring-of-beans-generated-by-easymock-factory-method/6340391#6340391">suggesting</a> the solution and to <a href="http://blog.jayway.com/author/mattiasarthursson/">Mattias Hellborg Arthursson</a> for valuable discussions.</p>
+
+<h2 id="dependencies">Dependencies</h2>
+
+<ul>
+  <li>Spring 3.0.6</li>
+  <li>Mockito 1.8.5</li>
+  <li>jUnit 4.10</li>
+  <li>EasyMock 3.1</li>
+</ul>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-class-static-factory-method">Spring Reference Manual - Static Factory Method</a></li>
+  <li><a href="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/beans.html#beans-factory-extension-factorybean">Spring Reference Manual - FactoryBean</a></li>
+  <li><a href="http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/testing.html#integration-testing-annotations">Spring Reference Manual - Integration Testing</a></li>
+  <li><a href="http://docs.mockito.googlecode.com/hg/org/mockito/Mockito.html">Mockito</a></li>
+  <li><a href="http://easymock.org/EasyMock3_1_Documentation.html">EasyMock</a></li>
+</ul>
+
+<p>Next post: <a href="/blog/2011/12/12/spring-integration-tests-part-ii-using-mock-objects/">Spring Integration Tests, Part II, Using Mock Objects</a></p>
+
+<h2 id="edit">Edit</h2>
+
+<p>As of Spring 3.2 RC1, the problem with generic factory methods and mock object has been <a href="http://blog.springsource.org/2012/11/07/spring-framework-3-2-rc1-new-testing-features/">solved</a>.</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2011-11-30T00:00:00+01:00">November 30, 2011</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2011/09/26/intellij-idea-performance-improvement/" class="pagination--pager" title="IntelliJ IDEA performance improvement
+">Previous</a>
+    
+    
+      <a href="/blog/2011/12/12/spring-integration-tests-part-ii-using-mock-objects/" class="pagination--pager" title="Spring Integration Tests, Part II, Using Mock Objects
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

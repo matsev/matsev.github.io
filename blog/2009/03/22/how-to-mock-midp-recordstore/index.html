@@ -1,0 +1,579 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>How to mock MIDP RecordStore - Random Code Ramblings</title>
+<meta name="description" content="Challenge">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="How to mock MIDP RecordStore">
+<meta property="og:url" content="https://matsev.github.io/blog/2009/03/22/how-to-mock-midp-recordstore/">
+
+
+  <meta property="og:description" content="Challenge">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2009-03-22T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2009/03/22/how-to-mock-midp-recordstore/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="How to mock MIDP RecordStore">
+    <meta itemprop="description" content="Challenge">
+    <meta itemprop="datePublished" content="2009-03-22T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">How to mock MIDP RecordStore
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#challenge">Challenge</a></li>
+  <li><a href="#getting-started">Getting Started</a></li>
+  <li><a href="#the-setback">The Setback</a></li>
+  <li><a href="#solution">Solution</a></li>
+  <li><a href="#reference-code">Reference Code</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <h3 id="challenge">Challenge</h3>
+
+<p>PowerMock is a mocking framework that claims to have almost supernatural powers. According to its documentation it is able to mock both static and private methods, final classes, and other nasty things that would be insurmountable obstacles for other mock frameworks. As a result, it has been stated that it should be able to mock the MIDP RecordStore, but so far I have not seen a working example. I accepted the challenge.</p>
+
+<h3 id="getting-started">Getting Started</h3>
+
+<p>I decided that writing a unit test was the best way to get started. After all, mocking is usually used together with unit testing. In order to use RecordStore you must first open it. According to the <a href="http://java.sun.com/javame/reference/apis/jsr118/javax/microedition/rms/RecordStore.html">javadoc of RecordStore</a>, the method to be used is: <code class="language-plaintext highlighter-rouge">public static RecordStore openRecordStore(String recordStoreName, boolean createIfNecessary)</code>. A static method that returns an instance of the RecordStore object. Following the “Mocking static methods” guidelines on the <a href="http://code.google.com/p/powermock/">PowerMock web site</a>, it seemed to be a pretty straight forward task:</p>
+
+<ol>
+  <li>Use the <code class="language-plaintext highlighter-rouge">@RunWith</code> annotation at the class-level of the test case.</li>
+  <li>Use the <code class="language-plaintext highlighter-rouge">@PrepareForTest</code> annotation at the class-level of the test case.</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">PowerMock.mockStatic()</code> to mock all methods of this class.</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">PowerMock.replay()</code> to change the class to replay mode.</li>
+  <li>Use <code class="language-plaintext highlighter-rouge">PowerMock.verify()</code> to change the class to verify mode.</li>
+</ol>
+
+<p>Ok, a little more complicated than my ordinary EasyMock setup, but nothing to really worry about. In my case, I also needed to create a mock object of the RecordStore class itself because of the return value of the <code class="language-plaintext highlighter-rouge">openRecordStore()</code> method.</p>
+
+<h3 id="the-setback">The Setback</h3>
+
+<p>To my disappointment, my test failed with an <code class="language-plaintext highlighter-rouge">ExceptionInInitializerError</code>. I studied the code thoroughly to make sure that I had followed the instructions, but I concluded that error resided elsewhere. A closer look at the failure trace revealed:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">[</span>...]
+Caused by: java.lang.UnsupportedOperationException: getSlowingFactor is native
+at javax.microedition.rms.RecordStore.getSlowingFactor<span class="o">(</span>RecordStore.java<span class="o">)</span>
+at javax.microedition.rms.RecordStore.<span class="o">(</span>RecordStore.java:2414<span class="o">)</span>
+<span class="o">[</span>...]
+</code></pre></div></div>
+
+<p>Hmm, that is strange… According to the API, there should be no <code class="language-plaintext highlighter-rouge">getSlowingFactor()</code> in RecordStore? And it seems like it is called by the class initializer? When searching for an answer it seemed like this problem occurs if you have not configured the preverifier correctly. It sort of makes sense, I am not using a preverifier at all in my project and I did not like the idea of introducing one.</p>
+
+<h3 id="solution">Solution</h3>
+
+<p>Returning to the PowerMock documentation, I discovered instructions how to “Suppressing Unwanted Behavior”, maybe this was the way forward? Soon, I found the annotation <code class="language-plaintext highlighter-rouge">@SuppressStaticInitializationFor</code>, I added it to my test case and voilÃ , I had successfully mocked the RecordStore!</p>
+
+<h3 id="reference-code">Reference Code</h3>
+
+<p>You can find the code needed to mock the RecordStore below. If you find it interesting, you can <a href="/assets/bin/midp-recordstore-example.zip">download</a> a more complex example where a class that uses RecordStore for persistent storage is unit tested with aid of PowerMock.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">static</span> <span class="n">org</span><span class="o">.</span><span class="na">easymock</span><span class="o">.</span><span class="na">EasyMock</span><span class="o">.</span><span class="na">expect</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">static</span> <span class="n">org</span><span class="o">.</span><span class="na">easymock</span><span class="o">.</span><span class="na">classextension</span><span class="o">.</span><span class="na">EasyMock</span><span class="o">.</span><span class="na">createMock</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">static</span> <span class="n">org</span><span class="o">.</span><span class="na">junit</span><span class="o">.</span><span class="na">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.microedition.rms.RecordStore</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">javax.microedition.rms.RecordStoreException</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.junit.Test</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.junit.runner.RunWith</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.powermock.api.easymock.PowerMock</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.powermock.core.classloader.annotations.PrepareForTest</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.powermock.core.classloader.annotations.SuppressStaticInitializationFor</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.powermock.modules.junit4.PowerMockRunner</span><span class="o">;</span>
+
+<span class="nd">@RunWith</span><span class="o">(</span><span class="nc">PowerMockRunner</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@PrepareForTest</span><span class="o">(</span><span class="nc">RecordStore</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="nd">@SuppressStaticInitializationFor</span><span class="o">(</span><span class="s">"javax.microedition.rms.RecordStore"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">RecordStoreMockTest</span> <span class="o">{</span>
+
+	<span class="nd">@Test</span>
+	<span class="kd">public</span> <span class="kt">void</span> <span class="nf">testCreateRecordStoreMock</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">RecordStoreException</span> <span class="o">{</span>
+		<span class="nc">String</span> <span class="n">recordStoreName</span> <span class="o">=</span> <span class="s">"record_store_name"</span><span class="o">;</span>
+
+		<span class="c1">// Create mocks</span>
+		<span class="nc">PowerMock</span><span class="o">.</span><span class="na">mockStatic</span><span class="o">(</span><span class="nc">RecordStore</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+		<span class="nc">RecordStore</span> <span class="n">recordStoreMock</span> <span class="o">=</span> <span class="n">createMock</span><span class="o">(</span><span class="nc">RecordStore</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+		<span class="c1">// Record behavior</span>
+		<span class="n">expect</span><span class="o">(</span><span class="nc">RecordStore</span><span class="o">.</span><span class="na">openRecordStore</span><span class="o">(</span><span class="n">recordStoreName</span><span class="o">,</span> <span class="kc">true</span><span class="o">)).</span><span class="na">andReturn</span><span class="o">(</span>
+				<span class="n">recordStoreMock</span><span class="o">);</span>
+
+		<span class="c1">// Replay behavior</span>
+		<span class="nc">PowerMock</span><span class="o">.</span><span class="na">replay</span><span class="o">(</span><span class="nc">RecordStore</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+
+		<span class="c1">// Execute test and verify result</span>
+		<span class="n">assertEquals</span><span class="o">(</span><span class="n">recordStoreMock</span><span class="o">,</span> <span class="nc">RecordStore</span><span class="o">.</span><span class="na">openRecordStore</span><span class="o">(</span><span class="n">recordStoreName</span><span class="o">,</span> <span class="kc">true</span><span class="o">));</span>
+		<span class="nc">PowerMock</span><span class="o">.</span><span class="na">verify</span><span class="o">(</span><span class="nc">RecordStore</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+	<span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2009-03-22T00:00:00+01:00">March 22, 2009</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2009/03/22/getting-started-with-javame-junit-testing/" class="pagination--pager" title="Getting Started with JavaME jUnit Testing
+">Previous</a>
+    
+    
+      <a href="/blog/2010/03/28/architectural-enforcement-with-aid-of-aspectj/" class="pagination--pager" title="Architectural Enforcement with Aid of AspectJ
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

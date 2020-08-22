@@ -1,0 +1,636 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Spring @PropertySource - Random Code Ramblings</title>
+<meta name="description" content="If you are a Spring developer and and you have created a Java based container configuration, you have probably come across the @PropertySource annotation for importing resources. It was first added as part of Spring 3.1, but Spring 4 has added some welcome improvements.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Spring @PropertySource">
+<meta property="og:url" content="https://matsev.github.io/blog/2014/02/16/spring-propertysource/">
+
+
+  <meta property="og:description" content="If you are a Spring developer and and you have created a Java based container configuration, you have probably come across the @PropertySource annotation for importing resources. It was first added as part of Spring 3.1, but Spring 4 has added some welcome improvements.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2014-02-16T00:00:00+01:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2014/02/16/spring-propertysource/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Spring @PropertySource">
+    <meta itemprop="description" content="If you are a Spring developer and and you have created a Java based container configuration, you have probably come across the @PropertySource annotation for importing resources. It was first added as part of Spring 3.1, but Spring 4 has added some welcome improvements.">
+    <meta itemprop="datePublished" content="2014-02-16T00:00:00+01:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Spring @PropertySource
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#basics">Basics</a></li>
+  <li><a href="#multiple-properties-files">Multiple Properties Files</a></li>
+  <li><a href="#-placeholders">${…} Placeholders</a></li>
+  <li><a href="#spring-4">Spring 4</a></li>
+  <li><a href="#putting-it-together">Putting It Together</a></li>
+  <li><a href="#java-8">Java 8</a></li>
+  <li><a href="#edit">Edit</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>If you are a Spring developer and and you have created a Java based container configuration, you have probably come across the <a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/PropertySource.html">@PropertySource</a> annotation for importing resources. It was first added as part of Spring 3.1, but Spring 4 has added some welcome improvements.</p>
+
+<h2 id="basics">Basics</h2>
+
+<p>Let’s start with a simple example:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@PropertySource</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"classpath:application.properties"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ApplicationConfig</span> <span class="o">{</span>
+
+    <span class="c1">// more configuration ...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>When executed, properties will be imported from the <code class="language-plaintext highlighter-rouge">application.properties</code> file, located in the classpath root. <code class="language-plaintext highlighter-rouge">classpath</code> is the default location, and can thus be omitted:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"application.properties"</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ApplicationConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Alternatively, it is possible to specify a <code class="language-plaintext highlighter-rouge">file:</code> location to appoint a properties file that is located elsewhere on your host environment:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"file:/path/to/application.properties"</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>Other possible resource strings include <code class="language-plaintext highlighter-rouge">http:</code> and <code class="language-plaintext highlighter-rouge">ftp:</code>, please see the <a href="http://docs.spring.io/spring/docs/4.0.x/spring-framework-reference/html/resources.html">Resource chapter</a> in the Spring reference documentation for details.</p>
+
+<h2 id="multiple-properties-files">Multiple Properties Files</h2>
+
+<p>It is also possible to specify two or more files:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySource</span><span class="o">({</span><span class="s">"default.properties"</span><span class="o">,</span> <span class="s">"overriding.properties"</span><span class="o">})</span>
+</code></pre></div></div>
+
+<p>Note that the order of the declared files is important. If the same key is defined in two or more files, the value associated with the key in the last declared file will override any previous value(s).</p>
+
+<h2 id="-placeholders">${…} Placeholders</h2>
+
+<p>In the <a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/PropertySource.html">@PropertySource JavaDoc</a> it is stated that:</p>
+
+<blockquote>
+  <p>Any ${…} placeholders present in a @PropertySource resource location will be resolved against the set of property sources already registered against the environment.</p>
+</blockquote>
+
+<p>Thus, it is possible to specify a system property or an environment variable that will be resolved to its actual value when your application starts. For example, <code class="language-plaintext highlighter-rouge">${CONF_DIR}</code> below will be replaced with its associated value when the Spring application starts:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"file:${CONF_DIR}/application.properties"</span><span class="o">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="nv">$CONF_DIR</span>
+/path/to/directory/with/app/config/files
+</code></pre></div></div>
+
+<p>Of course, you can let the file name be included in the environment variable:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"file:${APP_PROPERTIES}"</span><span class="o">)</span>
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span><span class="nb">echo</span> <span class="nv">$APP_PROPERTIES</span>
+/path/to/application.properties
+</code></pre></div></div>
+
+<p>This approach can be very useful if your application needs different properties in different environments, such as client vs. server deployment, Linux vs. Windows target operating system and so on.</p>
+
+<h2 id="spring-4">Spring 4</h2>
+
+<p>Spring 4 brings two new features to the <code class="language-plaintext highlighter-rouge">@PropertySource</code>. The first new feature deals with missing files. By default, Spring will throw an exception if it does not find the file that has been declared. Given a project that does not contain a <code class="language-plaintext highlighter-rouge">missing.properties</code> file, but has the following declaration:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySource</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"missing.properties"</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>If one attempts to start the application anyway, there will be a stacktrace accordingly:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.IllegalStateException: Failed to load ApplicationContext
+<span class="o">[</span>...]
+Caused by: java.io.FileNotFoundException: class path resource <span class="o">[</span>missing.properties] cannot be opened because it does not exist
+</code></pre></div></div>
+
+<p>To overcome this problem, the <code class="language-plaintext highlighter-rouge">ignoreResourceNotFound</code> attribute has been added to the <code class="language-plaintext highlighter-rouge">@ProperySource</code> annotation. Consequently, the declaration:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySource</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"missing.properties"</span><span class="o">,</span> <span class="n">ignoreResourceNotFound</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>will cause Spring to silently ignore that the <code class="language-plaintext highlighter-rouge">missing.properties</code> file cannot be found. This may seem odd at first, if one does not care about the absent file, then why bother to declare it the first place? As will be explained later, there is a very good reason for this. Secondly, there is a new annotation called <a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/PropertySources.html">@PropertySources</a> that allows you to declare repeated <code class="language-plaintext highlighter-rouge">@PropertySource</code> annotations:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@PropertySources</span><span class="o">({</span>
+    <span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"default.properties"</span><span class="o">),</span>
+    <span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"overriding.properties"</span><span class="o">)</span>
+<span class="o">})</span>
+</code></pre></div></div>
+
+<p>Yet again, the order of the property file declarations is important. As suggested by the file names in the example above, files declared later will override any previous value(s) if they contain the same key(s).</p>
+
+<h2 id="putting-it-together">Putting It Together</h2>
+
+<p>To summarize, a property source configuration can be implemented like:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@PropertySources</span><span class="o">({</span>
+    <span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"default.properties"</span><span class="o">),</span>
+    <span class="nd">@PropertySource</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"file:${CONF_DIR}/optional-override.properties"</span><span class="o">,</span> <span class="n">ignoreResourceNotFound</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ApplicationConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">default.properties</code> file is part of the project jar or war file, and consequently availible on the classpath. However, now we can see that the addition of the <code class="language-plaintext highlighter-rouge">ignoreResourcesNotFound</code> attribute allow us to <em>optionally</em> override one or more of the properties depending on the deployment environment. Additionally, the use of <code class="language-plaintext highlighter-rouge">file</code> and the <code class="language-plaintext highlighter-rouge">${...}</code> placeholder enable a configurable location of this optional properties file. For the record, it is possible to conditionally import properties files in earlier Spring versions as well using placeholders and <code class="language-plaintext highlighter-rouge">:</code>, but then it was an either / or inclusion on file level. Prior to Spring 4, you were forced to copy all properties to the overriding file even if you only had the need of overriding a single property value. See the <a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/PropertySource.html">JavaDoc</a> for details.</p>
+
+<h2 id="java-8">Java 8</h2>
+
+<p>When you migrate update to Java 8, the <code class="language-plaintext highlighter-rouge">@PropertySources</code> annotation will be redundant, because Java 8 will support <a href="http://openjdk.java.net/jeps/120">repeating annotations</a>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Configuration</span>
+<span class="nd">@PropertySource</span><span class="o">(</span><span class="s">"default.properties"</span><span class="o">)</span>
+<span class="nd">@PropertySource</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="s">"file:${CONF_DIR}/optional-override.properties"</span><span class="o">,</span> <span class="n">ignoreResourceNotFound</span> <span class="o">=</span> <span class="kc">true</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ApplicationConfig</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="edit">Edit</h2>
+
+<p>In the earlier version of Spring 4, i.e. versions below 4.0.2, an exception will be thrown if a placeholder such as the <code class="language-plaintext highlighter-rouge">${CONF_DIR}</code> above cannot be resolved, despite that <code class="language-plaintext highlighter-rouge">ignoreResourceNotFound</code> attribute has been set to <code class="language-plaintext highlighter-rouge">true</code>. <a href="https://jira.springsource.org/browse/SPR-11524">SPR-11524</a> addresses this issue, and a solution is scheduled to be released as part of the 4.0.3 version.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/PropertySource.html">@PropertySource JavaDoc</a></li>
+  <li><a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/Configuration.html">@Configuration JavaDoc</a> (specifically “Working with externalized values”)</li>
+  <li><a href="http://docs.spring.io/spring/docs/4.0.0.RELEASE/javadoc-api/org/springframework/context/annotation/Bean.html">@Bean JavaDoc</a> (specifically “BeanFactoryPostProcessor-returning @Bean methods”)</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2014-02-16T00:00:00+01:00">February 16, 2014</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2013/11/03/spring-and-autowiring-of-generic-types/" class="pagination--pager" title="Spring and Autowiring of Generic Types
+">Previous</a>
+    
+    
+      <a href="/blog/2014/03/06/about-executorservices/" class="pagination--pager" title="About ExecutorServices
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

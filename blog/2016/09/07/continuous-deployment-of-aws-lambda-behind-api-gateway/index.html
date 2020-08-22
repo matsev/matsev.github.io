@@ -1,0 +1,669 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Continuous Deployment of AWS Lambda behind API Gateway - Random Code Ramblings</title>
+<meta name="description" content="Blog about how bash scripts can be used for continuous deployment of an AWS Lambda that is behind an API Gateway. Contains links to GitHub sample project.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Continuous Deployment of AWS Lambda behind API Gateway">
+<meta property="og:url" content="https://matsev.github.io/blog/2016/09/07/continuous-deployment-of-aws-lambda-behind-api-gateway/">
+
+
+  <meta property="og:description" content="Blog about how bash scripts can be used for continuous deployment of an AWS Lambda that is behind an API Gateway. Contains links to GitHub sample project.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2016-09-07T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2016/09/07/continuous-deployment-of-aws-lambda-behind-api-gateway/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Continuous Deployment of AWS Lambda behind API Gateway">
+    <meta itemprop="description" content="Blog about how bash scripts can be used for continuous deployment of an AWS Lambda that is behind an API Gateway. Contains links to GitHub sample project.">
+    <meta itemprop="datePublished" content="2016-09-07T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Continuous Deployment of AWS Lambda behind API Gateway
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#goal">Goal</a></li>
+  <li><a href="#cloudformation-resources">CloudFormation Resources</a>
+      - {:.} <a href="#lambda-aliases">Lambda Aliases</a>
+      - {:.} <a href="#lambda-permissions">Lambda Permissions</a>
+      - {:.} <a href="#api-gateway-stages">API Gateway Stages</a>
+      - {:.} <a href="#api-gateway-method">API Gateway Method</a></li>
+  <li><a href="#tests">Tests</a></li>
+  <li><a href="#consideration">Consideration</a></li>
+  <li><a href="#update">Update</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>In two previous blog posts I started by introducing scripts for <a href="/blog/2016/07/07/continuous-deployment-on-aws-lambda/">Continuous Deployment on AWS Lambda</a> and then I continued to experiment with <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/">Introduction to CloudFormation for API Gateway</a>. This blog post will be a continuation of both of them. You will see an example of how continuous deployment of an AWS Lambda function behind an AWS API Gateway may look like in a CloudFormation setup. All implementation details can found in the <a href="https://github.com/matsev/api-gateway-continuous-deployment">sample repository</a> at GitHub if you are interested.</p>
+
+<h2 id="goal">Goal</h2>
+
+<p>By revisiting the <a href="/blog/2016/07/07/continuous-deployment-on-aws-lambda/">first blog post</a>, you can see an example of how <a href="http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html">AWS Lambda Function Versioning and Aliases</a> can be used to implement continuous delivery on Lambda. In short, two different Lambda alias, <code class="language-plaintext highlighter-rouge">STAGE</code> and <code class="language-plaintext highlighter-rouge">PROD</code>, were used as two different deployment targets for the Lambda function. Some scripts were developed that first executed unit tests of the Lambda source code, zipped the Lambda source code to a new package that was deployed a new Lambda version and updated the Lambda <code class="language-plaintext highlighter-rouge">STAGE</code> alias if the Lambda integration tests passed. In the <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/">second blog post</a>, I showed how CloudFormation can be used to configure an API Gateway backed by a Lambda function. This blog post aims to combine the two previous blog posts to create two API Gateway stages, the first named <code class="language-plaintext highlighter-rouge">stage</code>, the second named <code class="language-plaintext highlighter-rouge">prod</code>, that will be mapped to each Lambda alias respectively. In addition, new integration tests should be developed that verify that the RESTful API works as expected.</p>
+
+<h2 id="cloudformation-resources">CloudFormation Resources</h2>
+
+<p>Some changes to the CloudFormation template are required in order to make the continuous deployment work. The final result can be found in the <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/cloudformation.template">cloudformation.template</a> at GitHub.</p>
+
+<h4 id="lambda-aliases">Lambda Aliases</h4>
+
+<p>As with any other AWS resource, one must add permission before a Lambda function can be called. More to the point, in the <a href="http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases-permissions.html">Versioning, Aliases, and Resource Policies</a> section of the AWS Lambda Developer Guide, it is stated that one must add a permission based on the Lambda alias ARN in order to invoke the Lambda using an alias name. Any attempt to use a permission based on the unqualified Lambda ARN will result in a permission error. For this reason two <code class="language-plaintext highlighter-rouge">AWS::Lambda::Alias</code> resources are created up front that will be used later when creating the Lambda permissions.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"GreetingStageLambdaAlias"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Lambda::Alias"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"FunctionName"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingLambda"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"FunctionVersion"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"$LATEST"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"STAGE"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="err">,</span><span class="w">
+
+</span><span class="nl">"GreetingProdLambdaAlias"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Lambda::Alias"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"FunctionName"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingLambda"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"FunctionVersion"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"$LATEST"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"PROD"</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Both aliases reference the same Lambda <code class="language-plaintext highlighter-rouge">FunctionName</code>, but they have different alias <code class="language-plaintext highlighter-rouge">Name</code>s. The <code class="language-plaintext highlighter-rouge">FunctionVersion</code> has been set to <code class="language-plaintext highlighter-rouge">$LATEST</code> version which means that both alias will point to the <a href="http://docs.aws.amazon.com/lambda/latest/dg/aliases-intro.html">latest Lambda version</a> after the initial stack deployment. Later, the aliases will be updated by the continuous deployment scripts to point to new versions. Ref: <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-alias.html">AWS::Lambda::Alias</a></p>
+
+<h4 id="lambda-permissions">Lambda Permissions</h4>
+
+<p>After the aliases have been created, two <code class="language-plaintext highlighter-rouge">AWS::Lambda::Permission</code>s are created to allow the API Gateway to call both <code class="language-plaintext highlighter-rouge">GreetingLambda:STAGE</code> and <code class="language-plaintext highlighter-rouge">GreetingLambda:PROD</code> alias.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"GreetingLambdaStagePermission"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Lambda::Permission"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lambda:invokeFunction"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"FunctionName"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingLambdaStageAlias"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Principal"</span><span class="p">:</span><span class="w"> </span><span class="s2">"apigateway.amazonaws.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"SourceArn"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Fn::Join"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">""</span><span class="p">,</span><span class="w">
+      </span><span class="p">[</span><span class="s2">"arn:aws:execute-api:"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Region"</span><span class="p">},</span><span class="w"> </span><span class="s2">":"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::AccountId"</span><span class="p">},</span><span class="w"> </span><span class="s2">":"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingApi"</span><span class="p">},</span><span class="w"> </span><span class="s2">"/*"</span><span class="p">]</span><span class="w">
+    </span><span class="p">]}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="err">,</span><span class="w">
+
+</span><span class="nl">"GreetingLambdaProdPermission"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Lambda::Permission"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"lambda:invokeFunction"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"FunctionName"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingLambdaProdAlias"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"Principal"</span><span class="p">:</span><span class="w"> </span><span class="s2">"apigateway.amazonaws.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"SourceArn"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Fn::Join"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">""</span><span class="p">,</span><span class="w">
+      </span><span class="p">[</span><span class="s2">"arn:aws:execute-api:"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Region"</span><span class="p">},</span><span class="w"> </span><span class="s2">":"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::AccountId"</span><span class="p">},</span><span class="w"> </span><span class="s2">":"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingApi"</span><span class="p">},</span><span class="w"> </span><span class="s2">"/*"</span><span class="p">]</span><span class="w">
+    </span><span class="p">]}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Note that we pass references to the two Lambda aliases instead of the Lambda resource as <code class="language-plaintext highlighter-rouge">FunctionName</code> values. Ref: <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-permission.html">AWS::Lambda::Permission</a></p>
+
+<h4 id="api-gateway-stages">API Gateway Stages</h4>
+
+<p>Now we have all required components to create the API Gateway stages. They are very similar to the example developed in the previous blog post, but with one important distinction. By defining a <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/stage-variables.html">Stage Variables</a> called <code class="language-plaintext highlighter-rouge">LambdaAlias</code> we can add a value for mapping the Lambda alias later on. Stage variables act as environment variables in your API Gateway configuration. You can use whatever variable name and value that you like, as long as you use the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-stage.html#cfn-apigateway-stage-variables">allowed characters</a>. Please see <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/aws-api-gateway-stage-variables-reference.html">API Gateway Stage Variables Reference</a> for details and use cases of how stage variables can be used.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"GreetingApiStageStage"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"DependsOn"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"ApiGatewayAccount"</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::ApiGateway::Stage"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"DeploymentId"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ApiDeployment"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"MethodSettings"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+      </span><span class="nl">"DataTraceEnabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"HttpMethod"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"LoggingLevel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"INFO"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"ResourcePath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/*"</span><span class="w">
+    </span><span class="p">}],</span><span class="w">
+    </span><span class="nl">"RestApiId"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingApi"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"StageName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"stage"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Variables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"LambdaAlias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"STAGE"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="err">,</span><span class="w">
+
+</span><span class="nl">"GreetingApiProdStage"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"DependsOn"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"ApiGatewayAccount"</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::ApiGateway::Stage"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"DeploymentId"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ApiDeployment"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"MethodSettings"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+      </span><span class="nl">"DataTraceEnabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"HttpMethod"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"LoggingLevel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"INFO"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"ResourcePath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/*"</span><span class="w">
+    </span><span class="p">}],</span><span class="w">
+    </span><span class="nl">"RestApiId"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingApi"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"StageName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"prod"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Variables"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"LambdaAlias"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PROD"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="err">,</span><span class="w">
+</span></code></pre></div></div>
+
+<h4 id="api-gateway-method">API Gateway Method</h4>
+
+<p>The last change of the CloudFormation template compared to the previous blog post is in the API Gateway method resource where the HTTP method is mapped to the Lambda function. Previously, the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apitgateway-method-integration.html#cfn-apigateway-method-integration-uri">API Gateway Uri</a> was “just” a magic string including the Lambda ARN. With the addition of the <code class="language-plaintext highlighter-rouge">${stageVariables.LambdaAlias}</code> stage variable to provide the Lambda alias the string becomes even more magic. Depending on which API Gateway stage is being called, the stage variable will be evaluated to <code class="language-plaintext highlighter-rouge">STAGE</code> and <code class="language-plaintext highlighter-rouge">PROD</code> respectively, thus directing the request to the matching Lambda alias. Please see the <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/aws-api-gateway-stage-variables-reference.html#stage-variables-in-integration-lambda-functions">AWS Integration URIs (Lambda Functions)</a> for more details on how this works.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"GreetingRequest"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"DependsOn"</span><span class="p">:</span><span class="w"> </span><span class="s2">"LambdaPermission"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::ApiGateway::Method"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"AuthorizationType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NONE"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"HttpMethod"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GET"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Integration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"IntegrationHttpMethod"</span><span class="p">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"Uri"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Fn::Join"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">""</span><span class="p">,</span><span class="w">
+        </span><span class="p">[</span><span class="s2">"arn:aws:apigateway:"</span><span class="p">,</span><span class="w">
+        </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Region"</span><span class="p">},</span><span class="w">
+        </span><span class="s2">":lambda:path/2015-03-31/functions/"</span><span class="p">,</span><span class="w">
+        </span><span class="p">{</span><span class="nl">"Fn::GetAtt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"GreetingLambda"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Arn"</span><span class="p">]},</span><span class="w">
+        </span><span class="s2">":${stageVariables.LambdaAlias}"</span><span class="p">,</span><span class="w">
+        </span><span class="s2">"/invocations"</span><span class="p">]</span><span class="w">
+      </span><span class="p">]},</span><span class="w">
+      </span><span class="nl">"IntegrationResponses"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+        </span><span class="nl">"StatusCode"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w">
+      </span><span class="p">}],</span><span class="w">
+      </span><span class="nl">"RequestTemplates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"application/json"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Fn::Join"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="w">
+          </span><span class="s2">"{"</span><span class="p">,</span><span class="w">
+          </span><span class="s2">"  </span><span class="se">\"</span><span class="s2">name</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">$input.params('name')</span><span class="se">\"</span><span class="s2">"</span><span class="p">,</span><span class="w">
+          </span><span class="s2">"}"</span><span class="w">
+        </span><span class="p">]]}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"RequestParameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"method.request.querystring.name"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"ResourceId"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingResource"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"RestApiId"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GreetingApi"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"MethodResponses"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+      </span><span class="nl">"StatusCode"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="w">
+    </span><span class="p">}]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="tests">Tests</h2>
+
+<p>After the CloudFormation template, the application can be tested in three different levels. First of all, there is the <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/test/greeter-test.js">unit test</a> at the JavaScript level (executor <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/scripts/1-test.sh">1-test.sh</a>). Next level <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/itest-lambda/greeting-lambda-test.js">tests the Lambda function</a> using the AWS JavaScript SDK after a new Lambda function has been updated (executor <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/scripts/4-lambda-itest.sh">4-lambda-itest.sh</a>) and acts as a gatekeeper whether or not the Lambda alias should be updated. The last level of <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/itest-api-gateway/greeting-rest-test.js">integration tests</a> uses a REST client to send requests to the API Gateway and validates the responses (executor <a href="https://github.com/matsev/api-gateway-continuous-deployment/blob/master/scripts/7-api-gateway-itest.sh">7-api-gateway-itest.sh</a>).</p>
+
+<h2 id="consideration">Consideration</h2>
+
+<p>The continuous integration flow has only been configured to update the Lambda implementation and not the API Gateway stage. Consequently, if you update your Lambda function in a way that requires changes to the API Gateway integration request or response mapping, the REST client integration tests will not work, despite appropriate updates. The cause of this error is that once the API Gateway stage has been been deployed, it cannot be updated. If you find the need for such update, you must either deploy a new stage, or delete the existing stage, make the necessary changes and re-deploy it.</p>
+
+<h2 id="update">Update</h2>
+
+<p>On the November 18th, 2016 AWS introduced the Serverless Application Model (or SAM for short) that provides an alternative solution to the one described in this blog post. Please read the <a href="https://aws.amazon.com/blogs/compute/introducing-simplified-serverless-application-deplyoment-and-management/">AWS blog post</a> and study the related <a href="https://github.com/awslabs/serverless-application-model/blob/master/README.md">project</a> at the AWS Labs GitHub account for more information.</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2016-09-07T00:00:00+02:00">September 7, 2016</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/" class="pagination--pager" title="Introduction to CloudFormation for API Gateway
+">Previous</a>
+    
+    
+      <a href="/blog/2016/09/18/introduction-to-swagger-for-cloudformation-and-api-gateway/" class="pagination--pager" title="Introduction to Swagger for CloudFormation and API Gateway
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

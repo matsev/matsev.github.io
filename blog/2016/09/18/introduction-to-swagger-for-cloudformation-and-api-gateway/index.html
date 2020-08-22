@@ -1,0 +1,628 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Introduction to Swagger for CloudFormation and API Gateway - Random Code Ramblings</title>
+<meta name="description" content="Blog post that outlines how Swagger can be used to configure an AWS API Gateway backed by an AWS Lambda function.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Introduction to Swagger for CloudFormation and API Gateway">
+<meta property="og:url" content="https://matsev.github.io/blog/2016/09/18/introduction-to-swagger-for-cloudformation-and-api-gateway/">
+
+
+  <meta property="og:description" content="Blog post that outlines how Swagger can be used to configure an AWS API Gateway backed by an AWS Lambda function.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2016-09-18T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2016/09/18/introduction-to-swagger-for-cloudformation-and-api-gateway/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Introduction to Swagger for CloudFormation and API Gateway">
+    <meta itemprop="description" content="Blog post that outlines how Swagger can be used to configure an AWS API Gateway backed by an AWS Lambda function.">
+    <meta itemprop="datePublished" content="2016-09-18T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Introduction to Swagger for CloudFormation and API Gateway
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#goal">Goal</a></li>
+  <li><a href="#cloudformation-resources">CloudFormation Resources</a>
+      - {:.} <a href="#api-gateway-rest-api">API Gateway Rest API</a>
+      - {:.} <a href="#redundant-cloudformation-resources">Redundant CloudFormation Resources</a></li>
+  <li><a href="#test">Test</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>When I was writing my previous blog post about <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/">Introduction to CloudFormation for API Gateway</a>, I noticed that CloudFormation also supports <a href="http://swagger.io/">Swagger</a> for API Gateway configuration. Curious about what such an implementation would look like in comparison to the previous solution, I decided to give it a go. Like the previous example, consider this blog post and related source code as a proof of concept. If you choose to implement a similar solution, I advise you to study the reference docs using the provided links. The accompanying source code to this blog post can be found in my <a href="https://github.com/matsev/cloudformation-swagger-api-gateway">GitHub repo</a>.</p>
+
+<h2 id="goal">Goal</h2>
+
+<p>The aim of this blog post is to re-implement the very same example as in the <a href="/blog/2016/08/17/introduction-to-cloudformation-for-api-gateway/">previous post</a>, but this time use Swagger configuration instead of CloudFormation resources to configure the REST API. The business logic is an AWS Lambda function called <code class="language-plaintext highlighter-rouge">GreetingLambda</code> which has been configured with an appropriate execution role. If the event passed to the Lambda contains a <code class="language-plaintext highlighter-rouge">name</code> property, a JSON document with a greeting containing the name is returned. If not, the greeting <code class="language-plaintext highlighter-rouge">Hello, World!</code> is returned.</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">handler</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">;</span>
+  <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="s2">!`</span><span class="p">};</span>
+  <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>When proxied by an API Gateway, it should be possible to perform a HTTP request with the name as a request parameter.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl https://abc123.execute-api.eu-west-1.amazonaws.com/LATEST/greeting?name<span class="o">=</span>Superman
+<span class="o">{</span><span class="s2">"greeting"</span>:<span class="s2">"Hello, Superman!"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="cloudformation-resources">CloudFormation Resources</h2>
+
+<p>Many of the CloudFormation resources will be left untouched from the previous implementation, so I will not describe them again (you will find them in the <a href="https://github.com/matsev/cloudformation-swagger-api-gateway/blob/master/cloudformation.template">cloudformation.template</a>). Let us focus on the differences instead.</p>
+
+<h4 id="api-gateway-rest-api">API Gateway Rest API</h4>
+
+<p>The biggest change is to the <code class="language-plaintext highlighter-rouge">AWS::ApiGateway::RestApi</code> resource. By configuring the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-body">Body</a> property it is possible to inline the entire REST API using <a href="http://swagger.io/">Swagger</a>’s JSON format. As a result, the CloudFormation template as a whole will be less verbose since some other CloudFormation resources can be deleted. That said, it is still a mouthful when you include the <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html">API Gateway Extensions to Swagger</a> to handle the integration between the API Gateway and other AWS services.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"GreetingApi"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="nl">"Type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::ApiGateway::RestApi"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Properties"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Greeting API"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"API used for Greeting requests"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"FailOnWarnings"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Body"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"swagger"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2016-08-18T18:08:34Z"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Greeting API"</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"basePath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/LATEST"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"schemes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"https"</span><span class="p">],</span><span class="w">
+      </span><span class="nl">"paths"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"/greeting"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+          </span><span class="nl">"get"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+              </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"name"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"in"</span><span class="p">:</span><span class="w"> </span><span class="s2">"query"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"required"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"string"</span><span class="w">
+            </span><span class="p">}],</span><span class="w">
+            </span><span class="nl">"produces"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"application/json"</span><span class="p">],</span><span class="w">
+            </span><span class="nl">"responses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"200"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"200 response"</span><span class="w">
+              </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"x-amazon-apigateway-integration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+              </span><span class="nl">"requestTemplates"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"application/json"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{</span><span class="se">\"</span><span class="s2">name</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">$input.params('name')</span><span class="se">\"</span><span class="s2">}"</span><span class="w">
+              </span><span class="p">},</span><span class="w">
+              </span><span class="nl">"uri"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"Fn::Join"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"arn:aws:apigateway:"</span><span class="p">,</span><span class="w">
+                </span><span class="p">{</span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Region"</span><span class="p">},</span><span class="w">
+                </span><span class="s2">":lambda:path/2015-03-31/functions/"</span><span class="p">,</span><span class="w">
+                </span><span class="p">{</span><span class="nl">"Fn::GetAtt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"GreetingLambda"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Arn"</span><span class="p">]},</span><span class="w">
+                </span><span class="s2">"/invocations"</span><span class="p">]</span><span class="w">
+              </span><span class="p">]},</span><span class="w">
+              </span><span class="nl">"responses"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"default"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                  </span><span class="nl">"statusCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"200"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+              </span><span class="p">},</span><span class="w">
+              </span><span class="nl">"httpMethod"</span><span class="p">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span><span class="w">
+              </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"aws"</span><span class="w">
+            </span><span class="p">}</span><span class="w">
+          </span><span class="p">}</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Configuration comments:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Body</code> Root node of the Swagger configuration. Basically a JSON document that conforms to the <a href="http://swagger.io/specification/">Swagger 2.0 Specification</a>.</li>
+  <li><code class="language-plaintext highlighter-rouge">/greeting</code> Defines the greeting endpoint and its behavior, e.g. it accepts HTTP <code class="language-plaintext highlighter-rouge">GET</code> requests, it has an optional query parameter called <code class="language-plaintext highlighter-rouge">name</code>, it responds with <code class="language-plaintext highlighter-rouge">200 - OK</code> and the response is in JSON format.</li>
+  <li><a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html#api-gateway-swagger-extensions-integration">x-amazon-apigateway-integration</a> A big part of the code consists of the configuration that is responsible for mapping and transforming the request and response from the RESTful endpoint to the specified AWS service. It contains several sub-properties, more than the ones listed below.
+    <ul>
+      <li><a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html#api-gateway-swagger-extensions-integration-requestTemplates">requestTemplates</a> This part of the configuration transforms the incoming request before passing the result downstream då the Lambda function. In this example, the value of the <code class="language-plaintext highlighter-rouge">name</code> query parameter is transformed into a JSON object that has the format <code class="language-plaintext highlighter-rouge">{"name": "Superman"}</code>.</li>
+      <li><code class="language-plaintext highlighter-rouge">uri</code> The backend endpoint, here exemplified by the <code class="language-plaintext highlighter-rouge">GreetingLambda</code> ARN.</li>
+      <li><a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html#api-gateway-swagger-extensions-integration-responses">responses</a> Response status patterns from the backend service. Each key has then a <code class="language-plaintext highlighter-rouge">statusCode</code> property, which in turn must have a matching status code in the Swagger operation <code class="language-plaintext highlighter-rouge">responses</code>. Put differently, this is the HTTP status code that will be returned to the client. In the sample above, you will see that <code class="language-plaintext highlighter-rouge">default</code> is used as status pattern and <code class="language-plaintext highlighter-rouge">200</code> as status code, meaning that the client will always get a <code class="language-plaintext highlighter-rouge">200 - OK</code> as a result, regardless if the Lambda call was successful or not. This is something you likely want to change in a production project.</li>
+      <li><code class="language-plaintext highlighter-rouge">httpMethod</code> and <code class="language-plaintext highlighter-rouge">type</code> defaults to HTTP <code class="language-plaintext highlighter-rouge">POST</code> and <code class="language-plaintext highlighter-rouge">aws</code> when the API Gateway proxies AWS Lambda.</li>
+    </ul>
+  </li>
+  <li>In addition to the <code class="language-plaintext highlighter-rouge">x-amazon-apigateway-integration</code> object the <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-swagger-extensions.html">API Gateway Extensions to Swagger</a> also have support for other properties such as custom authorization configuration.</li>
+</ul>
+
+<p>Ref: <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html">AWS::ApiGateway::RestApi</a></p>
+
+<h4 id="redundant-cloudformation-resources">Redundant CloudFormation Resources</h4>
+
+<p>By having all the RESTful endpoints declared in Swagger format, one can omit the <code class="language-plaintext highlighter-rouge">AWS::ApiGateway::Resource</code> and the <code class="language-plaintext highlighter-rouge">AWS::ApiGateway::Method</code> resources.</p>
+
+<h2 id="test">Test</h2>
+
+<p>Similarly as in the previous blog post, the API Gateway gets a root url of the <code class="language-plaintext highlighter-rouge">https://[api-id].execute-api.[region].amazonaws.com</code> format. If you create a stack based on the complete <a href="https://github.com/matsev/cloudformation-swagger-api-gateway/blob/master/cloudformation.template">cloudformation.template</a> you will see the exact url in the stack output. To verify that the stack works, you have to append the <code class="language-plaintext highlighter-rouge">basePath</code> and the <code class="language-plaintext highlighter-rouge">/greeting</code> path to it before issuing a HTTP GET request.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl https://abc123.execute-api.eu-west-1.amazonaws.com/LATEST/greeting
+<span class="o">{</span><span class="s2">"greeting"</span>:<span class="s2">"Hello, World!"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<p>You can also provide a request parameter:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl https://abc123.execute-api.eu-west-1.amazonaws.com/LATEST/greeting?name<span class="o">=</span>Superman
+<span class="o">{</span><span class="s2">"greeting"</span>:<span class="s2">"Hello, Superman!"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>In this example, the Swagger configuration was inlined in the CloudFormation Template. If you prefer to keep things separate one can upload a Swagger file to S3 and point the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigateway-restapi.html#cfn-apigateway-restapi-bodys3location">BodyS3Location</a> property of the <code class="language-plaintext highlighter-rouge">AWS::ApiGateway::RestApi</code> to it. One advantage of using this property is that the file can be in either YAML or JSON format. Another benefit of keeping the Swagger configuration separate from the CloudFormation template is that you can pass the very same Swagger file to the client developers and they can use tools such as the <a href="https://github.com/swagger-api/swagger-codegen#swagger-code-generator">Swagger Code Generator</a> to generate client APIs and documentation. A minor disadvantage is of course that you need keep two files in sync when you deploy a new API Gateway Stage.</li>
+  <li>Swagger enables “contract first design”, i.e. you can define a RESTful API before any client or server business logic exists. It is an opinionated way of working and I usually prefer to develop the API and app incrementally. The good news is that Swagger can be used by both parties.</li>
+  <li>It is easy to prototype a new API Gateway using “point and click” in the AWS Console. When you are finished you can choose to <a href="http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-export-api.html">Export an API from API Gateway</a>, including the API Gateway Integration, using either a HTTP Get request or the AWS Console. Once you get hold of the Swagger file, you can paste it into your CloudFormation template or save it in an S3 bucket. Preferably, you take the opportunity to do some pruning in the process, for example you can replace any string that contains an AWS region with <code class="language-plaintext highlighter-rouge">{"Ref": "AWS::Region"}</code>, any string that contains a reference to another CloudFormation resource with <code class="language-plaintext highlighter-rouge">{"Ref": "&lt;logical resource id&gt;"}</code>, <code class="language-plaintext highlighter-rouge">{"Fn::GetAtt": ["&lt;Lambda logical id&gt;", "Arn"]}</code> for retrieving a Lambda ARN, etc.</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2016-09-18T00:00:00+02:00">September 18, 2016</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2016/09/07/continuous-deployment-of-aws-lambda-behind-api-gateway/" class="pagination--pager" title="Continuous Deployment of AWS Lambda behind API Gateway
+">Previous</a>
+    
+    
+      <a href="/blog/2016/11/06/introduction-to-claudia-js/" class="pagination--pager" title="Introduction to Claudia.js
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

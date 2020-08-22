@@ -1,0 +1,635 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>AWS Elasticsearch JavaScript Client - Random Code Ramblings</title>
+<meta name="description" content="Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="AWS Elasticsearch JavaScript Client">
+<meta property="og:url" content="https://matsev.github.io/blog/2018/09/11/aws-elasticsearch-javascript-client/">
+
+
+  <meta property="og:description" content="Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2018-09-11T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2018/09/11/aws-elasticsearch-javascript-client/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="AWS Elasticsearch JavaScript Client">
+    <meta itemprop="description" content="Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.">
+    <meta itemprop="datePublished" content="2018-09-11T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">AWS Elasticsearch JavaScript Client
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#elasticsearch-iam-policy-document">Elasticsearch IAM Policy Document</a></li>
+  <li><a href="#elasticsearch-client">Elasticsearch Client</a></li>
+  <li><a href="#example-usage">Example Usage</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>I have spent some time working with the <a href="https://aws.amazon.com/elasticsearch-service/">AWS Elasticsearch Service</a> lately. Regrettably, I found the threshold before being productive was higher than I anticipated. One of my obstacles was to get an AWS Elasticsearch JavaScript client working inside an AWS Lambda function, so I thought I’d better make a note of my solution in case I run into a similar problem in the future.</p>
+
+<h2 id="elasticsearch-iam-policy-document">Elasticsearch IAM Policy Document</h2>
+
+<p>Before looking at the client implementation, we need to make sure that it is allowed to access the Elasticsearch domain. As always, this requires that the client is associated with an IAM Policy Document. Adhering to the AWS guideline of <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege">principle of least privileges</a> the policy is as strict as possible.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"Version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2012-10-17"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Statement"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+        </span><span class="nl">"Effect"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Allow"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"Action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"es:ESHttp*"</span><span class="p">,</span><span class="w"> 
+        </span><span class="nl">"Resource"</span><span class="p">:</span><span class="w"> </span><span class="s2">"arn:aws:es:eu-west-1:111122223333:my-domain/*"</span><span class="w">
+    </span><span class="p">}]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">*</code> character at the end of the <code class="language-plaintext highlighter-rouge">es:ESHttp*</code> value implies that all HTTP methods are allowed. You may choose to lock down the policy even further. One example is to use <code class="language-plaintext highlighter-rouge">"es:ESHttpGet"</code> for just permitting reading data from Elasticsearch. Another example is <code class="language-plaintext highlighter-rouge">["es:ESHttpPost", "es:ESHttpPut"]</code> for clients that only add data to the domain. Finally, the <code class="language-plaintext highlighter-rouge">Resource</code> property tells us that the policy statement only affects the Elasticsearch domain with the specified ARN.</p>
+
+<h2 id="elasticsearch-client">Elasticsearch Client</h2>
+
+<p>My first naive attempt was to use a HTTP client to make requests to the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs.html">Elasticsearch HTTP API</a> of my domain. It failed misearably, AWS requires that HTTP requests are signed with <a href="https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html">Signature Version 4</a> to be valid. The AWS SDK handles this internally so usually you do not need to bother. Realizing that, I took a closer look at what functionality the <a href="https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/ES.html">ES</a> class in the AWS JavaScript SDK offers. It does indeed provide an Elasticsearch API, but it is all about domain configuration, management and it does not provide any client features. Next, when I studied the <a href="https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/what-is-amazon-elasticsearch-service.html">AWS Elasticsearch developer guide</a>, I found an <a href="https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-indexing-programmatic.html#es-indexing-programmatic-node">JavaScript client snippet</a>. It had some limitations in my opinion (it uses global variables for request configuration and response handling just logs HTTP status code and response body). For this reason, I chose to rewrite it to a more generic <code class="language-plaintext highlighter-rouge">elasticsearch-client.js</code> file:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+    
+<span class="kd">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">path</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">AWS</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">aws-sdk</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="kd">const</span> <span class="p">{</span> <span class="nx">AWS_REGION</span><span class="p">,</span> <span class="nx">ELASTICSEARCH_DOMAIN</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">;</span>
+<span class="kd">const</span> <span class="nx">endpoint</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">Endpoint</span><span class="p">(</span><span class="nx">ELASTICSEARCH_DOMAIN</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">HttpClient</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">EnvironmentCredentials</span><span class="p">(</span><span class="dl">'</span><span class="s1">AWS</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="cm">/**
+ * Sends a request to Elasticsearch
+ *
+ * @param {string} httpMethod - The HTTP method, e.g. 'GET', 'PUT', 'DELETE', etc
+ * @param {string} requestPath - The HTTP path (relative to the Elasticsearch domain), e.g. '.kibana'
+ * @param {Object} [payload] - An optional JavaScript object that will be serialized to the HTTP request body
+ * @returns {Promise} Promise - object with the result of the HTTP response
+ */</span>
+<span class="kd">function</span> <span class="nx">sendRequest</span><span class="p">({</span> <span class="nx">httpMethod</span><span class="p">,</span> <span class="nx">requestPath</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">})</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">request</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">HttpRequest</span><span class="p">(</span><span class="nx">endpoint</span><span class="p">,</span> <span class="nx">AWS_REGION</span><span class="p">);</span>
+
+    <span class="nx">request</span><span class="p">.</span><span class="nx">method</span> <span class="o">=</span> <span class="nx">httpMethod</span><span class="p">;</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">path</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">requestPath</span><span class="p">);</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">payload</span><span class="p">);</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="dl">'</span><span class="s1">Content-Type</span><span class="dl">'</span><span class="p">]</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">;</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="dl">'</span><span class="s1">Host</span><span class="dl">'</span><span class="p">]</span> <span class="o">=</span> <span class="nx">ELASTICSEARCH_DOMAIN</span><span class="p">;</span>
+
+    <span class="kd">const</span> <span class="nx">signer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">Signers</span><span class="p">.</span><span class="nx">V4</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="dl">'</span><span class="s1">es</span><span class="dl">'</span><span class="p">);</span>
+    <span class="nx">signer</span><span class="p">.</span><span class="nx">addAuthorization</span><span class="p">(</span><span class="nx">credentials</span><span class="p">,</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">());</span>
+
+    <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">httpClient</span><span class="p">.</span><span class="nx">handleRequest</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="kd">const</span> <span class="p">{</span> <span class="nx">statusCode</span><span class="p">,</span> <span class="nx">statusMessage</span><span class="p">,</span> <span class="nx">headers</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">response</span><span class="p">;</span>
+                <span class="kd">let</span> <span class="nx">body</span> <span class="o">=</span> <span class="dl">''</span><span class="p">;</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">data</span><span class="dl">'</span><span class="p">,</span> <span class="nx">chunk</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                    <span class="nx">body</span> <span class="o">+=</span> <span class="nx">chunk</span><span class="p">;</span>
+                <span class="p">});</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">end</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                    <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="nx">statusCode</span><span class="p">,</span>
+                        <span class="nx">statusMessage</span><span class="p">,</span>
+                        <span class="nx">headers</span>
+                    <span class="p">};</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">body</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">data</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">body</span><span class="p">);</span>
+                    <span class="p">}</span>
+                    <span class="nx">resolve</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+                <span class="p">});</span>
+            <span class="p">},</span>
+            <span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+            <span class="p">});</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+
+<span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">sendRequest</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h2 id="example-usage">Example Usage</h2>
+
+<p>The above implementation enables you to implement all methods in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs.html">Elasticsearch HTTP API</a>. The only missing part is an environment variable called <code class="language-plaintext highlighter-rouge">ELASTICSEARCH_DOMAIN</code> that should have the value of your AWS hosted Elasticsearch domain such as <code class="language-plaintext highlighter-rouge">my-domain-qwertyasdf.eu-west-1.es.amazonaws.com</code>. To create a new Elasticsearch index called <code class="language-plaintext highlighter-rouge">my-index</code> you execute the function call by providing the required parameters in the corresponding <a href="https://www.elastic.co/guide/en/elasticsearch/reference/6.2/indices-create-index.html">Create Index API</a>:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+    
+<span class="kd">const</span> <span class="nx">sendElasticsearchRequest</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./elasticsearch-client</span><span class="dl">'</span><span class="p">);</span>
+
+<span class="kd">const</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="na">httpMethod</span><span class="p">:</span> <span class="dl">'</span><span class="s1">PUT</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">requestPath</span><span class="p">:</span> <span class="dl">'</span><span class="s1">my-index</span><span class="dl">'</span><span class="p">,</span>
+    <span class="na">payload</span><span class="p">:</span> <span class="p">{</span>
+        <span class="c1">// see link above for details</span>
+        <span class="na">settings</span><span class="p">:</span> <span class="p">{</span>
+            <span class="na">index</span><span class="p">:</span> <span class="p">{</span>
+                <span class="na">number_of_shards</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+                <span class="na">number_of_replicas</span><span class="p">:</span> <span class="mi">2</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+<span class="nx">sendElasticsearchRequest</span><span class="p">(</span><span class="nx">params</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="nx">response</span><span class="p">);</span>
+    <span class="p">});</span>
+</code></pre></div></div>
+
+<p>And the result may look something like:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span> 
+    <span class="nl">statusCode</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+    <span class="nx">statusMessage</span><span class="p">:</span> <span class="dl">'</span><span class="s1">OK</span><span class="dl">'</span><span class="p">,</span>
+    <span class="nx">headers</span><span class="p">:</span> <span class="p">{</span> 
+        <span class="nl">date</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Wed, 05 Sep 2018 20:24:24 GMT</span><span class="dl">'</span><span class="p">,</span>
+        <span class="dl">'</span><span class="s1">content-type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json; charset=UTF-8</span><span class="dl">'</span><span class="p">,</span>
+        <span class="dl">'</span><span class="s1">content-length</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">67</span><span class="dl">'</span><span class="p">,</span>
+        <span class="nx">connection</span><span class="p">:</span> <span class="dl">'</span><span class="s1">keep-alive</span><span class="dl">'</span><span class="p">,</span>
+        <span class="dl">'</span><span class="s1">access-control-allow-origin</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">*</span><span class="dl">'</span> 
+    <span class="p">},</span>
+    <span class="nx">body</span><span class="p">:</span> <span class="p">{</span> 
+        <span class="nl">acknowledged</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nx">shards_acknowledged</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nx">index</span><span class="p">:</span> <span class="dl">'</span><span class="s1">my-index</span><span class="dl">'</span>
+    <span class="p">}</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>The Elasticsearch client above returns a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise">Promise</a>. Timeouts and unknown domain URLs result in <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/reject">Promise.reject()</a> whereas successful HTTP request/response results in <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve">Promise.resolve()</a>. The resolved JavaScript object has three or four properties, namely the HTTP <code class="language-plaintext highlighter-rouge">statusCode</code>, the HTTP <code class="language-plaintext highlighter-rouge">statusMessage</code>, the HTTP <code class="language-plaintext highlighter-rouge">headers</code> and <code class="language-plaintext highlighter-rouge">body</code> in case there is a HTTP response body. Consequently, the promise will be resolved successfully by any 4XX client error codes (e.g. 404 - Not Found) and 5XX server errors (e.g. 503 Service Unavailable). Feel free to modify the code to reject the promise on HTTP errors if you prefer such behaviour.</li>
+  <li>The client uses the <a href="https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/EnvironmentCredentials.html">AWS.EnvironmentCredentials</a> class for obtaining valid credentials since it is being deployed as part of a Lambda function. This is not the only Node.js runtime environment and for this reason this is not the only credential class in the SDK. Please study the <a href="https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-credentials-node.html">Setting Credentials in Node.js</a> chapter in the AWS JavaScript developer guide for other alternatives.</li>
+  <li>A different approach to connect to an AWS Elasticsearch domain is to use the official <a href="https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/current/api-reference-6-2.html">Elasticsearch JavaScript client</a>. Like my HTTP client attempt, it cannot be used directly since it does not have the AWS Signature Version 4 capability. However, it has a pluggable architecture and there is a community <a href="https://www.elastic.co/guide/en/elasticsearch/client/javascript-api/15.x/extensions.html">extension</a> called <code class="language-plaintext highlighter-rouge">http-aws-es</code> that solves this problem. I have not tried this method, but they are both available as npm dependencies. Please check <a href="https://www.npmjs.com/package/elasticsearch&quot;">elasticsearch</a> and <a href="https://www.npmjs.com/package/http-aws-es">http-aws-es</a> for more information.</li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2018-09-11T00:00:00+02:00">September 11, 2018</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" class="pagination--pager" title="AWS Glue Dev Endpoint Deleter
+">Previous</a>
+    
+    
+      <a href="/blog/2020/03/23/aws-cdk-mfa/" class="pagination--pager" title="AWS CDK MFA
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2016/11/06/introduction-to-claudia-js/" rel="permalink">Introduction to Claudia.js
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Introduction to the Claudia.js deployment tool for AWS Lambda and AWS API Gateway. Some basic installation guides and a simple code example is provided.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

@@ -1,0 +1,610 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Spring Boot Custom HealthIndicator - Random Code Ramblings</title>
+<meta name="description" content="Example of you can implement a custom HealthIndicator for Spring Boot. In particular, the example shows how you can make sure that there is disk space left.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Spring Boot Custom HealthIndicator">
+<meta property="og:url" content="https://matsev.github.io/blog/2014/07/22/spring-boot-custom-healthindicator/">
+
+
+  <meta property="og:description" content="Example of you can implement a custom HealthIndicator for Spring Boot. In particular, the example shows how you can make sure that there is disk space left.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2014-07-22T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2014/07/22/spring-boot-custom-healthindicator/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Spring Boot Custom HealthIndicator">
+    <meta itemprop="description" content="Example of you can implement a custom HealthIndicator for Spring Boot. In particular, the example shows how you can make sure that there is disk space left.">
+    <meta itemprop="datePublished" content="2014-07-22T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Spring Boot Custom HealthIndicator
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#not-enough-space">Not enough space?</a></li>
+  <li><a href="#implementation">Implementation</a></li>
+  <li><a href="#explanation">Explanation</a></li>
+  <li><a href="#http-status-codes">HTTP Status Codes</a></li>
+  <li><a href="#considerations">Considerations</a></li>
+  <li><a href="#update">Update</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>A big part of the DevOps responsibilities is to monitor and maintain the health of running servers. If a production server goes down, appropriate actions must be undertaken to bring the service back to life. However, before any resurrection, one must know that the server is malfunctioning in the first place. In an automated cloud environment, this can be handled by a load balancer calling a known endpoint. For this reason, Spring Boot has a <a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#production-ready-endpoints">/health</a> endpoint that is part of its <a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#production-ready">Actuator</a> features. In this blog post, we will see how a custom health indicator can be implemented that adds to the existing <code class="language-plaintext highlighter-rouge">/health</code> endpoint.</p>
+
+<h2 id="not-enough-space">Not enough space?</h2>
+
+<p>A common problem is that you run out of disk space. Spring Boot provides default <a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#boot-features-logging">log rotation</a>, however there might be an access log, a database log, environment changes, and what not. Over time, even small log statements will eat up the disk space. More often than not, the problem manifests itself in production. The same problem is probably present in test and staging environments as well, but typically these environments are restarted more frequently (opportunity for clearing logs) and they are subject to less load (fewer actions logged). The idea with a custom <code class="language-plaintext highlighter-rouge">DiskSpaceHealthIndicator</code> is to provide a heads up warning before the server runs out of space completely.</p>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>A custom <code class="language-plaintext highlighter-rouge">HealthIndicator</code> that checks the available disk space can be implemented as follows:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@Component</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">DiskSpaceHealthIndicator</span> <span class="kd">extends</span> <span class="nc">AbstractHealthIndicator</span> <span class="o">{</span>
+
+
+    <span class="kd">private</span> <span class="kd">final</span> <span class="nc">FileStore</span> <span class="n">fileStore</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">thresholdBytes</span><span class="o">;</span>
+
+    <span class="nd">@Autowired</span>
+    <span class="kd">public</span> <span class="nf">DiskSpaceHealthIndicator</span><span class="o">(</span><span class="nd">@Value</span><span class="o">(</span><span class="s">"${health.filestore.path:${user.dir}}"</span><span class="o">)</span> <span class="nc">String</span> <span class="n">path</span><span class="o">,</span>
+                                    <span class="nd">@Value</span><span class="o">(</span><span class="s">"${health.filestore.threshold.bytes:10485760}"</span><span class="o">)</span> <span class="kt">long</span> <span class="n">thresholdBytes</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">IOException</span> <span class="o">{</span>
+        <span class="n">fileStore</span> <span class="o">=</span> <span class="nc">Files</span><span class="o">.</span><span class="na">getFileStore</span><span class="o">(</span><span class="nc">Paths</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">path</span><span class="o">));</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">thresholdBytes</span> <span class="o">=</span> <span class="n">thresholdBytes</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">doHealthCheck</span><span class="o">(</span><span class="nc">Health</span><span class="o">.</span><span class="na">Builder</span> <span class="n">builder</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">diskFreeInBytes</span> <span class="o">=</span> <span class="n">fileStore</span><span class="o">.</span><span class="na">getUnallocatedSpace</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">diskFreeInBytes</span> <span class="o">&gt;=</span> <span class="n">thresholdBytes</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">builder</span><span class="o">.</span><span class="na">up</span><span class="o">();</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">builder</span><span class="o">.</span><span class="na">down</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Note that this example is based on Spring Boot version 1.1+, because the <code class="language-plaintext highlighter-rouge">HealthIndicator</code> interface was changed as part of the <a href="https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.1-Release-Notes#healthindicators">Spring Boot 1.1</a> release. When tested, the application responds appropriately:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl localhost:8080/health
+<span class="o">{</span><span class="s2">"status"</span>:<span class="s2">"UP"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<p>or if the specified threshold has been exceeded:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl localhost:8080/health
+<span class="o">{</span><span class="s2">"status"</span>:<span class="s2">"DOWN"</span><span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="explanation">Explanation</h2>
+
+<ul>
+  <li>Any <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/HealthIndicator.html">HealthIndicator</a> Spring bean will contribute to the overall health status presented at the <code class="language-plaintext highlighter-rouge">/health</code> endpoint. The <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/AbstractHealthIndicator.html">AbstractHealthIndicator</a> implements the interface and provides a convenient <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/Health.Builder.html">Health.Builder</a> that can be used.</li>
+  <li>Two optional properties have been specified. They have default values, but they can easily be overridden, e.g. by providing appropriate values in the <code class="language-plaintext highlighter-rouge">application.properties</code> file.
+    <ul>
+      <li>The <code class="language-plaintext highlighter-rouge">${health.filestore.path:${user.dir}}"</code> specifies the path to the underlying <code class="language-plaintext highlighter-rouge">FileStore</code>. Here, it defaults to <code class="language-plaintext highlighter-rouge">${user.dir}</code>, i.e. a <a href="http://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html">system property</a> that defines the current directory when the JVM was started. You may need to set it to something else, such as the root folder, the folder in which the application is deployed, etc, see considerations below.</li>
+      <li>The <code class="language-plaintext highlighter-rouge">${health.filestore.threshold.bytes:10485760}</code> is the amount of free space left in bytes before the health indicator will change its state. In this case 10485760 (10MB) has been set to the default, which gives some space for any services to flush data to their log files despite that the application has become unavailable.</li>
+    </ul>
+  </li>
+  <li>The health check itself is trivial, set the status to <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/Status.html#UP">Status.UP</a> if the available disk is greater than the threshold. If not, set the status to <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/Status.html#DOWN">Status.DOWN</a></li>
+</ul>
+
+<h2 id="http-status-codes">HTTP Status Codes</h2>
+
+<p>It is possible to change the HTTP status codes of the <code class="language-plaintext highlighter-rouge">/health</code> response. By default, if the status is <code class="language-plaintext highlighter-rouge">Status.DOWN</code> or <code class="language-plaintext highlighter-rouge">Status.OUT_OF_SERVICE</code> HTTP status <code class="language-plaintext highlighter-rouge">503 - Service Unavailable</code> will be returned. (Please note that in Spring Boot versions &lt;= 1.1.4, there is a <a href="https://github.com/spring-projects/spring-boot/issues/1264">bug</a> that will cause <code class="language-plaintext highlighter-rouge">200 - OK</code> to be returned by default.) If you do not like the default HTTP status codes, or if you instantiate your own <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/Status.html">Status</a>, you can add a line in your <code class="language-plaintext highlighter-rouge">application.properties</code> to configure the desired HTTP status code. For example, if you would like the <code class="language-plaintext highlighter-rouge">Status.DOWN</code> to return <code class="language-plaintext highlighter-rouge">500 - Internal Server Error</code>, specify the following:</p>
+
+<div class="language-properties highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="py">endpoints.health.mapping.DOWN</span><span class="p">:</span> <span class="s">INTERNAL_SERVER_ERROR</span>
+</code></pre></div></div>
+
+<p>The key starts with <code class="language-plaintext highlighter-rouge">endpoints.health.mapping</code> followed by the <code class="language-plaintext highlighter-rouge">code</code> (case sensitive) that is passed to the <a href="http://docs.spring.io/spring-boot/docs/1.1.x/api/org/springframework/boot/actuate/health/Status.html#Status(java.lang.String)">Status</a> constructor, and the value a <a href="http://docs.spring.io/spring-framework/docs/4.0.x/javadoc-api/org/springframework/http/HttpStatus.html">HttpStatus</a> (case insensitive).</p>
+
+<h2 id="considerations">Considerations</h2>
+
+<ul>
+  <li>The application must have read access to the path specified by the <code class="language-plaintext highlighter-rouge">${health.filestore.path:${user.dir}}"</code> property, otherwise the <a href="http://docs.oracle.com/javase/8/docs/api/java/nio/file/Files.html#getFileStore-java.nio.file.Path-">Files.getFileStore(Path path)</a> will throw an exception. Likewise, if a security manager has been installed, the <a href="http://docs.oracle.com/javase/8/docs/api/java/lang/SecurityManager.html#checkRead-java.lang.String-">checkRead(String path)</a> method will be called, potentially resulting in a <code class="language-plaintext highlighter-rouge">SecurityException</code> being thrown.</li>
+  <li>The <a href="http://docs.oracle.com/javase/8/docs/api/java/nio/file/FileStore.html#getUnallocatedSpace--">FileStore.getUnallocatedSpace()</a> was used to find out how much disk space is available. As an alternative, one could call the <a href="http://docs.oracle.com/javase/8/docs/api/java/nio/file/FileStore.html#getUsableSpace--">FileStore.getUsableSpace()</a> method instead that checks only for the available disk for this JVM.</li>
+  <li>The methods of the <code class="language-plaintext highlighter-rouge">FileStore</code> return hints to the available disk size, but it does not provide any guarantees “that it is possible to use most or any of these bytes”, see the <a href="http://docs.oracle.com/javase/8/docs/api/java/nio/file/FileStore.html">Javadoc</a>.</li>
+  <li>
+    <p>The actual data can be presented as part of the <code class="language-plaintext highlighter-rouge">/health</code> response message, simply add the following lines to the end of the <code class="language-plaintext highlighter-rouge">doHealthCheck()</code> method above:</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">long</span> <span class="n">totalSpaceInBytes</span> <span class="o">=</span> <span class="n">fileStore</span><span class="o">.</span><span class="na">getTotalSpace</span><span class="o">();</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">withDetail</span><span class="o">(</span><span class="s">"disk.free"</span><span class="o">,</span> <span class="n">diskFreeInBytes</span><span class="o">);</span>
+<span class="n">builder</span><span class="o">.</span><span class="na">withDetail</span><span class="o">(</span><span class="s">"disk.total"</span><span class="o">,</span> <span class="n">totalSpaceInBytes</span><span class="o">);</span>
+</code></pre></div>    </div>
+
+    <p>As a result, any call to the <code class="language-plaintext highlighter-rouge">/health</code> endpoint will present the current figures:</p>
+
+    <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>curl localhost:8080/health
+<span class="o">{</span>
+   <span class="s2">"disk.free"</span> : 389685293056,
+   <span class="s2">"disk.total"</span> : 499418034176,
+   <span class="s2">"status"</span> : <span class="s2">"UP"</span>
+<span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>Alternatively, if you are more cautious, you can implement the health as it is, and add the actual figures to the <code class="language-plaintext highlighter-rouge">/metrics</code> endpoint instead, please see the <a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#production-ready-metrics">reference docs</a> for details.</li>
+</ul>
+
+<h2 id="update">Update</h2>
+
+<p>July 27th, 2014. Changed default path to <code class="language-plaintext highlighter-rouge">${user.dir}</code>. September 9th, 2014. After publishing this blog post I was <a href="https://twitter.com/cdupuis/status/491687010445590528">asked</a> to submit a pull request with this feature. <a href="https://twitter.com/cdupuis">Christian Dupuis</a> reviewed the code, and it was merged into Spring Boot as of <a href="http://spring.io/blog/2014/09/08/spring-boot-1-2-0-m1-available-now">1.2.0.M1</a>. More information can be found in the <a href="https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.2-Release-Notes#diskspacehealthindicator">Spring Boot 1.2 Release Notes</a>.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="http://docs.spring.io/spring-boot/docs/1.1.x/reference/htmlsingle/#production-ready-health">Custom health information</a></li>
+  <li><a href="https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-1.1-Release-Notes#healthindicators">Spring Boot 1.1 Release Notes</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2014-07-22T00:00:00+02:00">July 22, 2014</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2014/07/04/integration-testing-a-spring-boot-application/" class="pagination--pager" title="Integration Testing a Spring Boot Application
+">Previous</a>
+    
+    
+      <a href="/blog/2014/09/09/asynchronous-spring-service/" class="pagination--pager" title="Asynchronous Spring Service
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

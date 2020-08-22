@@ -1,0 +1,631 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Route53 Configuration for Elastic Beanstalk - Random Code Ramblings</title>
+<meta name="description" content="Blog post about HostedZoneId configuration for a Route53 AliasTarget targeting an Elastic Beanstalk environment in CloudFormation.">
+
+
+  <meta name="author" content="Mattias Severson">
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="Route53 Configuration for Elastic Beanstalk">
+<meta property="og:url" content="https://matsev.github.io/blog/2016/06/02/route53-configuration-for-elastic-beanstalk/">
+
+
+  <meta property="og:description" content="Blog post about HostedZoneId configuration for a Route53 AliasTarget targeting an Elastic Beanstalk environment in CloudFormation.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2016-06-02T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2016/06/02/route53-configuration-for-elastic-beanstalk/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Consultant</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Route53 Configuration for Elastic Beanstalk">
+    <meta itemprop="description" content="Blog post about HostedZoneId configuration for a Route53 AliasTarget targeting an Elastic Beanstalk environment in CloudFormation.">
+    <meta itemprop="datePublished" content="2016-06-02T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">Route53 Configuration for Elastic Beanstalk
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#challenge">Challenge</a></li>
+  <li><a href="#configuration">Configuration</a></li>
+  <li><a href="#hostedzoneid-for-aliastarget">HostedZoneId for AliasTarget?</a></li>
+  <li><a href="#whats-next">What’s Next?</a></li>
+  <li><a href="#resources">Resources</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>The AWS documentation is extensive, yet I find it both incomprehensible and overwhelming from time to time. Recently, I struggled to configure a HostedZoneId in a Route53 AliasTarget targeting an Elastic Beanstalk environment using CloudFormation.</p>
+
+<h2 id="challenge">Challenge</h2>
+
+<p>I had an ElasticBeanstalk environment with an ELB (such as the <a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-eu-west-1.html#d0e136547">Elastic Beanstalk Node.js sample application</a> available at the AWS site). Now, the task was to configure DNS based on a Route53 Alias Resource Record Set (see <a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html">Choosing Between Alias and Non-Alias Resource Record Sets</a> for an explanation).</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>I started by adding a parameter for the domain name:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"Parameters"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        
+  </span><span class="nl">"DomainName"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Description"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"The domain name of the app"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"String"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Default"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"ConstraintDescription"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Must be valid domain name"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+
+  </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Next, I added two resources for the HostedZone and the RecordSet:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"Resources"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        
+  </span><span class="nl">"SampleHostedZone"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Route53::HostedZone"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Properties"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"Name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Ref"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"DomainName"</span><span class="w"> </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+
+  </span><span class="nl">"SampleRecordSet"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Route53::RecordSet"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Properties"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"AliasTarget"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"DNSName"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Fn::GetAtt"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"SampleEnvironment"</span><span class="p">,</span><span class="w"> </span><span class="s2">"EndpointURL"</span><span class="p">]</span><span class="w"> </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"HostedZoneId"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="err">???</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"HostedZoneId"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SampleHostedZone"</span><span class="w"> </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"Name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Ref"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"DomainName"</span><span class="w"> </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"A"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+
+  </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="hostedzoneid-for-aliastarget">HostedZoneId for AliasTarget?</h2>
+
+<p>The most difficult obstacle was to find the correct value for the <code class="language-plaintext highlighter-rouge">HostedZoneId</code> for the <code class="language-plaintext highlighter-rouge">AliasTarget</code> configuration (marked as <code class="language-plaintext highlighter-rouge">???</code> above) . Normally, when configuring an ELB using the <code class="language-plaintext highlighter-rouge">AWS::ElasticLoadBalancing::LoadBalancer</code> resource, one can use <code class="language-plaintext highlighter-rouge">{ "Fn::GetAtt" : ["myELB", "CanonicalHostedZoneNameID"] }</code> to get the id of the hosted zone. Unfortunately, this option is not available for Beanstalk environments so that does not work. Next, I found a table in the AWS documentation that <a href="http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region">maps AWS regions to Amazon Route 53 Hosted Zone ID</a>. According to the table, the HostedZoneId for <code class="language-plaintext highlighter-rouge">eu-west-1</code> where my stack resides should be <code class="language-plaintext highlighter-rouge">Z2NYPWQ7DFZAZH</code>. However, the stack update failed miserably:</p>
+
+<blockquote>
+  <p>20:31:03 UTC+0200 CREATE_FAILED AWS::Route53::RecordSet SampleRecordSet Tried to create an alias that targets awseb-e-n-AWSEBLoa-[ABCDEFGHIJKLK-1234567890].eu-west-1.elb.amazonaws.com., type A in zone Z2NYPWQ7DFZAZH, but the alias target name does not lie within the target zone</p>
+</blockquote>
+
+<p>What to do? By deploying just the Beanstalk configuration (before adding Route53) it is possible to lookup the Hosted Zone Id, either by looking at the “Load Balancers” in the EC2 service in the AWS console, or by calling the CLI:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>aws elb describe-load-balancers <span class="nt">--region</span> eu-west-1
+<span class="o">{</span>
+    <span class="s2">"LoadBalancerDescriptions"</span>: <span class="o">[</span>
+        <span class="o">{</span>
+            <span class="o">[</span>...]		
+            <span class="s2">"CanonicalHostedZoneNameID"</span>: <span class="s2">"Z3NF1Z3NOM5OY2"</span>,
+            <span class="s2">"CanonicalHostedZoneName"</span>: <span class="s2">"awseb-e-n-AWSEBLoa-[ABCDEFGHIJKLK-1234567890].eu-west-1.elb.amazonaws.com"</span>,
+            <span class="o">[</span>...]
+        <span class="o">}</span>
+    <span class="o">]</span>
+<span class="o">}</span>
+        
+
+I updated the HostedZoneId <span class="k">in </span>the CloudFormation template to <span class="sb">`</span>Z3NF1Z3NOM5OY2<span class="sb">`</span> and it worked.
+
+<span class="c">## Solution</span>
+
+Now that I knew what to look <span class="k">for</span>, it was easier to find relevant hits. Some Googling revealed <span class="o">[</span>this issue]<span class="o">(</span>https://github.com/fog/fog/issues/1098<span class="o">)</span> that contains a list of AWS regions mapped to Beanstalks HostedZoneIds. The author claims that the mapping can be used <span class="k">for </span>all accounts. Consequently, I added the following mapping to the template:
+
+<span class="sb">```</span>json
+<span class="s2">"Mappings"</span> : <span class="o">{</span>
+
+  <span class="s2">"Beanstalk2Route53HostedZoneId"</span> : <span class="o">{</span>
+    <span class="s2">"us-east-1"</span>      : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z3DZXE0Q79N41H"</span> <span class="o">}</span>,
+    <span class="s2">"us-west-1"</span>      : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z1M58G0W56PQJA"</span> <span class="o">}</span>,
+    <span class="s2">"us-west-2"</span>      : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z33MTJ483KN6FU"</span> <span class="o">}</span>,
+    <span class="s2">"eu-west-1"</span>      : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z3NF1Z3NOM5OY2"</span> <span class="o">}</span>,
+    <span class="s2">"ap-northeast-1"</span> : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z2YN17T5R711GT"</span> <span class="o">}</span>,
+    <span class="s2">"ap-southeast-1"</span> : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z1WI8VXHPB1R38"</span> <span class="o">}</span>,
+    <span class="s2">"sa-east-1"</span>      : <span class="o">{</span> <span class="s2">"HostedZoneId"</span>: <span class="s2">"Z2ES78Y61JGQKS"</span> <span class="o">}</span>
+  <span class="o">}</span>,
+
+  <span class="o">[</span>...]
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>And updated the configuration of the <code class="language-plaintext highlighter-rouge">AWS::Route53::RecordSet</code> accordingly:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nl">"Resources"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        
+  </span><span class="nl">"SampleRecordSet"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Route53::RecordSet"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"Properties"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"AliasTarget"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"DNSName"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Fn::GetAtt"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"SampleEnvironment"</span><span class="p">,</span><span class="w"> </span><span class="s2">"EndpointURL"</span><span class="p">]</span><span class="w"> </span><span class="p">},</span><span class="w">
+        </span><span class="nl">"HostedZoneId"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Fn::FindInMap"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="s2">"Beanstalk2Route53HostedZoneId"</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="nl">"Ref"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"AWS::Region"</span><span class="p">},</span><span class="w"> </span><span class="s2">"HostedZoneId"</span><span class="w"> </span><span class="p">]}</span><span class="w">
+      </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"HostedZoneId"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Ref"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SampleHostedZone"</span><span class="w"> </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"Name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"Ref"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"DomainName"</span><span class="w"> </span><span class="p">},</span><span class="w">
+      </span><span class="nl">"Type"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"A"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+
+  </span><span class="p">[</span><span class="err">...</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="whats-next">What’s Next?</h2>
+
+<p>By now, Route53 should be successfully configured, however that does not mean that DNS is working. Depending on where you have registered your domain, you need to <a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/creating-migrating.html">Configuring Amazon Route 53 as Your DNS Service</a> (specifically, take a closer look at <a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/MigratingDNS.html#Step_UpdateRegistrar">Updating Your Registrar’s Name Servers</a>). It may also interest you that Route 53 can also be used for <a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/registrar.html">registering and transferring</a> domain names to AWS.</p>
+
+<h2 id="resources">Resources</h2>
+
+<ul>
+  <li><a href="https://github.com/matsev/route53-beanstalk">Sample project</a> at GitHub including complete CloudFormation template</li>
+  <li><a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53-hostedzone.html">AWS::Route53::HostedZone</a></li>
+  <li><a href="http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-recordset.html">AWS::Route53::RecordSet</a></li>
+  <li><a href="http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-values-alias.html">Values for Alias Resource Record Sets</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2016-06-02T00:00:00+02:00">June 2, 2016</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2016/03/03/custom-resource-for-generating-lambdas/" class="pagination--pager" title="Custom Resource for Generating Lambdas
+">Previous</a>
+    
+    
+      <a href="/blog/2016/07/07/continuous-deployment-on-aws-lambda/" class="pagination--pager" title="Continuous Deployment on AWS Lambda
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2017/11/22/aws-cli-mfa/" rel="permalink">AWS CLI MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can use a CloudFormation Template and AWS CLI profiles to enforce MFA for AWS CLI users.
+</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>
