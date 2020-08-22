@@ -1,0 +1,62 @@
+name: Build and deploy
+
+
+on:
+  push:
+    branches:
+      - dev
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2.3.2
+        with:
+          persist-credentials: false  # Must be set otherwise github-pages-deploy-action will not work
+
+      - name: Install rbenv ⏳
+        uses: masa-iwasaki/setup-rbenv@1.2.0
+
+      - name: Cache RBENV_ROOT 🗄
+        uses: actions/cache@v2.1.1
+        id: cache_rbenv
+        with:
+          path: /home/runner/.rbenv
+          key: ${{ runner.os }}-rbenv
+
+      - name: Install Ruby ⏳
+        run: |
+          eval "$(rbenv init -)"
+          rbenv install -s `cat .ruby-version`
+          # rbenv has added "/home/runner/.rbenv/shims" to PATH
+          echo "::set-env name=PATH::$PATH"
+          gem install bundler
+
+      - name: Cache Gems 🗄
+        uses: actions/cache@v2.1.1
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-gem-
+
+      - name: Install Gems ⏳
+        run: |
+          bundle config path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Build Jekyll 🏗
+        run: |
+          bundle exec jekyll build
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@3.5.9
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: master
+          FOLDER: _site
