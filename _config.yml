@@ -49,7 +49,7 @@ words_per_minute      : 200
 author:
   name             : "Mattias Severson"
   avatar           : "/assets/images/mattias-severson.jpg"
-  bio              : "Senior Software Consultant"
+  bio              : "Senior Software Engineer"
   location         : "Malmö, Sweden"
   email            :
   stackoverflow    : "303598/matsev"
