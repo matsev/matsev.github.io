@@ -256,4 +256,10 @@ var store = [{
         "tags": ["AWS","AWS CDK","cloud","JavaScript","MFA","security"],
         "url": "https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/",
         "teaser": null
+      },{
+        "title": "Automating Dependency Updates",
+        "excerpt":"Updating project dependencies is a task that is often neglected, especially in legacy projects that are “done” and just work without changes. It is easy to understand why, without automation it is tedious work that has to be repeated every so often for all of your projects. This post is...","categories": ["build automation","CI/CD","security"],
+        "tags": ["build automation","CI/CD","Dependabot","GitHub","security"],
+        "url": "https://matsev.github.io/blog/2020/09/01/automating-dependency-updates/",
+        "teaser": null
       }]

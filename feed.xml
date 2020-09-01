@@ -1,4 +1,88 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://matsev.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://matsev.github.io/" rel="alternate" type="text/html" /><updated>2020-08-29T22:05:39+02:00</updated><id>https://matsev.github.io/feed.xml</id><title type="html">Random Code Ramblings</title><subtitle>Mattias Severson's website. This is where I present my profile, list my public events, publish my blog posts and list references to my other profiles online.</subtitle><author><name>Mattias Severson</name></author><entry><title type="html">AWS CDK MFA</title><link href="https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/" rel="alternate" type="text/html" title="AWS CDK MFA" /><published>2020-03-23T00:00:00+01:00</published><updated>2020-03-23T00:00:00+01:00</updated><id>https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa</id><content type="html" xml:base="https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/">&lt;p&gt;The &lt;a href=&quot;https://aws.amazon.com/cdk/&quot;&gt;AWS CDK (Cloud Development Kit)&lt;/a&gt; is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://matsev.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://matsev.github.io/" rel="alternate" type="text/html" /><updated>2020-09-01T19:34:45+02:00</updated><id>https://matsev.github.io/feed.xml</id><title type="html">Random Code Ramblings</title><subtitle>Mattias Severson's website. This is where I present my profile, list my public events, publish my blog posts and list references to my other profiles online.</subtitle><author><name>Mattias Severson</name></author><entry><title type="html">Automating Dependency Updates</title><link href="https://matsev.github.io/blog/2020/09/01/automating-dependency-updates/" rel="alternate" type="text/html" title="Automating Dependency Updates" /><published>2020-09-01T00:00:00+02:00</published><updated>2020-09-01T00:00:00+02:00</updated><id>https://matsev.github.io/blog/2020/09/01/automating-dependency-updates</id><content type="html" xml:base="https://matsev.github.io/blog/2020/09/01/automating-dependency-updates/">&lt;p&gt;Updating project dependencies is a task that is often neglected, especially in legacy projects that are “done” and just work without changes. It is easy to understand why, without automation it is tedious work that has to be repeated every so often for all of your projects. This post is an introduction to &lt;a href=&quot;https://docs.github.com/en/github/administering-a-repository/keeping-your-dependencies-updated-automatically&quot;&gt;GitHub’s Dependabot&lt;/a&gt; which offloads the repetitive parts of the job to the machines.&lt;/p&gt;
+
+&lt;h2 id=&quot;motivation&quot;&gt;Motivation&lt;/h2&gt;
+
+&lt;p&gt;Perhaps the most important reason why you should spend time to keep your third party libraries up to date is that every now and then a new security vulnerability is discovered and your customers, your data and your business may be at stake. By dealing with updates regularly the risk of having a daunting cascade of migrations is mitigated and the workload is distributed over time. Furthermore, with tools such as Dependabot that enables both automation of discovering and execution of dependency version updates there is no excuse why this should be overlooked.&lt;/p&gt;
+
+&lt;h2 id=&quot;step-by-step&quot;&gt;Step by Step&lt;/h2&gt;
+
+&lt;p&gt;Updating third party dependencies typically involves the following steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Check out the project&lt;/li&gt;
+  &lt;li&gt;Find out which dependencies that can be updated. Typically, your project management tools can assist, the &lt;a href=&quot;https://www.mojohaus.org/versions-maven-plugin/index.html&quot;&gt;Versions Maven Plugin&lt;/a&gt; is helpful for Java Maven projects, &lt;a href=&quot;https://classic.yarnpkg.com/en/docs/cli/upgrade&quot;&gt;yarn upgrade&lt;/a&gt; and &lt;a href=&quot;https://classic.yarnpkg.com/en/docs/cli/upgrade-interactive&quot;&gt;yarn upgrade-interactive&lt;/a&gt; for JavaScript Yarn to name a few examples&lt;/li&gt;
+  &lt;li&gt;Fix API incompatibility issues that the update incurred&lt;/li&gt;
+  &lt;li&gt;Submit a pull request&lt;/li&gt;
+  &lt;li&gt;Rebuild and retest the project to verify that there has been no regression&lt;/li&gt;
+  &lt;li&gt;Deploy&lt;/li&gt;
+  &lt;li&gt;Repeat&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Assuming that you already use a build server for continuous integration that takes care of step &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;5&lt;/code&gt; and possibly also step &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;6&lt;/code&gt; if you also have continuous deployment in place. With Dependabot configured in the project, steps &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;2&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;4&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;7&lt;/code&gt; are also managed automatically. What about step &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;3&lt;/code&gt;, API incapability issues? It turns out, this is not always a problem. If your dependencies have adopted &lt;a href=&quot;https://semver.org&quot;&gt;semantic versioning&lt;/a&gt;, then you will have a indicator if the update will succeed or fail without code changes. If the new version is just a minor or patch release it is likely to pass. Even if it is a new major version, your code may still work if you are not using the parts of the API with the breaking changes.&lt;/p&gt;
+
+&lt;h2 id=&quot;dependabot-example&quot;&gt;Dependabot Example&lt;/h2&gt;
+
+&lt;p&gt;This example uses &lt;a href=&quot;https://docs.github.com/en/github/administering-a-repository/keeping-your-dependencies-updated-automatically&quot;&gt;GitHub’s Dependabot&lt;/a&gt; for dependency checks for two reasons. Firstly, it is provided out of the box for GitHub projects. Meaning, you don’t have to deploy or manage any infrastructure or build server to make use of it. Secondly, it does not require much configuration to get started:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Create a &lt;a href=&quot;https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates#about-the-dependabotyml-file&quot;&gt;dependabot.yml&lt;/a&gt; file in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.github&lt;/code&gt; folder in your project root&lt;/li&gt;
+  &lt;li&gt;specify &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;version: 2&lt;/code&gt; and an array of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;updates&lt;/code&gt; (one configuration for each package manager that you would like to check)&lt;/li&gt;
+  &lt;li&gt;Each update have three required options (there are more, please &lt;a href=&quot;https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates&quot;&gt;configuration options&lt;/a&gt; for an exhaustive list)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;option&lt;/th&gt;
+      &lt;th&gt;description&lt;/th&gt;
+      &lt;th&gt;example&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;package-ecosystem&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Package manager to use&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gradle&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;directory&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Location of the package manifest (in relation to the repository root)&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;schedule.interval&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;How often to check for updates&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&quot;weekly&quot;&lt;/code&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Thus, a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dependabot.yml&lt;/code&gt; file for a Docker project could look something like:&lt;/p&gt;
+
+&lt;div class=&quot;language-yml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;version&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2&lt;/span&gt;
+&lt;span class=&quot;na&quot;&gt;updates&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+
+  &lt;span class=&quot;c1&quot;&gt;# Enable version updates for Docker&lt;/span&gt;
+  &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;package-ecosystem&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;docker&quot;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Look for a `Dockerfile` in the `root` directory&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;directory&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;/&quot;&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# Check for updates once a week&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;schedule&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;na&quot;&gt;interval&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;weekly&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;There is nothing that prevents Dependabot from checking two (or more) different build systems. For example, this site is built using bundler and GitHub Actions. The corresponding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dependabot.yml&lt;/code&gt; file is in the GitHub &lt;a href=&quot;https://github.com/matsev/matsev.github.io/blob/dev/.github/dependabot.yml&quot;&gt;project repo&lt;/a&gt; and there is also an example of a &lt;a href=&quot;https://github.com/matsev/matsev.github.io/pull/2&quot;&gt;pull request&lt;/a&gt; generated by dependabot.&lt;/p&gt;
+
+&lt;h2 id=&quot;alternatives&quot;&gt;Alternatives&lt;/h2&gt;
+
+&lt;p&gt;Two other tools similar to Dependabot are &lt;a href=&quot;https://snyk.io&quot;&gt;Snyk&lt;/a&gt; and &lt;a href=&quot;https://renovate.whitesourcesoftware.com&quot;&gt;WhiteSource Renovate&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.github.com/en/github/administering-a-repository/about-github-dependabot-version-updates#supported-repositories-and-ecosystems&quot;&gt;Dependabot supported repositories and ecosystems&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates&quot;&gt;Configuration options for dependency updates&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>Mattias Severson</name></author><category term="build automation" /><category term="CI/CD" /><category term="security" /><category term="build automation" /><category term="CI/CD" /><category term="Dependabot" /><category term="GitHub" /><category term="security" /><summary type="html">Updating project dependencies is a task that is often neglected, especially in legacy projects that are “done” and just work without changes. It is easy to understand why, without automation it is tedious work that has to be repeated every so often for all of your projects. This post is an introduction to GitHub’s Dependabot which offloads the repetitive parts of the job to the machines.</summary></entry><entry><title type="html">AWS CDK MFA</title><link href="https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/" rel="alternate" type="text/html" title="AWS CDK MFA" /><published>2020-03-23T00:00:00+01:00</published><updated>2020-03-23T00:00:00+01:00</updated><id>https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa</id><content type="html" xml:base="https://matsev.github.io/blog/2020/03/23/aws-cdk-mfa/">&lt;p&gt;The &lt;a href=&quot;https://aws.amazon.com/cdk/&quot;&gt;AWS CDK (Cloud Development Kit)&lt;/a&gt; is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to configure AWS resources using programming languages like TypeScript, JavaScript, Java, Python and C#. In this post, I will present how you can improve the security of your AWS account by enabling MFA (Multi Factor Authentication) when you are working with the AWS CDK.&lt;/p&gt;
 
 &lt;h2 id=&quot;update&quot;&gt;Update&lt;/h2&gt;
 
@@ -1448,133 +1532,4 @@ zip &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; greeting-lambda.zip &lt;spa
   &lt;li&gt;&lt;a href=&quot;http://docs.aws.amazon.com/lambda/latest/dg/versioning-aliases.html&quot;&gt;AWS Lambda Versioning and Aliases&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;http://docs.aws.amazon.com/cli/latest/reference/lambda/&quot;&gt;Lambda AWS CLI&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://stedolan.github.io/jq/manual/&quot;&gt;jq Manual&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Mattias Severson</name></author><category term="CI/CD" /><category term="cloud" /><category term="DevOps" /><category term="AWS" /><category term="bash" /><category term="CI/CD" /><category term="cloud" /><category term="CloudFormation" /><category term="DevOps" /><category term="Lambda" /><category term="Node.js" /><category term="serverless" /><summary type="html">Example of how a you can use a set of bash scripts to implement continuous deployment on AWS Lambda, with reference to a working sample project at GitHub.</summary></entry><entry><title type="html">Route53 Configuration for Elastic Beanstalk</title><link href="https://matsev.github.io/blog/2016/06/02/route53-configuration-for-elastic-beanstalk/" rel="alternate" type="text/html" title="Route53 Configuration for Elastic Beanstalk" /><published>2016-06-02T00:00:00+02:00</published><updated>2016-06-02T00:00:00+02:00</updated><id>https://matsev.github.io/blog/2016/06/02/route53-configuration-for-elastic-beanstalk</id><content type="html" xml:base="https://matsev.github.io/blog/2016/06/02/route53-configuration-for-elastic-beanstalk/">&lt;p&gt;The AWS documentation is extensive, yet I find it both incomprehensible and overwhelming from time to time. Recently, I struggled to configure a HostedZoneId in a Route53 AliasTarget targeting an Elastic Beanstalk environment using CloudFormation.&lt;/p&gt;
-
-&lt;h2 id=&quot;challenge&quot;&gt;Challenge&lt;/h2&gt;
-
-&lt;p&gt;I had an ElasticBeanstalk environment with an ELB (such as the &lt;a href=&quot;http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-eu-west-1.html#d0e136547&quot;&gt;Elastic Beanstalk Node.js sample application&lt;/a&gt; available at the AWS site). Now, the task was to configure DNS based on a Route53 Alias Resource Record Set (see &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-choosing-alias-non-alias.html&quot;&gt;Choosing Between Alias and Non-Alias Resource Record Sets&lt;/a&gt; for an explanation).&lt;/p&gt;
-
-&lt;h2 id=&quot;configuration&quot;&gt;Configuration&lt;/h2&gt;
-
-&lt;p&gt;I started by adding a parameter for the domain name:&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Parameters&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;DomainName&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Description&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;The domain name of the app&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Type&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;String&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Default&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;example.com&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;ConstraintDescription&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Must be valid domain name&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Next, I added two resources for the HostedZone and the RecordSet:&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Resources&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;SampleHostedZone&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Type&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;AWS::Route53::HostedZone&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Properties&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Name&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Ref&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;DomainName&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;SampleRecordSet&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Type&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;AWS::Route53::RecordSet&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Properties&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;AliasTarget&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;DNSName&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Fn::GetAtt&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;SampleEnvironment&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;EndpointURL&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;???&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Ref&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;SampleHostedZone&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Name&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Ref&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;DomainName&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Type&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;A&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;hostedzoneid-for-aliastarget&quot;&gt;HostedZoneId for AliasTarget?&lt;/h2&gt;
-
-&lt;p&gt;The most difficult obstacle was to find the correct value for the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;HostedZoneId&lt;/code&gt; for the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AliasTarget&lt;/code&gt; configuration (marked as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;???&lt;/code&gt; above) . Normally, when configuring an ELB using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWS::ElasticLoadBalancing::LoadBalancer&lt;/code&gt; resource, one can use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;{ &quot;Fn::GetAtt&quot; : [&quot;myELB&quot;, &quot;CanonicalHostedZoneNameID&quot;] }&lt;/code&gt; to get the id of the hosted zone. Unfortunately, this option is not available for Beanstalk environments so that does not work. Next, I found a table in the AWS documentation that &lt;a href=&quot;http://docs.aws.amazon.com/general/latest/gr/rande.html#elasticbeanstalk_region&quot;&gt;maps AWS regions to Amazon Route 53 Hosted Zone ID&lt;/a&gt;. According to the table, the HostedZoneId for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eu-west-1&lt;/code&gt; where my stack resides should be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Z2NYPWQ7DFZAZH&lt;/code&gt;. However, the stack update failed miserably:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;20:31:03 UTC+0200 CREATE_FAILED AWS::Route53::RecordSet SampleRecordSet Tried to create an alias that targets awseb-e-n-AWSEBLoa-[ABCDEFGHIJKLK-1234567890].eu-west-1.elb.amazonaws.com., type A in zone Z2NYPWQ7DFZAZH, but the alias target name does not lie within the target zone&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;What to do? By deploying just the Beanstalk configuration (before adding Route53) it is possible to lookup the Hosted Zone Id, either by looking at the “Load Balancers” in the EC2 service in the AWS console, or by calling the CLI:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;aws elb describe-load-balancers &lt;span class=&quot;nt&quot;&gt;--region&lt;/span&gt; eu-west-1
-&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;s2&quot;&gt;&quot;LoadBalancerDescriptions&quot;&lt;/span&gt;: &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;
-        &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;...]		
-            &lt;span class=&quot;s2&quot;&gt;&quot;CanonicalHostedZoneNameID&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z3NF1Z3NOM5OY2&quot;&lt;/span&gt;,
-            &lt;span class=&quot;s2&quot;&gt;&quot;CanonicalHostedZoneName&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;awseb-e-n-AWSEBLoa-[ABCDEFGHIJKLK-1234567890].eu-west-1.elb.amazonaws.com&quot;&lt;/span&gt;,
-            &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;...]
-        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-        
-
-I updated the HostedZoneId &lt;span class=&quot;k&quot;&gt;in &lt;/span&gt;the CloudFormation template to &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;Z3NF1Z3NOM5OY2&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt; and it worked.
-
-&lt;span class=&quot;c&quot;&gt;## Solution&lt;/span&gt;
-
-Now that I knew what to look &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt;, it was easier to find relevant hits. Some Googling revealed &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;this issue]&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;https://github.com/fog/fog/issues/1098&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; that contains a list of AWS regions mapped to Beanstalks HostedZoneIds. The author claims that the mapping can be used &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;all accounts. Consequently, I added the following mapping to the template:
-
-&lt;span class=&quot;sb&quot;&gt;```&lt;/span&gt;json
-&lt;span class=&quot;s2&quot;&gt;&quot;Mappings&quot;&lt;/span&gt; : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-  &lt;span class=&quot;s2&quot;&gt;&quot;Beanstalk2Route53HostedZoneId&quot;&lt;/span&gt; : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;s2&quot;&gt;&quot;us-east-1&quot;&lt;/span&gt;      : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z3DZXE0Q79N41H&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-    &lt;span class=&quot;s2&quot;&gt;&quot;us-west-1&quot;&lt;/span&gt;      : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z1M58G0W56PQJA&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-    &lt;span class=&quot;s2&quot;&gt;&quot;us-west-2&quot;&lt;/span&gt;      : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z33MTJ483KN6FU&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-    &lt;span class=&quot;s2&quot;&gt;&quot;eu-west-1&quot;&lt;/span&gt;      : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z3NF1Z3NOM5OY2&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-    &lt;span class=&quot;s2&quot;&gt;&quot;ap-northeast-1&quot;&lt;/span&gt; : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z2YN17T5R711GT&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-    &lt;span class=&quot;s2&quot;&gt;&quot;ap-southeast-1&quot;&lt;/span&gt; : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z1WI8VXHPB1R38&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-    &lt;span class=&quot;s2&quot;&gt;&quot;sa-east-1&quot;&lt;/span&gt;      : &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;: &lt;span class=&quot;s2&quot;&gt;&quot;Z2ES78Y61JGQKS&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;,
-
-  &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;...]
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;And updated the configuration of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;AWS::Route53::RecordSet&lt;/code&gt; accordingly:&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Resources&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        
-  &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;SampleRecordSet&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Type&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;AWS::Route53::RecordSet&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Properties&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;AliasTarget&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;DNSName&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Fn::GetAtt&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;SampleEnvironment&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;EndpointURL&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Fn::FindInMap&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Beanstalk2Route53HostedZoneId&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Ref&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;AWS::Region&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;HostedZoneId&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Ref&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;SampleHostedZone&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Name&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Ref&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;DomainName&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-      &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;Type&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;A&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-  &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;whats-next&quot;&gt;What’s Next?&lt;/h2&gt;
-
-&lt;p&gt;By now, Route53 should be successfully configured, however that does not mean that DNS is working. Depending on where you have registered your domain, you need to &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/creating-migrating.html&quot;&gt;Configuring Amazon Route 53 as Your DNS Service&lt;/a&gt; (specifically, take a closer look at &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/MigratingDNS.html#Step_UpdateRegistrar&quot;&gt;Updating Your Registrar’s Name Servers&lt;/a&gt;). It may also interest you that Route 53 can also be used for &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/registrar.html&quot;&gt;registering and transferring&lt;/a&gt; domain names to AWS.&lt;/p&gt;
-
-&lt;h2 id=&quot;resources&quot;&gt;Resources&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/matsev/route53-beanstalk&quot;&gt;Sample project&lt;/a&gt; at GitHub including complete CloudFormation template&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-route53-hostedzone.html&quot;&gt;AWS::Route53::HostedZone&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-route53-recordset.html&quot;&gt;AWS::Route53::RecordSet&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-values-alias.html&quot;&gt;Values for Alias Resource Record Sets&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Mattias Severson</name></author><category term="cloud" /><category term="AWS" /><category term="Beanstalk" /><category term="cloud" /><category term="CloudFormation" /><category term="Route53" /><summary type="html">Blog post about HostedZoneId configuration for a Route53 AliasTarget targeting an Elastic Beanstalk environment in CloudFormation.</summary></entry></feed>
+&lt;/ul&gt;</content><author><name>Mattias Severson</name></author><category term="CI/CD" /><category term="cloud" /><category term="DevOps" /><category term="AWS" /><category term="bash" /><category term="CI/CD" /><category term="cloud" /><category term="CloudFormation" /><category term="DevOps" /><category term="Lambda" /><category term="Node.js" /><category term="serverless" /><summary type="html">Example of how a you can use a set of bash scripts to implement continuous deployment on AWS Lambda, with reference to a working sample project at GitHub.</summary></entry></feed>
