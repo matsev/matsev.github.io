@@ -6,7 +6,7 @@ toc: true
 
 ## Mattias Severson
 
-Mattias Severson is a senior software architect and engineer specialized in cloud based applications, scalable solutions and build automation. He has been working primarily with AWS and Node.js lately, but he has also deep experience of Java backend architecture in general and Spring Framework in particular.
+Mattias Severson is a senior software architect and engineer specialized in cloud based applications, scalable solutions, infrastructure as code and build automation. He has been working primarily with AWS and Node.js lately, but he has also deep experience of Java backend architecture in general and Spring Framework in particular.
 
 Mattias has experience from many different environments, including everything between big international projects that last for years and solo, single day jobs. He is a clean code proponent who appreciates Test Driven Development and Agile methodologies. Mattias is open-minded and curious about new technologies. Consequently, he believes in continuous improvement on a personal level as well as in the projects that he is working on.
 
