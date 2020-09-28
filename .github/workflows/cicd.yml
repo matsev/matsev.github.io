@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.2
+        uses: actions/checkout@v2.3.3
         with:
           persist-credentials: false  # Must be set otherwise github-pages-deploy-action will not work
 
