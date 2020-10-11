@@ -1,0 +1,584 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.2 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>EventBridge and EC2 Spot Instances - Random Code Ramblings</title>
+<meta name="description" content="In a recent project, we were using AWS EC2 Spot instances as part of our cloud test environment. A good solution which catered for cost savings, but as expected the instances were interrupted from time to time. One limitation was that we did not know why the instance stopped, was it manually terminated, stopped by an application error or was it an EC2 spot interruption? This blog post shows how Amazon EventBridge can be configured to trigger a simple Lambda function when spot instances are interrupted.">
+
+
+  <meta name="author" content="Mattias Severson">
+  
+  <meta property="article:author" content="Mattias Severson">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Random Code Ramblings">
+<meta property="og:title" content="EventBridge and EC2 Spot Instances">
+<meta property="og:url" content="https://matsev.github.io/blog/2020/10/11/eventbridge-ec2-spot-instances/">
+
+
+  <meta property="og:description" content="In a recent project, we were using AWS EC2 Spot instances as part of our cloud test environment. A good solution which catered for cost savings, but as expected the instances were interrupted from time to time. One limitation was that we did not know why the instance stopped, was it manually terminated, stopped by an application error or was it an EC2 spot interruption? This blog post shows how Amazon EventBridge can be configured to trigger a simple Lambda function when spot instances are interrupted.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2020-10-11T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://matsev.github.io/blog/2020/10/11/eventbridge-ec2-spot-instances/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": "Mattias Severson",
+      "url": "https://matsev.github.io/"
+    
+  }
+</script>
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css">
+
+<!--[if IE]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <h2 class="screen-reader-text">Skip links</h2>
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/">
+          Random Code Ramblings
+          <span class="site-subtitle">offloading a software engineer's mind</span>
+        </a>
+        <ul class="visible-links"><li class="masthead__menu-item">
+              <a href="/blog/" title="Software related blog posts">Blog</a>
+            </li><li class="masthead__menu-item">
+              <a href="/talks/" title="Presentations that I have made">Talks</a>
+            </li><li class="masthead__menu-item">
+              <a href="/about/" title="Information about me and this web site">About</a>
+            </li></ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="https://schema.org/Person">
+
+  
+    <div class="author__avatar">
+      
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
+      
+    </div>
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
+    
+    
+      <div class="author__bio" itemprop="description">
+        <p>Senior Software Engineer</p>
+
+      </div>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+        </li>
+      
+
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+            <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+
+  <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="EventBridge and EC2 Spot Instances">
+    <meta itemprop="description" content="In a recent project, we were using AWS EC2 Spot instances as part of our cloud test environment. A good solution which catered for cost savings, but as expected the instances were interrupted from time to time. One limitation was that we did not know why the instance stopped, was it manually terminated, stopped by an application error or was it an EC2 spot interruption? This blog post shows how Amazon EventBridge can be configured to trigger a simple Lambda function when spot instances are interrupted.">
+    <meta itemprop="datePublished" content="2020-10-11T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title" itemprop="headline">EventBridge and EC2 Spot Instances
+</h1>
+          
+
+
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+  <li><a href="#introduction">Introduction</a></li>
+  <li><a href="#infrastructure">Infrastructure</a></li>
+  <li><a href="#events-event-filters-and-event-targets">Events, Event Filters and Event Targets</a></li>
+  <li><a href="#application-code">Application Code</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p>In a recent project, we were using <a href="https://aws.amazon.com/ec2/spot/">AWS EC2 Spot instances</a> as part of our cloud test environment. A good solution which catered for cost savings, but as expected the instances were interrupted from time to time. One limitation was that we did not know <em>why</em> the instance stopped, was it manually terminated, stopped by an application error or was it an EC2 spot interruption? This blog post shows how <a href="https://aws.amazon.com/eventbridge/">Amazon EventBridge</a> can be configured to trigger a simple Lambda function when spot instances are interrupted.</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>In case you are not familiar with EventBridge, here is a paragraph copied from its <a href="https://aws.amazon.com/eventbridge/">product page</a>:</p>
+<blockquote>
+  <p>Amazon EventBridge is a serverless event bus that makes it easy to connect applications together using data from your own applications, integrated Software-as-a-Service (SaaS) applications, and AWS services. EventBridge delivers a stream of real-time data from event sources, such as Zendesk, Datadog, or Pagerduty, and routes that data to targets like AWS Lambda. You can set up routing rules to determine where to send your data to build application architectures that react in real time to all of your data sources.</p>
+</blockquote>
+
+<p>As can be seen, EventBridge is a versatile and powerful tool. In this particular example, we will see how it can be used for the specific purpose of detecting EC2 Spot instance interruptions.</p>
+
+<h2 id="infrastructure">Infrastructure</h2>
+
+<p>The two main components of the infrastructure is one <a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/create-eventbridge-rule.html">EventBridge Rule</a> and a Lambda function that is triggered when an event is matched by the rule. Using the <a href="https://docs.aws.amazon.com/cdk/latest/guide/home.html">AWS CDK</a>, it is a pretty straight forward configuration:</p>
+
+<div class="language-typescript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="o">*</span> <span class="k">as</span> <span class="nx">cdk</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@aws-cdk/core</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="o">*</span> <span class="k">as</span> <span class="nx">lambda</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@aws-cdk/aws-lambda</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="o">*</span> <span class="k">as</span> <span class="nx">logs</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">@aws-cdk/aws-logs</span><span class="dl">"</span><span class="p">;</span>
+<span class="k">import</span> <span class="o">*</span> <span class="k">as</span> <span class="nx">events</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@aws-cdk/aws-events</span><span class="dl">'</span><span class="p">;</span>
+<span class="k">import</span> <span class="o">*</span> <span class="k">as</span> <span class="nx">eventsTargets</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">@aws-cdk/aws-events-targets</span><span class="dl">'</span>
+
+
+<span class="k">export</span> <span class="kd">class</span> <span class="nx">SpotInstantceEventDetectorStack</span> <span class="kd">extends</span> <span class="nx">cdk</span><span class="p">.</span><span class="nx">Stack</span> <span class="p">{</span>
+  <span class="kd">constructor</span><span class="p">(</span><span class="nx">scope</span><span class="p">:</span> <span class="nx">cdk</span><span class="p">.</span><span class="nx">Construct</span><span class="p">,</span> <span class="nx">id</span><span class="p">:</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">props</span><span class="p">?:</span> <span class="nx">cdk</span><span class="p">.</span><span class="nx">StackProps</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">super</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">props</span><span class="p">);</span>
+
+    <span class="c1">// Lambda function that will triggered</span>
+    <span class="kd">const</span> <span class="nx">spotInstanceEventLambda</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">lambda</span><span class="p">.</span><span class="nb">Function</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="dl">'</span><span class="s1">SpotInstanceEventLambda</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+      <span class="na">description</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Handles Spot Instance events</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">runtime</span><span class="p">:</span> <span class="nx">lambda</span><span class="p">.</span><span class="nx">Runtime</span><span class="p">.</span><span class="nx">NODEJS_12_X</span><span class="p">,</span>
+      <span class="na">code</span><span class="p">:</span> <span class="k">new</span> <span class="nx">lambda</span><span class="p">.</span><span class="nx">AssetCode</span><span class="p">(</span><span class="dl">'</span><span class="s1">lambdas</span><span class="dl">'</span><span class="p">),</span>
+      <span class="na">handler</span><span class="p">:</span> <span class="dl">'</span><span class="s1">spot-instance-event-lambda.handler</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">logRetention</span><span class="p">:</span> <span class="nx">logs</span><span class="p">.</span><span class="nx">RetentionDays</span><span class="p">.</span><span class="nx">TWO_WEEKS</span><span class="p">,</span>
+    <span class="p">});</span>
+
+    <span class="c1">// Events Rule that will trigger the Lambda when an EC2 interruption event occurs</span>
+    <span class="k">new</span> <span class="nx">events</span><span class="p">.</span><span class="nx">Rule</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="dl">'</span><span class="s1">SpotInstanceEventRule</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
+      <span class="na">description</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Rule for tracking spot instance interruptions</span><span class="dl">'</span><span class="p">,</span>
+      <span class="na">eventPattern</span><span class="p">:</span> <span class="p">{</span>
+        <span class="na">source</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">aws.ec2</span><span class="dl">'</span><span class="p">],</span>
+        <span class="na">detailType</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">EC2 Spot Instance Interruption Warning</span><span class="dl">'</span><span class="p">],</span>
+      <span class="p">},</span>
+      <span class="na">targets</span><span class="p">:</span> <span class="p">[</span><span class="k">new</span> <span class="nx">eventsTargets</span><span class="p">.</span><span class="nx">LambdaFunction</span><span class="p">(</span><span class="nx">spotInstanceEventLambda</span><span class="p">)],</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Apart from the EventBridge Rule and the Lambda function, three(*) more AWS resources are generated, one IAM role that is configured with the <code class="language-plaintext highlighter-rouge">AWSLambdaBasicExecutionRole</code> (thus allowing the Lambda to log to CloudWatch), a <a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-permissions.html">Lambda Permission</a> that allows EventBridge to invoke the Lambda and lastly a <code class="language-plaintext highlighter-rouge">CDKMetadata</code> resource that, as the name implies, contains metadata about the CDK.</p>
+
+<p>(*) Actually, with the <code class="language-plaintext highlighter-rouge">logRetention</code> configuration in place there are yet another four resources created. This setting causes the CDK to configure the Lambda CloudWatch log retention policy using a custom resource with another Lambda function, an IAM Role and an IAM Policy.</p>
+
+<h2 id="events-event-filters-and-event-targets">Events, Event Filters and Event Targets</h2>
+
+<p>In the sample above, events are filtered using the <code class="language-plaintext highlighter-rouge">eventPattern</code> configuration part of the event rule. All AWS event have the same <a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/aws-events.html">event structure</a> and here we use the <code class="language-plaintext highlighter-rouge">source</code> and <code class="language-plaintext highlighter-rouge">detailType</code> as <a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/filtering-examples-structure.html">event pattern</a> to filter out the Spot instance interruption events. Please see the EventBridge user guide for a comprehensive list of <a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/event-types.html">Event Examples from Supported AWS Services</a>. 
+Going further the <code class="language-plaintext highlighter-rouge">targets</code> property have been configured with the Lambda function. It should be noted that there are many more <a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-targets.html">EventBridge Targets</a> to choose from, such as Kinesis, StepFunctions, API Gateway and so on.</p>
+
+<h2 id="application-code">Application Code</h2>
+
+<p>In its simplest form, the Lambda function logs the important parts of the spot instance interruption events to CloudWatch:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">handler</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">{</span> <span class="nx">time</span><span class="p">,</span> <span class="nx">region</span><span class="p">,</span> <span class="na">detail</span><span class="p">:</span> <span class="p">{</span> <span class="dl">'</span><span class="s1">instance-id</span><span class="dl">'</span><span class="p">:</span> <span class="nx">instanceId</span><span class="p">,</span> <span class="dl">'</span><span class="s1">instance-action</span><span class="dl">'</span><span class="p">:</span> <span class="nx">instanceAction</span> <span class="p">}</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">event</span><span class="p">;</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span> <span class="nx">time</span><span class="p">,</span> <span class="nx">region</span><span class="p">,</span> <span class="nx">instanceId</span><span class="p">,</span> <span class="nx">instanceAction</span> <span class="p">}));</span>
+<span class="p">};</span>
+</code></pre></div></div>
+
+<p>Now, how would you like to be notified? What is important for your service? Perhaps logging to CloudWatch like above will suffice? Maybe it makes sense to store the events in DynamoDB? Or perhaps send a Slack notification? Different teams and different projects have different requirements, but this gives you a good starting point for further endeavours.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li><a href="https://github.com/matsev/spot-instance-event-detector">Example Project at GitHub</a></li>
+  <li><a href="https://aws.amazon.com/cdk/">AWS Cloud Development Kit (CDK)</a></li>
+  <li><a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-interruptions.html">Spot Instance interruptions</a></li>
+  <li><a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/aws-events.html">AWS Events</a></li>
+  <li><a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/filtering-examples-structure.html">Event Patterns</a></li>
+  <li><a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/eventbridge-targets.html">EventBridge Targets</a></li>
+  <li><a href="https://docs.aws.amazon.com/eventbridge/latest/userguide/event-types.html">EventBridge Event Examples from Supported AWS Services</a>.</li>
+  <li><a href="https://aws.amazon.com/blogs/compute/taking-advantage-of-amazon-ec2-spot-instance-interruption-notices/">Taking Advantage of Amazon EC2 Spot Instance Interruption Notices</a></li>
+</ul>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-10-11T00:00:00+02:00">October 11, 2020</time></p>
+
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/blog/2020/09/01/automating-dependency-updates/" class="pagination--pager" title="Automating Dependency Updates
+">Previous</a>
+    
+    
+      <a href="#" class="pagination--pager disabled">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/09/01/automating-dependency-updates/" rel="permalink">Automating Dependency Updates
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Updating project dependencies is a task that is often neglected, especially in legacy projects that are “done” and just work without changes. It is easy to u...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2020/03/23/aws-cdk-mfa/" rel="permalink">AWS CDK MFA
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">The AWS CDK (Cloud Development Kit) is a welcome contribution to the “Infrastructure as Code” family. It is a development framework that allows you to config...</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/09/11/aws-elasticsearch-javascript-client/" rel="permalink">AWS Elasticsearch JavaScript Client
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that shows how an AWS Elasticsearch JavaScript Client can be implemented in addition to an example of an AWS Elasticsearch IAM policy implementation.
+</p>
+  </article>
+</div>
+
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title no_toc" itemprop="headline">
+      
+        <a href="/blog/2018/07/03/aws-glue-dev-endpoint-deleter/" rel="permalink">AWS Glue Dev Endpoint Deleter
+</a>
+      
+    </h2>
+    
+
+
+    <p class="archive__item-excerpt" itemprop="description">Blog post that describes how you can decrease the costs associated with AWS Glue developer endpoint by implementing an AWS Lambda function that deletes them ...</p>
+  </article>
+</div>
+
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+
+    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/assets/js/main.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

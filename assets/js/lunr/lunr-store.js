@@ -262,4 +262,10 @@ var store = [{
         "tags": ["build automation","CI/CD","Dependabot","GitHub","security"],
         "url": "https://matsev.github.io/blog/2020/09/01/automating-dependency-updates/",
         "teaser": null
+      },{
+        "title": "EventBridge and EC2 Spot Instances",
+        "excerpt":"In a recent project, we were using AWS EC2 Spot instances as part of our cloud test environment. A good solution which catered for cost savings, but as expected the instances were interrupted from time to time. One limitation was that we did not know why the instance stopped, was...","categories": ["cloud","serverless"],
+        "tags": ["AWS","cdk","cloud","EventBridge","Lambda","serverless","spot instance"],
+        "url": "https://matsev.github.io/blog/2020/10/11/eventbridge-ec2-spot-instances/",
+        "teaser": null
       }]
