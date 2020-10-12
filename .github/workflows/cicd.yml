@@ -19,23 +19,8 @@ jobs:
         with:
           persist-credentials: false  # Must be set otherwise github-pages-deploy-action will not work
 
-      - name: Install rbenv ⏳
-        uses: masa-iwasaki/setup-rbenv@1.2.0
-
-      - name: Cache RBENV_ROOT 🗄
-        uses: actions/cache@v2.1.2
-        id: cache_rbenv
-        with:
-          path: /home/runner/.rbenv
-          key: ${{ runner.os }}-rbenv
-
       - name: Install Ruby ⏳
-        run: |
-          eval "$(rbenv init -)"
-          rbenv install -s `cat .ruby-version`
-          # rbenv has added "/home/runner/.rbenv/shims" to PATH
-          echo "/home/runner/.rbenv/shims" >> $GITHUB_PATH
-          gem install bundler
+        uses: ruby/setup-ruby@v1.47.0
 
       - name: Cache Gems 🗄
         uses: actions/cache@v2.1.2
