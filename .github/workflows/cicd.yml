@@ -23,7 +23,7 @@ jobs:
         uses: masa-iwasaki/setup-rbenv@1.2.0
 
       - name: Cache RBENV_ROOT 🗄
-        uses: actions/cache@v2.1.1
+        uses: actions/cache@v2.1.2
         id: cache_rbenv
         with:
           path: /home/runner/.rbenv
@@ -38,7 +38,7 @@ jobs:
           gem install bundler
 
       - name: Cache Gems 🗄
-        uses: actions/cache@v2.1.1
+        uses: actions/cache@v2.1.2
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
