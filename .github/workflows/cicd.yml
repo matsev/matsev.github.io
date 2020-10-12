@@ -34,7 +34,7 @@ jobs:
           eval "$(rbenv init -)"
           rbenv install -s `cat .ruby-version`
           # rbenv has added "/home/runner/.rbenv/shims" to PATH
-          echo "::set-env name=PATH::$PATH"
+          echo "/home/runner/.rbenv/shims" >> $GITHUB_PATH
           gem install bundler
 
       - name: Cache Gems 🗄
