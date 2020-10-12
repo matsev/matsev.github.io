@@ -18,7 +18,7 @@ gem "minimal-mistakes-jekyll", "~> 4.20.2"
 # If you have any plugins, put them here!
 group :jekyll_plugins do
   gem "jekyll-archives", "~> 2.2.1"
-  gem "jekyll-include-cache", "~> 0.2.0"
+  gem "jekyll-include-cache", "~> 0.2.1"
   gem "jekyll-octicons", "~> 11.0.0"
 end
 
