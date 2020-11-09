@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.20.2 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.21.0 by Michael Rose
   Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -324,8 +324,8 @@
               <ul class="toc__menu">
   <li><a href="#goal">Goal</a></li>
   <li><a href="#cloudformation-resources">CloudFormation Resources</a>
-      - {:.} <a href="#api-gateway-rest-api">API Gateway Rest API</a>
-      - {:.} <a href="#redundant-cloudformation-resources">Redundant CloudFormation Resources</a></li>
+     -  <a href="#api-gateway-rest-api">API Gateway Rest API</a>
+     -  <a href="#redundant-cloudformation-resources">Redundant CloudFormation Resources</a></li>
   <li><a href="#test">Test</a></li>
   <li><a href="#considerations">Considerations</a></li>
 </ul>
@@ -341,7 +341,7 @@
 
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">handler</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="kd">const</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">;</span>
-  <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="s2">!`</span><span class="p">};</span>
+  <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`</span><span class="err">Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="err">!</span><span class="s2">`</span><span class="p">};</span>
   <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
 <span class="p">};</span>
 </code></pre></div></div>

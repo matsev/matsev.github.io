@@ -1,5 +1,5 @@
 /* ========================================================================== Default skin ========================================================================== */
-/*! Minimal Mistakes Jekyll Theme 4.20.2 by Michael Rose Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes Licensed under MIT (https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE) */
+/*! Minimal Mistakes Jekyll Theme 4.21.0 by Michael Rose Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes Licensed under MIT (https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE) */
 /* Variables */
 /* ========================================================================== Variables ========================================================================== */
 /* Typography ========================================================================== */
@@ -758,13 +758,15 @@ tr, td, th { vertical-align: middle; }
 /* Priority plus navigation ========================================================================== */
 .greedy-nav { position: relative; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; min-height: 2em; background: #fff; }
 
-.greedy-nav a { display: block; margin: 0 1rem; color: #6f777d; text-decoration: none; }
+.greedy-nav a { display: block; margin: 0 1rem; color: #6f777d; text-decoration: none; -webkit-transition: none; transition: none; }
 
 .greedy-nav a:hover { color: #53595e; }
 
 .greedy-nav a.site-logo { margin-left: 0; margin-right: 0.5rem; }
 
 .greedy-nav a.site-title { margin-left: 0; }
+
+.greedy-nav img { -webkit-transition: none; transition: none; }
 
 .greedy-nav__toggle { -ms-flex-item-align: center; align-self: center; height: 2rem; border: 0; outline: none; background-color: transparent; cursor: pointer; }
 
