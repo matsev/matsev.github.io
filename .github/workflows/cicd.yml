@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false  # Must be set otherwise github-pages-deploy-action will not work
 
       - name: Install Ruby ⏳
-        uses: ruby/setup-ruby@v1.47.0
+        uses: ruby/setup-ruby@v1.48.0
 
       - name: Cache Gems 🗄
         uses: actions/cache@v2.1.2
