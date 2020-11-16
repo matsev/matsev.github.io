@@ -347,7 +347,7 @@
 
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">exports</span><span class="p">.</span><span class="nx">handler</span> <span class="o">=</span> <span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="kd">const</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">name</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">World</span><span class="dl">'</span><span class="p">;</span>
-  <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`</span><span class="err">Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="err">!</span><span class="s2">`</span><span class="p">};</span>
+  <span class="kd">const</span> <span class="nx">response</span> <span class="o">=</span> <span class="p">{</span><span class="na">greeting</span><span class="p">:</span> <span class="s2">`Hello, </span><span class="p">${</span><span class="nx">name</span><span class="p">}</span><span class="s2">!`</span><span class="p">};</span>
   <span class="nx">callback</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">response</span><span class="p">);</span>
 <span class="p">};</span>
 </code></pre></div></div>
