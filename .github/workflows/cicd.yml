@@ -4,7 +4,7 @@ name: Build and deploy
 on:
   push:
     branches:
-      - dev
+      - main
 
 
 jobs:
@@ -43,5 +43,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
           ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: master
+          BRANCH: public
           FOLDER: _site
