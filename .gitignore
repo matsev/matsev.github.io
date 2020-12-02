@@ -13,3 +13,6 @@ vendor/
 
 # IntelliJ
 .idea/
+
+# Visual Studo Code
+.vscode/
