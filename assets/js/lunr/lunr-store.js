@@ -268,4 +268,10 @@ var store = [{
         "tags": ["AWS","cdk","cloud","EventBridge","Lambda","serverless","spot instance"],
         "url": "https://matsev.github.io/blog/2020/10/11/eventbridge-ec2-spot-instances/",
         "teaser": null
+      },{
+        "title": "Serverless Twilio Dictionary",
+        "excerpt":"I recently started working at Twilio, a communications company that enables services like voice, text, chat and video globally through APIs. As part of the onboarding process, Twilions (Twilio employees) are encouraged to design and implement an app or service that uses one or more of Twilio’s service offerings to...","categories": ["cloud","serverless"],
+        "tags": ["cloud","serverless","Twilio"],
+        "url": "https://matsev.github.io/blog/2020/12/02/serverless-twilio-dictionary/",
+        "teaser": null
       }]
