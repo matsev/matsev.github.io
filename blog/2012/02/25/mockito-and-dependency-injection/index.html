@@ -332,7 +332,7 @@
             </nav>
           </aside>
         
-        <p>When writing your Java unit test you will soon need a way to handle the dependencies of your classes under test. <a href="http://code.google.com/p/mockito/">Mockito</a> have some nice features that simplify the creation and usage of mock objects that have improved gradually during the last couple of years.</p>
+        <p>When writing your Java unit test you will soon need a way to handle the dependencies of your classes under test. <a href="https://site.mockito.org">Mockito</a> have some nice features that simplify the creation and usage of mock objects that have improved gradually during the last couple of years.</p>
 
 <h2 id="class-under-test">Class under test</h2>
 
@@ -408,7 +408,7 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>The interesting part of this test is the code that is <em>not</em> there. You may be surprised to find that the test does not contain the traditional boilerplate code associated with jUnit tests such as a <code class="language-plaintext highlighter-rouge">@Before</code> method, there is no <code class="language-plaintext highlighter-rouge">new Example()</code> call that instantiates the class under test, nor any application context from which an example bean can be obtained. Moreover, there is no call to the <a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/Mockito.html#mock%28java.lang.Class%29">mock()</a> method to create the delegate mock object. Despite all this, an <code class="language-plaintext highlighter-rouge">Example</code> instance will be created, a mock object will be injected into it, and the test will execute and pass. When the <a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/runners/MockitoJUnitRunner.html">MockitoJUnitRunner</a> executes the test, Mockito creates mocks and spies instances for all fields that are annotated with the <a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/Mock.html">@Mock</a> or the <a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/Spy.html">@Spy</a> annotations. Next, the field declaration that is annotated with the <a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/InjectMocks.html">@InjectMocks</a> annotation is instantiated and Mockito injects the mocks and spies into it. This occurs before each test method, so there is no there is no residual state left from any previous test that may affect the current test. From this part onwards, the test behaves like any other test and you can write your assertions and verifications as usual. As can be seen from the above examples, Mockito supports dependency injection by using constructor arguments, setter methods and field injection. The underlying implementation relies on reflection, which means that there is no dependency on the Java EE 6 or Spring annotations as far as Mockito is concerned (obviously, you will get a compile error if you do not add the corresponding dependencies to the class path and your application will fail if there is no matching bean definition in runtime, but that has nothing to do with the unit test).</p>
+<p>The interesting part of this test is the code that is <em>not</em> there. You may be surprised to find that the test does not contain the traditional boilerplate code associated with jUnit tests such as a <code class="language-plaintext highlighter-rouge">@Before</code> method, there is no <code class="language-plaintext highlighter-rouge">new Example()</code> call that instantiates the class under test, nor any application context from which an example bean can be obtained. Moreover, there is no call to the <a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/Mockito.html#mock-java.lang.Class-">mock()</a> method to create the delegate mock object. Despite all this, an <code class="language-plaintext highlighter-rouge">Example</code> instance will be created, a mock object will be injected into it, and the test will execute and pass. When the <a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/junit/MockitoJUnitRunner.html">MockitoJUnitRunner</a> executes the test, Mockito creates mocks and spies instances for all fields that are annotated with the <a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/Mock.html">@Mock</a> or the <a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/Spy.html">@Spy</a> annotations. Next, the field declaration that is annotated with the <a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/InjectMocks.html">@InjectMocks</a> annotation is instantiated and Mockito injects the mocks and spies into it. This occurs before each test method, so there is no there is no residual state left from any previous test that may affect the current test. From this part onwards, the test behaves like any other test and you can write your assertions and verifications as usual. As can be seen from the above examples, Mockito supports dependency injection by using constructor arguments, setter methods and field injection. The underlying implementation relies on reflection, which means that there is no dependency on the Java EE 6 or Spring annotations as far as Mockito is concerned (obviously, you will get a compile error if you do not add the corresponding dependencies to the class path and your application will fail if there is no matching bean definition in runtime, but that has nothing to do with the unit test).</p>
 
 <h2 id="limitations">Limitations</h2>
 
@@ -422,7 +422,7 @@
   <li>Fields may not be declared as <code class="language-plaintext highlighter-rouge">final</code> or <code class="language-plaintext highlighter-rouge">static</code> (but <code class="language-plaintext highlighter-rouge">private</code> fields are supported).</li>
 </ul>
 
-<p>Please read the documentation of the <a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/InjectMocks.html">@InjectMocks</a> to learn about the details.</p>
+<p>Please read the documentation of the <a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/InjectMocks.html">@InjectMocks</a> to learn about the details.</p>
 
 <h2 id="dependency">Dependency</h2>
 
@@ -431,10 +431,10 @@
 <h2 id="references">References</h2>
 
 <ul>
-  <li><a href="http://code.google.com/p/mockito/">Mockito</a></li>
-  <li><a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/InjectMocks.html">@InjectMocks</a></li>
-  <li><a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/Mock.html">@Mock</a></li>
-  <li><a href="http://docs.mockito.googlecode.com/hg/1.9.0/org/mockito/runners/MockitoJUnitRunner.html">MockitoJUnitRunner</a></li>
+  <li><a href="https://site.mockito.org">Mockito</a></li>
+  <li><a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/InjectMocks.html">@InjectMocks</a></li>
+  <li><a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/Mock.html">@Mock</a></li>
+  <li><a href="https://javadoc.io/static/org.mockito/mockito-core/3.6.28/org/mockito/junit/MockitoJUnitRunner.html">MockitoJUnitRunner</a></li>
 </ul>
 
         
@@ -585,7 +585,7 @@
   </ul>
 </div>
 
-<div class="page__footer-copyright">&copy; 2020 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+<div class="page__footer-copyright">&copy; 2021 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
 
       </footer>
     </div>
