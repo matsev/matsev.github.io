@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.21.0 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.22.0 by Michael Rose
   Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -65,7 +65,9 @@
 <!-- end _includes/seo.html -->
 
 
-<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
+  <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
+
 
 <!-- https://t.co/dKP3o1e -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -92,7 +94,6 @@
     }
   </style>
 <![endif]-->
-
 
 
     <!-- start custom head snippets -->
@@ -321,28 +322,7 @@
           <aside class="sidebar__right ">
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
-              <ul class="toc__menu">
-  <li><a href="#lambda-versioning-and-alias">Lambda Versioning and Alias</a></li>
-  <li><a href="#preparations">Preparations</a>
-     -  <a href="#tools">Tools</a>
-     -  <a href="#npm-scripts">npm Scripts</a>
-     -  <a href="#cloudformation-and-initial-lambda">CloudFormation and Initial Lambda</a></li>
-  <li><a href="#bash-scripts">Bash Scripts</a>
-     -  <a href="#0-create-stack">0. Create Stack</a>
-     -  <a href="#1-unit-tests">1. Unit Tests</a>
-     -  <a href="#2-package">2. Package</a>
-     -  <a href="#3-update-lambda">3. Update Lambda</a>
-     -  <a href="#4-integration-tests">4. Integration Tests</a>
-     -  <a href="#5-publish-latest-version">5. Publish $LATEST Version</a>
-     -  <a href="#6-update-stage-alias">6. Update STAGE Alias</a>
-     -  <a href="#7-update-prod-alias">7. Update PROD Alias</a>
-     -  <a href="#build-and-deploy-to-stage">Build and Deploy to STAGE</a></li>
-  <li><a href="#considerations">Considerations</a>
-     -  <a href="#functionname">FunctionName</a>
-     -  <a href="#additional-backup">Additional Backup</a>
-     -  <a href="#different-configurations">Different Configurations</a></li>
-  <li><a href="#references">References</a></li>
-</ul>
+              <ul class="toc__menu"><li><a href="#lambda-versioning-and-alias">Lambda Versioning and Alias</a></li><li><a href="#preparations">Preparations</a><ul><li><a href="#tools">Tools</a></li><li><a href="#npm-scripts">npm Scripts</a></li><li><a href="#cloudformation-and-initial-lambda">CloudFormation and Initial Lambda</a></li></ul></li></ul></li><li><a href="#bash-scripts">Bash Scripts</a><ul><li><a href="#0-create-stack">0. Create Stack</a></li><li><a href="#1-unit-tests">1. Unit Tests</a></li><li><a href="#2-package">2. Package</a></li><li><a href="#3-update-lambda">3. Update Lambda</a></li><li><a href="#4-integration-tests">4. Integration Tests</a></li><li><a href="#5-publish-latest-version">5. Publish $LATEST Version</a></li><li><a href="#6-update-stage-alias">6. Update STAGE Alias</a></li><li><a href="#7-update-prod-alias">7. Update PROD Alias</a></li><li><a href="#build-and-deploy-to-stage">Build and Deploy to STAGE</a></li></ul></li></ul></li><li><a href="#considerations">Considerations</a><ul><li><a href="#functionname">FunctionName</a></li><li><a href="#additional-backup">Additional Backup</a></li><li><a href="#different-configurations">Different Configurations</a></li></ul></li></ul></li><li><a href="#references">References</a></li></ul>
 
             </nav>
           </aside>
@@ -708,7 +688,9 @@ zip <span class="nt">-r</span> greeting-lambda.zip <span class="nb">.</span>
 
     
 
-    <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+      <li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
   </ul>
 </div>
 
