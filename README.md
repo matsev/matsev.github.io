@@ -1,4 +1,8 @@
+[![Build and deploy](https://github.com/matsev/matsev.github.io/actions/workflows/cicd.yml/badge.svg)](https://github.com/matsev/matsev.github.io/actions/workflows/cicd.yml)
 
+## Mattias' web site
+
+This is the source code of my personal web site, https://matsev.github.io/
 
 ## Installation
 
@@ -11,3 +15,4 @@
     * Ref https://jekyllrb.com/tutorials/using-jekyll-with-bundler/
 * Install dependencies `$ bundle install`
 * Serve site `$ bundle exec jekyll serve`
+* Update bundler `$ gem update bundler && bundle update --bundler`
