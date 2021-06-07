@@ -27,7 +27,7 @@ jobs:
           bundle exec jekyll build
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.3
+        uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: public
           folder: _site
