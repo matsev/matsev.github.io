@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v2.4.0
 
       - name: Install Ruby ⏳
-        uses: ruby/setup-ruby@v1.97.0
+        uses: ruby/setup-ruby@v1.99.0
         with:
           bundler-cache: true
 
