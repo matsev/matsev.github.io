@@ -102,7 +102,7 @@ GEM
       faraday (> 0.8, < 2.0)
     terminal-table (2.0.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
-    tzinfo (2.0.4)
+    tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
     tzinfo-data (1.2022.1)
       tzinfo (>= 1.0.0)
@@ -118,7 +118,7 @@ DEPENDENCIES
   jekyll-include-cache (~> 0.2.1)
   jekyll-octicons (~> 17.3.0)
   minimal-mistakes-jekyll (~> 4.24.0)
-  tzinfo (~> 2.0.4)
+  tzinfo (~> 2.0.5)
   tzinfo-data
   wdm (~> 0.1.1)
 
