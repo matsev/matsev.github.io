@@ -127,5 +127,8 @@ DEPENDENCIES
   tzinfo-data
   wdm (~> 0.1.1)
 
+RUBY VERSION
+   ruby 3.2.0p0
+
 BUNDLED WITH
-   2.2.15
+   2.4.6
