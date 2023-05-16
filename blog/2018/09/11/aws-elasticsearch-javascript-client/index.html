@@ -338,13 +338,13 @@
 
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
     
-<span class="kd">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">path</span><span class="dl">'</span><span class="p">);</span>
-<span class="kd">const</span> <span class="nx">AWS</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">aws-sdk</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">path</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">path</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">AWS</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">aws-sdk</span><span class="dl">'</span><span class="p">);</span>
 
 <span class="kd">const</span> <span class="p">{</span> <span class="nx">AWS_REGION</span><span class="p">,</span> <span class="nx">ELASTICSEARCH_DOMAIN</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">;</span>
-<span class="kd">const</span> <span class="nx">endpoint</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">Endpoint</span><span class="p">(</span><span class="nx">ELASTICSEARCH_DOMAIN</span><span class="p">);</span>
-<span class="kd">const</span> <span class="nx">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">HttpClient</span><span class="p">();</span>
-<span class="kd">const</span> <span class="nx">credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">EnvironmentCredentials</span><span class="p">(</span><span class="dl">'</span><span class="s1">AWS</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">endpoint</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nc">Endpoint</span><span class="p">(</span><span class="nx">ELASTICSEARCH_DOMAIN</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nc">HttpClient</span><span class="p">();</span>
+<span class="kd">const</span> <span class="nx">credentials</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nc">EnvironmentCredentials</span><span class="p">(</span><span class="dl">'</span><span class="s1">AWS</span><span class="dl">'</span><span class="p">);</span>
 
 <span class="cm">/**
  * Sends a request to Elasticsearch
@@ -354,40 +354,40 @@
  * @param {Object} [payload] - An optional JavaScript object that will be serialized to the HTTP request body
  * @returns {Promise} Promise - object with the result of the HTTP response
  */</span>
-<span class="kd">function</span> <span class="nx">sendRequest</span><span class="p">({</span> <span class="nx">httpMethod</span><span class="p">,</span> <span class="nx">requestPath</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">})</span> <span class="p">{</span>
-    <span class="kd">const</span> <span class="nx">request</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">HttpRequest</span><span class="p">(</span><span class="nx">endpoint</span><span class="p">,</span> <span class="nx">AWS_REGION</span><span class="p">);</span>
+<span class="kd">function</span> <span class="nf">sendRequest</span><span class="p">({</span> <span class="nx">httpMethod</span><span class="p">,</span> <span class="nx">requestPath</span><span class="p">,</span> <span class="nx">payload</span> <span class="p">})</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">request</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nc">HttpRequest</span><span class="p">(</span><span class="nx">endpoint</span><span class="p">,</span> <span class="nx">AWS_REGION</span><span class="p">);</span>
 
     <span class="nx">request</span><span class="p">.</span><span class="nx">method</span> <span class="o">=</span> <span class="nx">httpMethod</span><span class="p">;</span>
-    <span class="nx">request</span><span class="p">.</span><span class="nx">path</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">requestPath</span><span class="p">);</span>
-    <span class="nx">request</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">payload</span><span class="p">);</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">path</span> <span class="o">=</span> <span class="nx">path</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="nx">request</span><span class="p">.</span><span class="nx">path</span><span class="p">,</span> <span class="nx">requestPath</span><span class="p">);</span>
+    <span class="nx">request</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">(</span><span class="nx">payload</span><span class="p">);</span>
     <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="dl">'</span><span class="s1">Content-Type</span><span class="dl">'</span><span class="p">]</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">;</span>
     <span class="nx">request</span><span class="p">.</span><span class="nx">headers</span><span class="p">[</span><span class="dl">'</span><span class="s1">Host</span><span class="dl">'</span><span class="p">]</span> <span class="o">=</span> <span class="nx">ELASTICSEARCH_DOMAIN</span><span class="p">;</span>
 
-    <span class="kd">const</span> <span class="nx">signer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">Signers</span><span class="p">.</span><span class="nx">V4</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="dl">'</span><span class="s1">es</span><span class="dl">'</span><span class="p">);</span>
-    <span class="nx">signer</span><span class="p">.</span><span class="nx">addAuthorization</span><span class="p">(</span><span class="nx">credentials</span><span class="p">,</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">());</span>
+    <span class="kd">const</span> <span class="nx">signer</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">AWS</span><span class="p">.</span><span class="nx">Signers</span><span class="p">.</span><span class="nc">V4</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="dl">'</span><span class="s1">es</span><span class="dl">'</span><span class="p">);</span>
+    <span class="nx">signer</span><span class="p">.</span><span class="nf">addAuthorization</span><span class="p">(</span><span class="nx">credentials</span><span class="p">,</span> <span class="k">new</span> <span class="nc">Date</span><span class="p">());</span>
 
-    <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="nx">httpClient</span><span class="p">.</span><span class="nx">handleRequest</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span>
+    <span class="k">return</span> <span class="k">new</span> <span class="nc">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">reject</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">httpClient</span><span class="p">.</span><span class="nf">handleRequest</span><span class="p">(</span><span class="nx">request</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span>
             <span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
                 <span class="kd">const</span> <span class="p">{</span> <span class="nx">statusCode</span><span class="p">,</span> <span class="nx">statusMessage</span><span class="p">,</span> <span class="nx">headers</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">response</span><span class="p">;</span>
                 <span class="kd">let</span> <span class="nx">body</span> <span class="o">=</span> <span class="dl">''</span><span class="p">;</span>
-                <span class="nx">response</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">data</span><span class="dl">'</span><span class="p">,</span> <span class="nx">chunk</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">data</span><span class="dl">'</span><span class="p">,</span> <span class="nx">chunk</span> <span class="o">=&gt;</span> <span class="p">{</span>
                     <span class="nx">body</span> <span class="o">+=</span> <span class="nx">chunk</span><span class="p">;</span>
                 <span class="p">});</span>
-                <span class="nx">response</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">end</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+                <span class="nx">response</span><span class="p">.</span><span class="nf">on</span><span class="p">(</span><span class="dl">'</span><span class="s1">end</span><span class="dl">'</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
                     <span class="kd">const</span> <span class="nx">data</span> <span class="o">=</span> <span class="p">{</span>
                         <span class="nx">statusCode</span><span class="p">,</span>
                         <span class="nx">statusMessage</span><span class="p">,</span>
                         <span class="nx">headers</span>
                     <span class="p">};</span>
-                    <span class="k">if</span> <span class="p">(</span><span class="nx">body</span><span class="p">)</span> <span class="p">{</span>
-                        <span class="nx">data</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">body</span><span class="p">);</span>
+                    <span class="nf">if </span><span class="p">(</span><span class="nx">body</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">data</span><span class="p">.</span><span class="nx">body</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">parse</span><span class="p">(</span><span class="nx">body</span><span class="p">);</span>
                     <span class="p">}</span>
-                    <span class="nx">resolve</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+                    <span class="nf">resolve</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
                 <span class="p">});</span>
             <span class="p">},</span>
             <span class="nx">err</span> <span class="o">=&gt;</span> <span class="p">{</span>
-                <span class="nx">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+                <span class="nf">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
             <span class="p">});</span>
     <span class="p">});</span>
 <span class="p">}</span>
@@ -401,7 +401,7 @@
 
 <div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
     
-<span class="kd">const</span> <span class="nx">sendElasticsearchRequest</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./elasticsearch-client</span><span class="dl">'</span><span class="p">);</span>
+<span class="kd">const</span> <span class="nx">sendElasticsearchRequest</span> <span class="o">=</span> <span class="nf">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">./elasticsearch-client</span><span class="dl">'</span><span class="p">);</span>
 
 <span class="kd">const</span> <span class="nx">params</span> <span class="o">=</span> <span class="p">{</span>
     <span class="na">httpMethod</span><span class="p">:</span> <span class="dl">'</span><span class="s1">PUT</span><span class="dl">'</span><span class="p">,</span>
@@ -416,9 +416,9 @@
         <span class="p">}</span>
     <span class="p">}</span>
 <span class="p">};</span>
-<span class="nx">sendElasticsearchRequest</span><span class="p">(</span><span class="nx">params</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="nx">response</span><span class="p">);</span>
+<span class="nf">sendElasticsearchRequest</span><span class="p">(</span><span class="nx">params</span><span class="p">)</span>
+    <span class="p">.</span><span class="nf">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="nx">response</span><span class="p">);</span>
     <span class="p">});</span>
 </code></pre></div></div>
 
