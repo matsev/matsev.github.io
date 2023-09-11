@@ -376,7 +376,7 @@
     <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Creating lambda:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">JSON</span><span class="p">.</span><span class="nf">stringify</span><span class="p">(</span><span class="nx">lambdaParams</span><span class="p">));</span>
 
     <span class="c1">// Check whether or not there is an Lambda function implementation in an S3 bucket that should be used</span>
-    <span class="nf">if </span><span class="p">(</span><span class="o">!</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span> <span class="o">||</span> <span class="o">!</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span><span class="p">.</span><span class="nx">S3Bucket</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if </span><span class="p">(</span><span class="o">!</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span> <span class="o">||</span> <span class="o">!</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span><span class="p">.</span><span class="nx">S3Bucket</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// No code provided, create initial version.</span>
         <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Handler</span> <span class="o">=</span> <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Handler</span> <span class="o">||</span> <span class="dl">'</span><span class="s1">index.handler</span><span class="dl">'</span><span class="p">;</span>
         <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Code</span> <span class="o">=</span> <span class="p">{</span><span class="na">ZipFile</span><span class="p">:</span> <span class="nf">createEchoFunction</span><span class="p">(</span><span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)};</span>
@@ -384,7 +384,7 @@
         <span class="nx">lambdaParams</span><span class="p">.</span><span class="nx">Runtime</span> <span class="o">=</span> <span class="dl">'</span><span class="s1">nodejs</span><span class="dl">'</span><span class="p">;</span>
     <span class="p">}</span>
     <span class="nx">lambda</span><span class="p">.</span><span class="nf">createFunction</span><span class="p">(</span><span class="nx">lambdaParams</span><span class="p">,</span> <span class="nf">function </span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nf">if </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
             <span class="c1">// Lambda creation failed, do not provide the physicalResourceId</span>
             <span class="nx">response</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">FAILED</span><span class="p">,</span> <span class="nx">err</span><span class="p">);</span>
         <span class="p">}</span>
@@ -406,13 +406,13 @@
     <span class="kd">var</span> <span class="nx">physicalResourceId</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">PhysicalResourceId</span><span class="p">;</span>
 
     <span class="c1">// Check if the physicalResourceId has the same value as provided by the createLambda() function</span>
-    <span class="nf">if </span><span class="p">(</span><span class="nx">physicalResourceId</span> <span class="o">===</span> <span class="nx">functionName</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if </span><span class="p">(</span><span class="nx">physicalResourceId</span> <span class="o">===</span> <span class="nx">functionName</span><span class="p">)</span> <span class="p">{</span>
 
         <span class="c1">// Yes, this Lambda was indeed created by this stack, ok to delete</span>
         <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">Deleting Lambda:</span><span class="dl">'</span><span class="p">,</span> <span class="nx">functionName</span><span class="p">);</span>
 
         <span class="nx">lambda</span><span class="p">.</span><span class="nf">deleteFunction</span><span class="p">({</span><span class="na">FunctionName</span><span class="p">:</span> <span class="nx">functionName</span><span class="p">},</span> <span class="nf">function </span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
-            <span class="nf">if </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if </span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
                 <span class="nx">response</span><span class="p">.</span><span class="nf">send</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">context</span><span class="p">,</span> <span class="nx">response</span><span class="p">.</span><span class="nx">FAILED</span><span class="p">,</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">functionName</span><span class="p">);</span>
             <span class="p">}</span>
             <span class="k">else</span> <span class="p">{</span>

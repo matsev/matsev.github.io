@@ -338,7 +338,7 @@
 
 <span class="k">export</span> <span class="kd">class</span> <span class="nc">SpotInstantceEventDetectorStack</span> <span class="kd">extends</span> <span class="nc">cdk</span><span class="p">.</span><span class="nx">Stack</span> <span class="p">{</span>
   <span class="nf">constructor</span><span class="p">(</span><span class="nx">scope</span><span class="p">:</span> <span class="nx">cdk</span><span class="p">.</span><span class="nx">Construct</span><span class="p">,</span> <span class="nx">id</span><span class="p">:</span> <span class="kr">string</span><span class="p">,</span> <span class="nx">props</span><span class="p">?:</span> <span class="nx">cdk</span><span class="p">.</span><span class="nx">StackProps</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nf">super</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">props</span><span class="p">);</span>
+    <span class="k">super</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">id</span><span class="p">,</span> <span class="nx">props</span><span class="p">);</span>
 
     <span class="c1">// Lambda function that will triggered</span>
     <span class="kd">const</span> <span class="nx">spotInstanceEventLambda</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">lambda</span><span class="p">.</span><span class="nc">Function</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="dl">'</span><span class="s1">SpotInstanceEventLambda</span><span class="dl">'</span><span class="p">,</span> <span class="p">{</span>
