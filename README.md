@@ -14,6 +14,7 @@ This is the source code of my personal web site, https://matsev.github.io/
     * Create empty Gemfile `bundle init`
     * Install gems in `./vendor/bundle/` by configuring bundle `$ bundle config --local set path 'vendor/bundle'` (creates [.bundle/config](.bundle/config))
     * Ref https://jekyllrb.com/tutorials/using-jekyll-with-bundler/
+* Update bundler `$ bundle update --bundler`
 * Install dependencies `$ bundle install`
 * Serve site `$ bundle exec jekyll serve`
 * Update bundler `$ gem update bundler && bundle update --bundler`
