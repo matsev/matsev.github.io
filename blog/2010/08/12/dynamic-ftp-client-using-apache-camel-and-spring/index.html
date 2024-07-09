@@ -1,11 +1,12 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
-  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Minimal Mistakes Jekyll Theme 4.26.2 by Michael Rose
+  Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
 -->
-<html lang="en" class="no-js">
+
+<html lang="en-US" class="no-js">
   <head>
     <meta charset="utf-8">
 
@@ -46,16 +47,7 @@
 
 
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    
-      "@type": "Person",
-      "name": "Mattias Severson",
-      "url": "https://matsev.github.io/"
-    
-  }
-</script>
+
 
 
 
@@ -68,19 +60,17 @@
 
 
   <link href="/feed.xml" type="application/atom+xml" rel="alternate" title="Random Code Ramblings Feed">
-
-
-<!-- https://t.co/dKP3o1e -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script>
+<script type="text/javascript">
   document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+  
 </script>
 
 <!-- For all browsers -->
 <link rel="stylesheet" href="/assets/css/main.css">
-<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@latest/css/all.min.css"></noscript>
 
 
 
@@ -101,10 +91,6 @@
   </ul>
 </nav>
 
-    <!--[if lt IE 9]>
-<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
-<![endif]-->
-
     
 
 <div class="masthead">
@@ -117,11 +103,23 @@
           <span class="site-subtitle">offloading a software engineer's mind</span>
         </a>
         <ul class="visible-links"><li class="masthead__menu-item">
-              <a href="/blog/" title="Software related blog posts">Blog</a>
+              <a
+                href="/blog/"
+                 title="Software related blog posts"
+                
+              >Blog</a>
             </li><li class="masthead__menu-item">
-              <a href="/talks/" title="Presentations that I have made">Talks</a>
+              <a
+                href="/talks/"
+                 title="Presentations that I have made"
+                
+              >Talks</a>
             </li><li class="masthead__menu-item">
-              <a href="/about/" title="Information about me and this web site">About</a>
+              <a
+                href="/about/"
+                 title="Information about me and this web site"
+                
+              >About</a>
             </li></ul>
         
         <button class="greedy-nav__toggle hidden" type="button">
@@ -140,28 +138,30 @@
 
 
 
+
+
 <div id="main" role="main">
   
   <div class="sidebar sticky">
   
 
 
-<div itemscope itemtype="https://schema.org/Person">
+<div itemscope itemtype="https://schema.org/Person" class="h-card">
 
   
     <div class="author__avatar">
-      
-        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image">
-      
+      <a href="https://matsev.github.io/">
+        <img src="/assets/images/mattias-severson.jpg" alt="Mattias Severson" itemprop="image" class="u-photo">
+      </a>
     </div>
   
 
   <div class="author__content">
+    <h3 class="author__name p-name" itemprop="name">
+      <a class="u-url" rel="me" href="https://matsev.github.io/" itemprop="url">Mattias Severson</a>
+    </h3>
     
-      <h3 class="author__name" itemprop="name">Mattias Severson</h3>
-    
-    
-      <div class="author__bio" itemprop="description">
+      <div class="author__bio p-note" itemprop="description">
         <p>Senior Software Engineer</p>
 
       </div>
@@ -173,7 +173,7 @@
     <ul class="author__urls social-icons">
       
         <li itemprop="homeLocation" itemscope itemtype="https://schema.org/Place">
-          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Malmö, Sweden</span>
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name" class="p-locality">Malmö, Sweden</span>
         </li>
       
 
@@ -207,7 +207,7 @@
 
       
         <li>
-          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer">
+          <a href="https://twitter.com/mattiasseverson" itemprop="sameAs" rel="nofollow noopener noreferrer me">
             <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i><span class="label">Twitter</span>
           </a>
         </li>
@@ -217,7 +217,7 @@
 
       
         <li>
-          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+          <a href="https://www.linkedin.com/in/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer me">
             <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span class="label">LinkedIn</span>
           </a>
         </li>
@@ -233,7 +233,7 @@
 
       
         <li>
-          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+          <a href="https://github.com/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer me">
             <i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span>
           </a>
         </li>
@@ -243,7 +243,7 @@
 
       
         <li>
-          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer">
+          <a href="https://stackoverflow.com/users/303598/matsev" itemprop="sameAs" rel="nofollow noopener noreferrer me">
             <i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span>
           </a>
         </li>
@@ -273,7 +273,7 @@
 
       <!--
   <li>
-    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
       <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
     </a>
   </li>
@@ -296,8 +296,10 @@
     <div class="page__inner-wrap">
       
         <header>
-          <h1 id="page-title" class="page__title" itemprop="headline">Dynamic FTP Client using Apache Camel and Spring
-</h1>
+          <h1 id="page-title" class="page__title" itemprop="headline">
+            <a href="https://matsev.github.io/blog/2010/08/12/dynamic-ftp-client-using-apache-camel-and-spring/" itemprop="url">Dynamic FTP Client using Apache Camel and Spring
+</a>
+          </h1>
           
 
 
@@ -310,7 +312,6 @@
             <nav class="toc">
               <header><h4 class="nav__title"><i class="fas fa-file-alt"></i> On this page</h4></header>
               <ul class="toc__menu"><li><a href="#ftpsenderjava">FtpSender.java</a></li><li><a href="#ftppropertiesjava">FtpProperties.java</a></li><li><a href="#ftproutebuilderjava">FtpRouteBuilder.java</a></li><li><a href="#ftpsenderimpljava">FtpSenderImpl.java</a></li><li><a href="#spring-configxml">spring-config.xml</a></li></ul>
-
             </nav>
           </aside>
         
@@ -535,8 +536,7 @@
 
         
 
-  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2010-08-12T00:00:00+02:00">August 12, 2010</time></p>
-
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2010-08-12T00:00:00+02:00">August 12, 2010</time></p>
 
       </footer>
 
@@ -561,11 +561,14 @@
 
   
   
-    <div class="page__related">
-      <h4 class="page__related-title">You may also enjoy</h4>
-      <div class="grid__wrapper">
-        
-          
+    
+<div class="page__related">
+  
+  <h2 class="page__related-title">You may also enjoy</h2>
+  <div class="grid__wrapper">
+    
+      
+      
 
 
 
@@ -585,8 +588,9 @@
   </article>
 </div>
 
-        
-          
+    
+      
+      
 
 
 
@@ -606,8 +610,9 @@
   </article>
 </div>
 
-        
-          
+    
+      
+      
 
 
 
@@ -627,8 +632,9 @@
   </article>
 </div>
 
-        
-          
+    
+      
+      
 
 
 
@@ -648,13 +654,15 @@
   </article>
 </div>
 
-        
-      </div>
-    </div>
+    
+  </div>
+</div>
+
   
   
 </div>
 
+      
     </div>
 
     
@@ -678,14 +686,13 @@
   </ul>
 </div>
 
-<div class="page__footer-copyright">&copy; 2023 Mattias Severson. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+<div class="page__footer-copyright">&copy; 2024 <a href="https://matsev.github.io">Random Code Ramblings</a>. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
 
       </footer>
     </div>
 
     
   <script src="/assets/js/main.min.js"></script>
-
 
 
 
