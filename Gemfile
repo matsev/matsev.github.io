@@ -20,7 +20,7 @@ gem "minimal-mistakes-jekyll", "~> 4.26.2"
 # gem "github-pages", group: :jekyll_plugins
 # If you have any plugins, put them here!
 group :jekyll_plugins do
-  gem "jekyll-archives", "~> 2.2.1"
+  gem "jekyll-archives", "~> 2.3.0"
   gem "jekyll-include-cache", "~> 0.2.1"
   gem "jekyll-octicons", "~> 19.8.0"
 end
