@@ -51,7 +51,7 @@ GEM
       jekyll (>= 3.7, < 5.0)
     jekyll-gist (1.5.0)
       octokit (~> 4.2)
-    jekyll-include-cache (0.2.1)
+    jekyll-include-cache (0.2.2)
       jekyll (>= 3.7, < 5.0)
     jekyll-octicons (19.32.0)
       jekyll (>= 3.6, < 5.0)
@@ -121,7 +121,7 @@ PLATFORMS
 DEPENDENCIES
   jekyll (~> 4.4.1)
   jekyll-archives (~> 2.3.0)
-  jekyll-include-cache (~> 0.2.1)
+  jekyll-include-cache (~> 0.2.2)
   jekyll-octicons (~> 19.32.0)
   minimal-mistakes-jekyll (~> 4.28.0)
   tzinfo (~> 2.0.6)
